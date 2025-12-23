@@ -21,7 +21,7 @@ All the symlinks will be created in the locations listed below.
 - alacritty (`~/.config/alacritty`)
 - bash (`~/.bashrc`)
 - git (`~/.config/git`)
-- hypr (`~/.config/hypr`)
+- hyprland (`~/.config/hypr`)
 - keepassxc (`~/.config/keepassxc`)
 - ly (`/etc/ly`)
 - mako (`~/.config/mako`)
