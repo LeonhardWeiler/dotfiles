@@ -10,8 +10,10 @@ git clone https://github.com/leonhardweiler/dotfiles.git ~/dotfiles
 Make script executable and run it:
 ```bash
 chmod +x ~/dotfiles/install.sh
-~/dotfiles/install.sh
+sudo ~/dotfiles/install.sh
 ```
+You have to use `sudo` to create the symlink for the `ly` display manager
+configuration.
 
 All the symlinks will be created in the locations listed below.
 
