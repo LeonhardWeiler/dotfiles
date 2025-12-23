@@ -7,6 +7,7 @@ vim.opt.swapfile = false
 
 vim.opt.cursorline = true
 vim.opt.fillchars:append { eob = " " }
+vim.opt.shortmess:append("c")
 
 vim.opt.tabstop = 2
 vim.opt.softtabstop = 2
