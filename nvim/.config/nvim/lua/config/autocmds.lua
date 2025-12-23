@@ -110,7 +110,7 @@ autocmd("BufWritePost", {
 
 -- Wrap + linebreak nur in bestimmten Dateitypen aktivieren
 autocmd("FileType", {
-  pattern = { "markdown", "text" },
+  pattern = { "markdown", "text", "gitcommit" },
   callback = function()
     vim.opt_local.wrap = true
     vim.opt_local.linebreak = true
