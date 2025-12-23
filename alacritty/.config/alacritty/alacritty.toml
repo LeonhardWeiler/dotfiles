@@ -1,0 +1,38 @@
+[window]
+padding = { x = 5, y = 6 }
+decorations = "None"
+
+[font]
+normal = { family = "JetBrainsMonoNerdFont" }
+size = 12.2
+
+[mouse]
+hide_when_typing = true
+
+[colors]
+# Default colors
+[colors.primary]
+  background = '#141414'
+  foreground = '#a7a7a7'
+
+# Normal colors
+[colors.normal]
+  black = '#2d2d2d'
+  red = '#9d5b61'
+  green = '#838d69'
+  yellow = '#b38d6a'
+  blue = '#606d84'
+  magenta = '#766577'
+  cyan = '#808fa0'
+  white = '#9c9a9a'
+
+# Bright colors
+[colors.bright]
+  black = '#141414'
+  red = '#9d5b61'
+  green = '#838b69'
+  yellow = '#b38d6a'
+  blue = '#606d84'
+  magenta = '#766577'
+  cyan = '#808fa0'
+  white = '#9c9a9a'

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+STEP=5
+
+SINK=$(pactl info | grep "Default Sink" | awk '{print $3}')
+if [ -z "$SINK" ]; then
+  echo "Error: Kein Default Sink gefunden"
+  exit 1
+fi
+
+case "$1" in
+  up)
+    pactl set-sink-volume "$SINK" +${STEP}%
+    ;;
+  down)
+    pactl set-sink-volume "$SINK" -${STEP}%
+    ;;
+  mute)
+    pactl set-sink-mute "$SINK" toggle
+    ;;
+  *)
+    echo "Usage: $0 {up|down|mute}"
+    exit 1
+    ;;
+esac
+
+IS_MUTED=$(pactl get-sink-mute "$SINK" | awk '{print $2}')
+VOLUME_RAW=$(pactl get-sink-volume "$SINK" | grep -oP '\d+%' | head -n1)
+VOLUME=${VOLUME_RAW%\%}
+
+if [ "$IS_MUTED" = "yes" ]; then
+  notify-send \
+    -h string:x-canonical-private-synchronous:volume \
+    "Volume" "Muted"
+else
+  notify-send \
+    -h string:x-canonical-private-synchronous:volume \
+    -h int:value:$VOLUME \
+    "Volume" "${VOLUME}%"
+fi
+

@@ -1,0 +1,29 @@
+background-color=#141414
+text-color=#dddddd
+border-color=#a7a7a7
+border-size=2
+
+icons=0
+
+margin=10
+padding=15
+
+default-timeout=1500
+
+font=monospace 12
+
+progress-color=#2d2d2d
+
+[urgency=low]
+background-color=#141434
+text-color=#aaccff
+border-color=#4477dd
+progress-color=#1d1d44
+
+[urgency=critical]
+font=monospace 15
+background-color=#301010
+text-color=#ff8888
+border-color=#aa4444
+progress-color=#401818
+anchor=center
