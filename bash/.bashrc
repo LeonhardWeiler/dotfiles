@@ -10,6 +10,7 @@ battery_status() {
 PS1='$(battery_status) \w \$ '
 
 export PATH="$HOME/.config/scripts:$PATH"
+export EDITOR="nvim"
 
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM=wayland
@@ -27,3 +28,4 @@ export GIT_CONFIG_GLOBAL="$HOME/.config/git/.gitconfig"
 
 alias resolve='distrobox-enter davincibox -- env QT_SCALE_FACTOR=0.9 QT_AUTO_SCREEN_SCALE_FACTOR=0 /opt/resolve/bin/resolve'
 alias open='xdg-open'
+alias dot='cd $HOME/dotfiles'

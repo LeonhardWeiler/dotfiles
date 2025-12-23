@@ -1,3 +1,5 @@
 [user]
 	email = Laser_Leo@hotmail.com
 	name = Leonhard Weiler
+[core]
+	editor = nvim

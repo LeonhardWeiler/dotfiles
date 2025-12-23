@@ -144,5 +144,12 @@ vim.api.nvim_create_autocmd("FileType", {
   end
 })
 
+-- Automatisches Update von lazy.nvim beim Start
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    require("lazy").update({ show = false })
+  end,
+})
+
 return M
 
