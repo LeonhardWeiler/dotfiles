@@ -39,8 +39,6 @@ The script will overwrite the `programs.txt` file with your current package list
 
 All symlinks will be created in the directories defined in the repository.
 
----
-
 ## Systemd Services
 
 ### System Services
@@ -78,8 +76,6 @@ Check status:
 systemctl --user status <name>.service
 ```
 
----
-
 ## Contents
 
 | Component      | Path                   |
@@ -101,24 +97,18 @@ systemctl --user status <name>.service
 | Typst          | `~/.config/typst`      |
 | Zram           | `/etc/systemd/system/` |
 
----
-
 ## My Setup
 
 I use Arch Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages and is updated when the installation script is run.
 
 > Note: This setup has been primarily tested on Arch Linux. Other distributions may require adjustments.
 
----
-
-## License
-
-GPL-2.0 License
-
----
-
 ## Notes
 
 * Some applications may require additional dependencies not covered by this repository.
 * Adjust paths and configurations to your personal environment.
 * Backing up existing configurations is strongly recommended.
+
+## License
+
+GPL-2.0 License
