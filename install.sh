@@ -12,7 +12,7 @@ fi
 
 cd "$DOTFILES_DIR"
 
-ROOT_PKGS=("ly" "zram" "systemd-system")
+ROOT_PKGS=("ly" "zram" "systemd-system" "mkinitcpio")
 USER_PKGS=()
 
 for dir in */; do

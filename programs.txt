@@ -3,7 +3,7 @@ alacritty 0.16.1-1
 blender-launcher-v2-bin 2.5.3-1
 brightnessctl 0.5.1-3
 btop 1.4.5-1
-cuda 13.0.2-3
+cuda 13.1.0-1
 dnsmasq 2.91-1
 dosfstools 4.2-5
 fastfetch 2.56.1-1

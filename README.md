@@ -88,6 +88,7 @@ systemctl --user status <name>.service
 | Ly             | `/etc/ly`              |
 | Mako           | `~/.config/mako`       |
 | MPV            | `~/.config/mpv`        |
+| mkinitcpio     | `/etc/mkinitcpio.conf` |
 | Neovim         | `~/.config/nvim`       |
 | Passwords      | `~/.config/passwords`  |
 | Rofi           | `~/.config/rofi`       |
@@ -108,6 +109,14 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 * Some applications may require additional dependencies not covered by this repository.
 * Adjust paths and configurations to your personal environment.
 * Backing up existing configurations is strongly recommended.
+
+### New Initramfs
+
+After modifying the `mkinitcpio.conf`, regenerate the initramfs with:
+
+```bash
+sudo mkinitcpio -P
+```
 
 ## License
 
