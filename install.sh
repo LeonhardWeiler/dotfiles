@@ -6,6 +6,8 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 if ! command -v stow &> /dev/null; then
     echo "Stow wird benötigt. Bitte zuerst installieren."
     exit 1
+elif [[ $EUID -ne 0 ]]; then
+    echo "Für Root-Pakete sind erhöhte Rechte erforderlich. Falls gewünscht mit 'sudo' ausführen."
 fi
 
 cd "$DOTFILES_DIR"
@@ -22,7 +24,9 @@ for dir in */; do
             break
         fi
     done
-    $skip || USER_PKGS+=("$dir")
+    if ! $skip; then
+        USER_PKGS+=("$dir")
+    fi
 done
 
 read -p "Möchtest du die Änderungen wirklich anwenden? [y/N]: " confirm
@@ -38,6 +42,13 @@ if [[ "$confirm" == "y" || "$confirm" == "yes" ]]; then
     for pkg in "${ROOT_PKGS[@]}"; do
         sudo stow -R -v --target=/ "$pkg"
     done
+
+    read -p "Möchtest du das programs.txt file aktualisieren [y/N]: " confirm
+    confirm=${confirm,,}
+    if [[ "$confirm" == "y" || "$confirm" == "yes" ]]; then
+        echo "Aktualisiere programs.txt..."
+        pacman -Qe | grep -v "$(pacman -Qq base)" > programs.txt
+    fi
 
     echo "Fertig!"
 else
