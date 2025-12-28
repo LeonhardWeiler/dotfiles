@@ -2,7 +2,7 @@ acpi 1.8-2
 alacritty 0.16.1-1
 blender-launcher-v2-bin 2.5.3-1
 brightnessctl 0.5.1-3
-btop 1.4.5-1
+btop 1.4.6-1
 cuda 13.1.0-1
 dnsmasq 2.91-1
 dosfstools 4.2-5
@@ -18,11 +18,11 @@ libwebp-utils 1.6.0-2
 linux 6.18.2.arch2-1
 linux-firmware 20251125-2
 linux-headers 6.18.2.arch2-1
-ly 1.3.0-2
+ly 1.3.0-3
 mako 1.10.0-1
 man-db 2.13.1-1
 mesa 1:25.3.2-1
-mpv 1:0.40.0-7
+mpv 1:0.41.0-2
 neovim 0.11.5-1
 networkmanager 1.54.3-1
 nodejs-lts-jod 22.21.1-2
