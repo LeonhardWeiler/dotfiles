@@ -16,6 +16,7 @@ ROOT_PKGS=("ly" "zram" "systemd-system" "mkinitcpio")
 USER_PKGS=()
 
 chmod +x update-package-list.sh
+chmod +x install-programs.sh
 
 for dir in */; do
     dir=${dir%/}

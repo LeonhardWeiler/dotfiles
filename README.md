@@ -110,6 +110,7 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 * Adjust paths and configurations to your personal environment.
 * Backing up existing configurations is strongly recommended.
 * To update de program list without relinking, run `./update_programs.sh`.
+* To install all packages from `programs.txt`, run  `./install-programs.sh`
 
 ### New Initramfs
 
