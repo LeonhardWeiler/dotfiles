@@ -8,10 +8,11 @@ dnsmasq 2.91-1
 dosfstools 4.2-5
 fastfetch 2.56.1-1
 git 2.52.0-2
-hyprland 0.52.2-2
-hyprlock 0.9.2-7
+hyprland 0.53.0-2
+hyprlock 0.9.2-8
 imagemagick 7.1.2.11-1
 iptables-nft 1:1.8.11-2
+jq 1.8.1-1
 keepassxc 2.7.11-1
 libnotify 0.8.7-2
 libwebp-utils 1.6.0-2
