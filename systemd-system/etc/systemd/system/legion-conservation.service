@@ -5,6 +5,7 @@ After=multi-user.target
 [Service]
 Type=oneshot
 ExecStart=/bin/sh -c 'echo 1 > /sys/bus/platform/drivers/ideapad_acpi/VPC2004\:00/conservation_mode'
+RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
