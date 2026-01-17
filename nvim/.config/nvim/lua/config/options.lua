@@ -3,7 +3,6 @@ vim.opt.relativenumber = true
 vim.opt.mouse = ""
 vim.opt.wrap = false
 vim.o.termguicolors = true
-vim.opt.swapfile = false
 
 vim.opt.cursorline = true
 vim.opt.fillchars:append { eob = " " }
@@ -32,5 +31,10 @@ vim.opt.updatetime = 50
 vim.g.netrw_browse_split = 0
 vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 25
+
+vim.opt.backup = false
+vim.opt.writebackup = false
+vim.opt.swapfile = false
+
 
 vim.cmd("colorscheme kanagawa")
