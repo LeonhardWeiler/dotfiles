@@ -21,6 +21,7 @@ export GDK_DPI_SCALE=0.5
 export QT_AUTO_SCREEN_SCALE_FACTOR=0
 export QT_SCALE_FACTOR=2
 export XCURSOR_SIZE=32
+export BROWSER=zen-browser
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 export TYPST_PACKAGE_PATH="$HOME/.config/typst/packages"
@@ -29,3 +30,4 @@ export GIT_CONFIG_GLOBAL="$HOME/.config/git/.gitconfig"
 alias resolve='distrobox-enter davincibox -- env QT_SCALE_FACTOR=0.9 QT_AUTO_SCREEN_SCALE_FACTOR=0 /opt/resolve/bin/resolve'
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
+alias openimg='zen-browser'
