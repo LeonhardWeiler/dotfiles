@@ -12,7 +12,7 @@ fi
 
 cd "$DOTFILES_DIR"
 
-ROOT_PKGS=("ly" "zram" "systemd-system" "mkinitcpio")
+ROOT_PKGS=("ly" "zram" "systemd-system")
 USER_PKGS=()
 
 chmod +x update-package-list.sh
