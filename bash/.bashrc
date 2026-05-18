@@ -31,3 +31,5 @@ alias resolve='distrobox-enter davincibox -- env QT_SCALE_FACTOR=0.9 QT_AUTO_SCR
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
 alias openimg='zen-browser'
+export NIX_CONFIG="experimental-features = nix-command flakes"
+source ~/.nix-profile/etc/profile.d/nix.sh
