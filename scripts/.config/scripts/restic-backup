@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+export RESTIC_REPOSITORY="sftp:Leo@192.168.178.23:D:\ResticBackup"
+
+restic backup \
+  /home/leo/files/projects \
+  /home/leo/files/school
+
+echo "Cleanup? (y/n)"
+read ans
+
+if [ "$ans" = "y" ]; then
+  restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+fi
