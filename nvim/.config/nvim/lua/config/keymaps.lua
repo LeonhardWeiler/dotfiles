@@ -17,7 +17,7 @@ vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
 -- Replace ohne Register zu überschreiben
-vim.keymap.set("x", "<leader>r", "\"_dp")
+vim.keymap.set("x", "<leader>r", '"_dp')
 
 -- System-Clipboard: siehe vim.opt.clipboard = "unnamedplus" in options.lua
 
@@ -32,4 +32,3 @@ vim.keymap.set("n", "<Space>", "<Nop>")
 -- 🧪 Eigene Funktionen
 local autocmds = require("config.autocmds")
 vim.keymap.set("n", "<leader>ob", autocmds.OpenBrowser, { noremap = true, silent = true })
-

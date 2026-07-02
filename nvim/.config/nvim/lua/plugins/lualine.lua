@@ -1,12 +1,12 @@
 return {
   "nvim-lualine/lualine.nvim",
   config = function()
-    require('lualine').setup {
+    require("lualine").setup({
       options = {
-        theme = 'auto',
+        theme = "auto",
         icons_enabled = true,
-        section_separators = '',
-        component_separators = '',
+        section_separators = "",
+        component_separators = "",
         disabled_filetypes = {
           statusline = {},
           winbar = {},
@@ -18,31 +18,30 @@ return {
           statusline = 1000,
           tabline = 1000,
           winbar = 1000,
-        }
+        },
       },
       sections = {
-        lualine_a = {'mode'},
-        lualine_b = {'branch', 'diff', 'diagnostics'},
+        lualine_a = { "mode" },
+        lualine_b = { "branch", "diff", "diagnostics" },
         lualine_c = {
           {
-            'filename',
+            "filename",
             file_status = true,
             newfile_status = true,
             path = 1,
             symbols = {
-              modified = '',
-              readonly = '',
-              unnamed = '',
-              newfile= '',
-            }
+              modified = "",
+              readonly = "",
+              unnamed = "",
+              newfile = "",
+            },
           },
         },
-        lualine_x = {'encoding', 'fileformat'},
-        lualine_y = {'filetype'},
-        lualine_z = {'location'}
+        lualine_x = { "encoding", "fileformat" },
+        lualine_y = { "filetype" },
+        lualine_z = { "location" },
       },
-      extensions = {'mason'}
-    }
-  end
+      extensions = { "mason" },
+    })
+  end,
 }
-

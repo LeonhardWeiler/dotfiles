@@ -5,7 +5,7 @@ vim.opt.wrap = false
 vim.o.termguicolors = true
 
 vim.opt.cursorline = true
-vim.opt.fillchars:append { eob = " " }
+vim.opt.fillchars:append({ eob = " " })
 vim.opt.shortmess:append("c")
 
 vim.opt.tabstop = 2
@@ -39,6 +39,5 @@ vim.g.netrw_winsize = 25
 vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.swapfile = false
-
 
 vim.cmd("colorscheme kanagawa")

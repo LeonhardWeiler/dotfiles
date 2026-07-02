@@ -12,7 +12,9 @@ return {
 
     local select = require("nvim-treesitter-textobjects.select")
     local sel = function(obj)
-      return function() select.select_textobject(obj, "textobjects") end
+      return function()
+        select.select_textobject(obj, "textobjects")
+      end
     end
     -- Select in Operator- und Visual-Mode
     for _, m in ipairs({ "x", "o" }) do

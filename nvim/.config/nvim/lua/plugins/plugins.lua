@@ -1,7 +1,12 @@
 return {
   -- UI & UX
   { "echasnovski/mini.pairs", version = false, event = "InsertEnter", opts = {} },
-  { "numToStr/Comment.nvim", config = function() require("Comment").setup() end },
+  {
+    "numToStr/Comment.nvim",
+    config = function()
+      require("Comment").setup()
+    end,
+  },
   {
     "echasnovski/mini.icons",
     version = false,
@@ -17,6 +22,5 @@ return {
     end,
   },
   { "lewis6991/gitsigns.nvim", opts = {} },
-  { "chomosuke/typst-preview.nvim", opts = {} }
+  { "chomosuke/typst-preview.nvim", opts = {} },
 }
-

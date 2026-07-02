@@ -41,8 +41,7 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt.linebreak = true
     vim.keymap.set("n", "j", "gj", { noremap = true })
     vim.keymap.set("n", "k", "gk", { noremap = true })
-  end
+  end,
 })
 
 return M
-

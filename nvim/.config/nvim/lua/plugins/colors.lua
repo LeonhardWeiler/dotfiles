@@ -5,7 +5,7 @@ return {
       compile = true,
       functionStyle = { italic = true },
       background = {
-        dark = "dragon"
+        dark = "dragon",
       },
       palette = {
         roninYellow = "#FFA066",
@@ -14,12 +14,11 @@ return {
         theme = {
           all = {
             ui = {
-              bg_gutter = "none"
-            }
-          }
-        }
-      }
+              bg_gutter = "none",
+            },
+          },
+        },
+      },
     })
   end,
 }
-

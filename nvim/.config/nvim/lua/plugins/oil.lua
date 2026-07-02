@@ -1,5 +1,5 @@
 return {
-  'stevearc/oil.nvim',
+  "stevearc/oil.nvim",
   dependencies = { "echasnovski/mini.icons" },
   lazy = false,
   opts = function()
@@ -28,7 +28,7 @@ return {
         ["g\\"] = { "actions.toggle_trash", mode = "n" },
       },
       view_options = {
-        show_hidden = true,   -- 🔑 unbedingt auf true setzen
+        show_hidden = true, -- 🔑 unbedingt auf true setzen
         is_hidden_file = function(name, bufnr)
           return name:match("^%.") ~= nil
         end,
@@ -37,6 +37,5 @@ return {
         end,
       },
     })
-  end
+  end,
 }
-

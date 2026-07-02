@@ -76,14 +76,18 @@ return {
 
     local function init_selection()
       local node = vim.treesitter.get_node()
-      if not node then return end
+      if not node then
+        return
+      end
       incr.stack = { node }
       visual_select(node)
     end
 
     local function increment()
       local stack = incr.stack
-      if not stack or #stack == 0 then return init_selection() end
+      if not stack or #stack == 0 then
+        return init_selection()
+      end
       local node = stack[#stack]
       local parent = node:parent()
       while parent and same_range(parent, node) do
@@ -99,7 +103,9 @@ return {
 
     local function decrement()
       local stack = incr.stack
-      if not stack or #stack <= 1 then return end
+      if not stack or #stack <= 1 then
+        return
+      end
       table.remove(stack)
       visual_select(stack[#stack])
     end

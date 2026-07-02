@@ -10,9 +10,9 @@ return {
     -- Sequentielle, kollisionsarme Slots: <leader>1 … <leader>4.
     -- (Ersetzt <C-h>/<C-s>, die Fenster-links bzw. Speichern belegten.)
     for i = 1, 4 do
-      vim.keymap.set("n", "<leader>" .. i, function() ui.nav_file(i) end,
-        { desc = "Harpoon: Datei " .. i })
+      vim.keymap.set("n", "<leader>" .. i, function()
+        ui.nav_file(i)
+      end, { desc = "Harpoon: Datei " .. i })
     end
-  end
+  end,
 }
-
