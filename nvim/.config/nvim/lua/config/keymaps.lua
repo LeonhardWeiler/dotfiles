@@ -21,6 +21,11 @@ vim.keymap.set(
   { desc = "Wort unter Cursor suchen & ersetzen" }
 )
 
+-- Diagnosen in die Quickfix-Liste schreiben (Anzeige dann per <leader>sq)
+vim.keymap.set("n", "<leader>sd", function()
+  vim.diagnostic.setqflist({ open = false })
+end, { desc = "Diagnosen → Quickfix-Liste" })
+
 vim.keymap.set("n", "<Backspace>", "<Nop>")
 vim.keymap.set("n", "<F1>", "<Nop>")
 vim.keymap.set("n", "<Space>", "<Nop>")
