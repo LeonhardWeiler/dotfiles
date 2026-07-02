@@ -1,6 +1,16 @@
 #!/bin/bash
 
-PERCENT=$(cat /sys/class/power_supply/BAT0/capacity)
+CAPACITY=/sys/class/power_supply/BAT0/capacity
+
+# Kein Akku vorhanden (Desktop, anderer Name, ausgebaut) -> still beenden.
+[ -r "$CAPACITY" ] || exit 0
+
+PERCENT=$(cat "$CAPACITY")
+
+# Nur fortfahren, wenn der Wert numerisch ist.
+case "$PERCENT" in
+  ''|*[!0-9]*) exit 0 ;;
+esac
 
 if [ "$PERCENT" -lt 10 ]; then
     notify-send \

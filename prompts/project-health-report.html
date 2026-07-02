@@ -131,7 +131,7 @@
     <div class="stat krit"><span class="n">0</span><span class="l">Kritisch</span></div>
     <div class="stat hoch"><span class="n">0</span><span class="l">Hoch</span></div>
     <div class="stat mittel"><span class="n">0</span><span class="l">Mittel</span></div>
-    <div class="stat niedrig"><span class="n">2</span><span class="l">Niedrig</span></div>
+    <div class="stat niedrig"><span class="n">1</span><span class="l">Niedrig</span></div>
   </div>
 
   <nav class="toc">
@@ -146,22 +146,6 @@
   <!-- ================= OFFENE FINDINGS ================= -->
   <section id="offen">
     <h2>1 · Offene Findings</h2>
-
-    <div class="card niedrig">
-      <div class="card-head"><span class="badge niedrig">niedrig</span>
-        <span class="id">BUG-1</span>
-        <span class="loc"><code>scripts/.config/scripts/bat_check:3</code></span></div>
-      <p>
-        <code>cat /sys/class/power_supply/BAT0/capacity</code> ohne Existenz-Check.
-        Fehlt <code>BAT0</code> (Desktop, anderer Akku-Name, ausgebauter Akku),
-        liefert <code>cat</code> nichts, und <code>[ "$PERCENT" -lt 10 ]</code>
-        wirft „integer expression expected". Da der Timer alle 2&nbsp;Minuten läuft,
-        füllt sich das Journal mit wiederkehrenden Fehlern.
-      </p>
-      <div class="rec"><b>Empfehlung:</b> Vorab prüfen
-        (<code>[ -r /sys/class/power_supply/BAT0/capacity ] || exit 0</code>) und
-        sicherstellen, dass <code>$PERCENT</code> numerisch ist.</div>
-    </div>
 
     <div class="card niedrig">
       <div class="card-head"><span class="badge niedrig">niedrig</span>
