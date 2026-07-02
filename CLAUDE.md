@@ -44,7 +44,12 @@ Struktur das Zielverzeichnis spiegelt — meist `$HOME` (z. B.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
   ausschließlich in `hypr/.config/hypr/hyprland.conf` gesetzt, **nicht** in der
   `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
-- Hyprland nutzt seine eigene Konfigsprache (**hyprlang**, `.conf`) — kein Lua.
+- Hyprland-Config: Seit 0.55 ist **hyprlang (`.conf`) deprecated** zugunsten der
+  **Lua-Config** (`hyprland.lua`, API-Global `hl`, geladen aus
+  `~/.config/hypr/hyprland.lua`). Das Repo enthält beides: `hyprland.lua` (aktiv
+  gepflegt) und `hyprland.conf` (Fallback). Bei Änderungen die `.lua` pflegen;
+  Lua-Syntax mit `luac -p hyprland.lua` prüfen. Konvertierung erfolgte mit
+  `hyprlang2lua`.
 - **KeePassXC-DB** (`*.kdbx`) ist per `.gitignore` ausgeschlossen und der
   `keepassxc/`-Ordner per `.claudeignore`.
 - Commits werden SSH-signiert (`git/.config/git/.gitconfig`).
