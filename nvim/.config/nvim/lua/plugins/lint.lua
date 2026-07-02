@@ -13,7 +13,9 @@ return {
       -- bereits sauber. selene ohne Neovim-std würde jeden Buffer mit
       -- falsch-positiven `vim is not defined` fluten.
       go = { "golangcilint" },
-      markdown = { "markdownlint" },
+      -- Markdown: kein markdownlint – es arbeitet gegen prettierd (bricht
+      -- Prosa nicht auf 80 Zeichen um) und erzeugt so Dauer-Diagnosen wie
+      -- MD013/line-length. Formatierung uebernimmt prettierd via conform.
     }
 
     local grp = vim.api.nvim_create_augroup("NvimLint", { clear = true })
