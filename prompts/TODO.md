@@ -1,7 +1,0 @@
-https://wiki.hypr.land/Configuring/Start/ das ist der lua part in hyprland vom wiki. kannst du bitte meinen code aufsplitten, das mit autocompletion machen und sonst alle best practices machen und meinen code bestmöglich aufbereiten
-
-kannst du auch bitte meine directory Struktur ändern. ich hätte gerne in meinem root vom project order ~/dotfiles/ das readme, claude.md und die license. die wirkliche konfiguration von z.b. neovim, mpv etc. die von stow getrackt wird in eineim ~/dotfiles/config/ directory und den rest wie die install scripte- program.txt liste ... in einem ~/dotfiles/scripts/ ordner es soll immer noch alles wie davor funktionieren. An allen orten wo das refenziert wird, z.b. in dem script zum automatisch zur datei hinzufügen, soll natürlich auch die location geändert werden, ich denke du weißt was ich mein
-
-ich möchte, dass du durch alle meine configs nach der reihe gehst und kritisch bewertest. alles soll auf der goldwage überprüft werden ob es berechtigt ist zu existieren, also ob es bessere varianten gibt, oder es überflüssig ist. den report für alles schreibst du in die html report datei, teile dabei in die verschiedenen programme auf.
-
-eine frage die ich noch habe. gerade muss ich schon ziemlich viele ordner für die ganzen programme machen. ist es vielleicht schauer die symlinks selbst, ohne stow zu machen mit einem config file in dem für jedes programm (jedem ordner) der pfad steht zu dem dieser hin gesymlinkt werden soll, wenn du verstehst was ich meine. Bewerte das am Ende des hmtl reports
