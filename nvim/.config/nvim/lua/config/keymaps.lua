@@ -37,6 +37,5 @@ vim.keymap.set("n", "<Space>", "<Nop>")
 
 -- 🧪 Eigene Funktionen
 local autocmds = require("config.autocmds")
-vim.keymap.set("n", "<leader>z",  autocmds.ToggleZathura, { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>ob", autocmds.OpenBrowser,   { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>ob", autocmds.OpenBrowser, { noremap = true, silent = true })
 

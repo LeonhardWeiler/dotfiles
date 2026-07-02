@@ -1,36 +1,15 @@
 local M = {}
 
--- Speichert die Job-ID von Zathura, falls geöffnet
-local zathura_job = nil
-
--- rewrite this Toggle Zathura funktion to open pdfs with the default browser as seen in the next function OpenBrowser
-
--- 📖 PDF mit Zathura öffnen oder schließen
-function M.ToggleZathura()
-  local filename = vim.fn.expand('%:r')
-  if zathura_job then
-    vim.fn.jobstop(zathura_job)
-    zathura_job = nil
-    vim.notify("🛑 Closed Zathura")
-  else
-    zathura_job = vim.fn.jobstart({ "zathura", filename .. ".pdf" })
-    vim.notify("📖 Opened Zathura")
-  end
-end
-
--- 🌐 HTML oder JS-Projekt im Browser öffnen
+-- 🌐 Aktuelle Datei mit dem Standardprogramm (Browser) öffnen.
+-- xdg-open reicht die Datei an den im System hinterlegten Handler weiter, sodass
+-- alle vom Browser darstellbaren Typen (PDF, HTML, SVG, Bilder …) geöffnet werden.
 function M.OpenBrowser()
   local filepath = vim.fn.expand("%:p")
-  local filetype = vim.bo.filetype
-
-  if filetype == "html" then
-    vim.fn.jobstart({ "xdg-open", filepath }, { detach = true })
-  elseif filetype == "javascript" then
-    local index_path = vim.fn.expand("%:p:h") .. "/../html/index.html"
-    vim.fn.jobstart({ "xdg-open", index_path }, { detach = true })
-  else
-    vim.notify("📛 Unsupported filetype for browser preview")
+  if filepath == "" then
+    vim.notify("📛 Kein Dateipfad für den aktuellen Buffer", vim.log.levels.WARN)
+    return
   end
+  vim.fn.jobstart({ "xdg-open", filepath }, { detach = true })
 end
 
 -- === Autocommands ===
