@@ -54,7 +54,7 @@ lua/plugins/             je eine Datei pro Plugin/Bereich (auto-import)
 | LSP           | mason.nvim, mason-lspconfig.nvim, nvim-lspconfig, lazydev.nvim, mason-tool-installer.nvim |
 | Completion    | blink.cmp, LuaSnip, friendly-snippets |
 | Formatter     | conform.nvim (stylua, biome, prettierd, goimports+gofumpt, typstyle) |
-| Linter        | nvim-lint (biome, selene, golangci-lint, markdownlint) |
+| Linter        | nvim-lint (biome, golangci-lint) |
 | Typst         | typst-preview.nvim |
 
 ## Keymaps (Auswahl)
@@ -95,3 +95,6 @@ Leader = `<Space>`.
 - **Format-on-Save** über conform.nvim (LSP-Fallback, falls kein Formatter
   konfiguriert ist).
 - **Linting** über nvim-lint bei `BufReadPost`/`BufWritePost`/`InsertLeave`.
+  Lua-Diagnosen liefert `lua_ls` (LSP); Markdown wird nur von prettierd formatiert.
+- **Diagnosen** werden per `virtual_lines` mehrzeilig unter der betroffenen Zeile
+  angezeigt; `<leader>e` öffnet zusätzlich den Diagnostik-Float.
