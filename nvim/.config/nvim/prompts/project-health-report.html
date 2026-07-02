@@ -265,7 +265,7 @@
         <span class="n">0</span><span class="l">niedrig</span>
       </div>
       <div class="count info">
-        <span class="n">1</span><span class="l">info</span>
+        <span class="n">0</span><span class="l">info</span>
       </div>
     </section>
 
@@ -303,33 +303,12 @@
 
     <h2 class="section" id="offen">1 · Offene Findings</h2>
 
-    <p class="meta" style="margin: 0 0 1rem; color: var(--fg-dim)">
-      Schwerpunkt dieser Runde: typische Nutzungs-Flows durchgespielt (Git-Hunks
-      bearbeiten, Editier-Session über Neustarts hinweg, Prosa/Markdown
-      schreiben, projektweit navigieren &amp; refactoren) und auf fehlende bzw.
-      besser umsetzbare Bausteine geprüft.
+    <p class="empty">
+      Keine offenen Findings. Aus der letzten Runde sind CQ-2 (undofile), UX-4
+      (spell für Prosa) und INFO-2 (Diagnosen → Quickfix) umgesetzt; UX-3
+      (gitsigns), INFO-3 (nvim-ts-autotag) und INFO-4 (Multi-File-Replace)
+      wurden bewusst nicht umgesetzt – UX-3 steht unter „Bewusst entschieden".
     </p>
-
-    <div class="card info">
-      <div class="card-head">
-        <span class="id">INFO-4</span>
-        <span class="badge info">info</span>
-        <span class="loc">lua/config/keymaps.lua:16 · telescope live_grep</span>
-      </div>
-      <p>
-        <strong>Kein projektweites Suchen &amp; Ersetzen.</strong>
-        <code>&lt;leader&gt;S</code> ersetzt nur im aktuellen Buffer und
-        <code>&lt;leader&gt;sg</code> (live_grep) ist rein lesend. Für ein
-        Symbol-/String-Refactoring über mehrere Dateien gibt es aktuell keinen
-        Workflow außerhalb von LSP-Rename (<code>&lt;leader&gt;rn</code>, nur
-        Symbole).
-      </p>
-      <p class="rec">
-        <strong>Empfehlung:</strong> Ein Multi-File-Replace-Tool wie
-        <code>MagicDuck/grug-far.nvim</code> ergänzen (Suchen &amp; Ersetzen mit
-        Vorschau über das ganze Projekt).
-      </p>
-    </div>
 
     <h2 class="section" id="stark">2 · Was schon stark ist</h2>
 
