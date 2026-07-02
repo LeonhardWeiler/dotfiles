@@ -1,6 +1,6 @@
 return {
   -- UI & UX
-  { "windwp/nvim-autopairs", event = "InsertEnter", config = true },
+  { "echasnovski/mini.pairs", version = false, event = "InsertEnter", opts = {} },
   { "numToStr/Comment.nvim", config = function() require("Comment").setup() end },
   { "nvim-tree/nvim-web-devicons" },
   { "lewis6991/gitsigns.nvim", opts = {} },
