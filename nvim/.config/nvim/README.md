@@ -67,6 +67,7 @@ Leader = `<Space>`.
 | `<leader>pv` | Oil (Dateimanager) |
 | `<leader>ob` | Aktuelle Datei im Standardprogramm/Browser öffnen |
 | `<leader>S` | Wort unter Cursor suchen & ersetzen |
+| `<leader>sd` | Diagnosen in die Quickfix-Liste (Anzeige mit `<leader>sq`) |
 | `<leader>r` (visual) | Über Auswahl einfügen ohne Register zu überschreiben |
 | `J`/`K` (visual) | Zeilen verschieben |
 
