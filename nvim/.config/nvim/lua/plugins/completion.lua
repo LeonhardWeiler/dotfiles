@@ -1,5 +1,3 @@
--- Completion via blink.cmp (ersetzt nvim-cmp). Versionstags liefern das
--- vorkompilierte Rust-Fuzzy-Binary mit, sodass keine cargo-Toolchain nötig ist.
 return {
   "saghen/blink.cmp",
   version = "1.*",
@@ -26,7 +24,6 @@ return {
     sources = {
       default = { "lsp", "path", "snippets", "buffer", "lazydev" },
       providers = {
-        -- lazydev als hoch priorisierte Quelle für Lua/Neovim-API
         lazydev = {
           name = "LazyDev",
           module = "lazydev.integrations.blink",

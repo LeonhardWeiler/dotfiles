@@ -12,13 +12,9 @@ return {
       "saghen/blink.cmp",
     },
     config = function()
-      -- Completion-Capabilities aus blink.cmp an alle LSP-Server weitergeben
       local capabilities = require("blink.cmp").get_lsp_capabilities()
       vim.lsp.config("*", { capabilities = capabilities })
 
-      -- Diagnosen sichtbar machen: virtual_lines zeigt die volle Meldung
-      -- mehrzeilig direkt unter der betroffenen Zeile (statt nur Wellenlinie +
-      -- Zeichen in der signcolumn). <leader>e oeffnet zusaetzlich den Float.
       vim.diagnostic.config({
         virtual_lines = true,
         underline = true,
@@ -26,7 +22,6 @@ return {
         float = { border = "rounded", source = true },
       })
 
-      -- lua_ls optimal für Neovim (lazydev liefert die Runtime-Library dazu)
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
@@ -47,7 +42,6 @@ return {
         },
       })
 
-      -- Server installieren und (via automatic_enable) automatisch aktivieren.
       require("mason-lspconfig").setup({
         ensure_installed = {
           "lua_ls",
@@ -61,7 +55,6 @@ return {
         },
       })
 
-      -- Buffer-lokale LSP-Keymaps, sobald ein Server attached ist
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("UserLspAttach", {}),
         callback = function(ev)

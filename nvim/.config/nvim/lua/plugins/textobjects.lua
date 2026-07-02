@@ -1,4 +1,3 @@
--- Treesitter-Textobjects (main-Branch, passend zum nvim-treesitter-main-Branch).
 return {
   "nvim-treesitter/nvim-treesitter-textobjects",
   branch = "main",
@@ -16,7 +15,7 @@ return {
         select.select_textobject(obj, "textobjects")
       end
     end
-    -- Select in Operator- und Visual-Mode
+
     for _, m in ipairs({ "x", "o" }) do
       vim.keymap.set(m, "af", sel("@function.outer"), { desc = "a function" })
       vim.keymap.set(m, "if", sel("@function.inner"), { desc = "inner function" })
@@ -26,7 +25,6 @@ return {
       vim.keymap.set(m, "ia", sel("@parameter.inner"), { desc = "inner parameter" })
     end
 
-    -- Bewegung zwischen Funktionen/Klassen
     local move = require("nvim-treesitter-textobjects.move")
     local goto_map = {
       ["]f"] = { move.goto_next_start, "@function.outer", "Nächste Funktion" },

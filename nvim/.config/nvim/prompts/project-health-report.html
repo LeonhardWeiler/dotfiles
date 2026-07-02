@@ -1,210 +1,448 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Project Health Report – Neovim Config</title>
-<style>
-  :root {
-    --bg: #16161d;
-    --bg-card: #1f1f28;
-    --bg-elev: #2a2a37;
-    --fg: #dcd7ba;
-    --fg-dim: #9e9b93;
-    --border: #363646;
-    --accent: #7e9cd8;
-    --krit: #e82424;
-    --hoch: #ff9e3b;
-    --mittel: #e6c384;
-    --niedrig: #7aa89f;
-    --info: #7e9cd8;
-    --good: #98bb6c;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 0 1rem 4rem;
-    background: var(--bg); color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6; max-width: 980px; margin: 0 auto;
-  }
-  header { padding: 2.5rem 0 1rem; border-bottom: 1px solid var(--border); }
-  h1 { margin: 0 0 .3rem; font-size: 1.9rem; color: #fff; }
-  .meta { color: var(--fg-dim); font-size: .9rem; }
-  .meta code { background: var(--bg-elev); padding: .1rem .4rem; border-radius: 4px; }
-  .summary { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.4rem 0; }
-  .count {
-    display: flex; flex-direction: column; align-items: center;
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 10px; padding: .6rem 1rem; min-width: 78px;
-  }
-  .count .n { font-size: 1.5rem; font-weight: 700; }
-  .count .l { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-dim); }
-  .count.krit .n { color: var(--krit); }
-  .count.hoch .n { color: var(--hoch); }
-  .count.mittel .n { color: var(--mittel); }
-  .count.niedrig .n { color: var(--niedrig); }
-  .count.info .n { color: var(--info); }
-  nav.toc {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 1rem 1.4rem; margin: 1.4rem 0;
-  }
-  nav.toc h2 { margin: 0 0 .6rem; font-size: 1rem; color: var(--fg-dim); text-transform: uppercase; letter-spacing: .05em; }
-  nav.toc ol { margin: 0; padding-left: 1.3rem; }
-  nav.toc a { color: var(--accent); text-decoration: none; }
-  nav.toc a:hover { text-decoration: underline; }
-  h2.section { margin: 2.4rem 0 1rem; font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
-  .card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-left-width: 4px; border-radius: 8px;
-    padding: 1rem 1.2rem; margin: .9rem 0;
-  }
-  .card.krit { border-left-color: var(--krit); }
-  .card.hoch { border-left-color: var(--hoch); }
-  .card.mittel { border-left-color: var(--mittel); }
-  .card.niedrig { border-left-color: var(--niedrig); }
-  .card.info { border-left-color: var(--info); }
-  .card.good { border-left-color: var(--good); }
-  .card-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .4rem; }
-  .card-head .id { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; color: #fff; }
-  .badge {
-    font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
-    padding: .15rem .5rem; border-radius: 20px; color: #16161d;
-  }
-  .badge.krit { background: var(--krit); color: #fff; }
-  .badge.hoch { background: var(--hoch); }
-  .badge.mittel { background: var(--mittel); }
-  .badge.niedrig { background: var(--niedrig); }
-  .badge.info { background: var(--info); }
-  .loc { font-family: ui-monospace, Menlo, monospace; font-size: .82rem; color: var(--fg-dim); }
-  .card p { margin: .5rem 0; }
-  .card .rec { margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--border); }
-  .card .rec strong { color: var(--good); }
-  code { background: var(--bg-elev); padding: .1rem .35rem; border-radius: 4px; font-size: .85em; }
-  .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.4rem 0; font-size: .82rem; color: var(--fg-dim); }
-  .legend span { display: inline-flex; align-items: center; gap: .35rem; }
-  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-  .empty { color: var(--fg-dim); font-style: italic; }
-  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--fg-dim); font-size: .82rem; }
-</style>
-</head>
-<body>
-<header>
-  <h1>🩺 Project Health Report</h1>
-  <div class="meta">
-    Neovim-Konfiguration · Momentaufnahme vom <strong>2026-07-02</strong> ·
-    Branch <code>main</code> · Neovim <code>v0.12.3</code>
-  </div>
-</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Health Report – Neovim Config</title>
+    <style>
+      :root {
+        --bg: #16161d;
+        --bg-card: #1f1f28;
+        --bg-elev: #2a2a37;
+        --fg: #dcd7ba;
+        --fg-dim: #9e9b93;
+        --border: #363646;
+        --accent: #7e9cd8;
+        --krit: #e82424;
+        --hoch: #ff9e3b;
+        --mittel: #e6c384;
+        --niedrig: #7aa89f;
+        --info: #7e9cd8;
+        --good: #98bb6c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0 1rem 4rem;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        line-height: 1.6;
+        max-width: 980px;
+        margin: 0 auto;
+      }
+      header {
+        padding: 2.5rem 0 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      h1 {
+        margin: 0 0 0.3rem;
+        font-size: 1.9rem;
+        color: #fff;
+      }
+      .meta {
+        color: var(--fg-dim);
+        font-size: 0.9rem;
+      }
+      .meta code {
+        background: var(--bg-elev);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+      }
+      .summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin: 1.4rem 0;
+      }
+      .count {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        min-width: 78px;
+      }
+      .count .n {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .count .l {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--fg-dim);
+      }
+      .count.krit .n {
+        color: var(--krit);
+      }
+      .count.hoch .n {
+        color: var(--hoch);
+      }
+      .count.mittel .n {
+        color: var(--mittel);
+      }
+      .count.niedrig .n {
+        color: var(--niedrig);
+      }
+      .count.info .n {
+        color: var(--info);
+      }
+      nav.toc {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem 1.4rem;
+        margin: 1.4rem 0;
+      }
+      nav.toc h2 {
+        margin: 0 0 0.6rem;
+        font-size: 1rem;
+        color: var(--fg-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      nav.toc ol {
+        margin: 0;
+        padding-left: 1.3rem;
+      }
+      nav.toc a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      nav.toc a:hover {
+        text-decoration: underline;
+      }
+      h2.section {
+        margin: 2.4rem 0 1rem;
+        font-size: 1.4rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.4rem;
+      }
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-left-width: 4px;
+        border-radius: 8px;
+        padding: 1rem 1.2rem;
+        margin: 0.9rem 0;
+      }
+      .card.krit {
+        border-left-color: var(--krit);
+      }
+      .card.hoch {
+        border-left-color: var(--hoch);
+      }
+      .card.mittel {
+        border-left-color: var(--mittel);
+      }
+      .card.niedrig {
+        border-left-color: var(--niedrig);
+      }
+      .card.info {
+        border-left-color: var(--info);
+      }
+      .card.good {
+        border-left-color: var(--good);
+      }
+      .card-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.4rem;
+      }
+      .card-head .id {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-weight: 700;
+        color: #fff;
+      }
+      .badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.15rem 0.5rem;
+        border-radius: 20px;
+        color: #16161d;
+      }
+      .badge.krit {
+        background: var(--krit);
+        color: #fff;
+      }
+      .badge.hoch {
+        background: var(--hoch);
+      }
+      .badge.mittel {
+        background: var(--mittel);
+      }
+      .badge.niedrig {
+        background: var(--niedrig);
+      }
+      .badge.info {
+        background: var(--info);
+      }
+      .loc {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 0.82rem;
+        color: var(--fg-dim);
+      }
+      .card p {
+        margin: 0.5rem 0;
+      }
+      .card .rec {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed var(--border);
+      }
+      .card .rec strong {
+        color: var(--good);
+      }
+      code {
+        background: var(--bg-elev);
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+        font-size: 0.85em;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1.4rem 0;
+        font-size: 0.82rem;
+        color: var(--fg-dim);
+      }
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .empty {
+        color: var(--fg-dim);
+        font-style: italic;
+      }
+      footer {
+        margin-top: 3rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+        color: var(--fg-dim);
+        font-size: 0.82rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>🩺 Project Health Report</h1>
+      <div class="meta">
+        Neovim-Konfiguration · Momentaufnahme vom <strong>2026-07-02</strong> ·
+        Branch <code>main</code> · Neovim <code>v0.12.3</code>
+      </div>
+    </header>
 
-<section class="summary">
-  <div class="count krit"><span class="n">0</span><span class="l">kritisch</span></div>
-  <div class="count hoch"><span class="n">0</span><span class="l">hoch</span></div>
-  <div class="count mittel"><span class="n">0</span><span class="l">mittel</span></div>
-  <div class="count niedrig"><span class="n">0</span><span class="l">niedrig</span></div>
-  <div class="count info"><span class="n">0</span><span class="l">info</span></div>
-</section>
+    <section class="summary">
+      <div class="count krit">
+        <span class="n">0</span><span class="l">kritisch</span>
+      </div>
+      <div class="count hoch">
+        <span class="n">0</span><span class="l">hoch</span>
+      </div>
+      <div class="count mittel">
+        <span class="n">0</span><span class="l">mittel</span>
+      </div>
+      <div class="count niedrig">
+        <span class="n">0</span><span class="l">niedrig</span>
+      </div>
+      <div class="count info">
+        <span class="n">0</span><span class="l">info</span>
+      </div>
+    </section>
 
-<div class="legend">
-  <span><span class="dot" style="background:var(--krit)"></span>kritisch – bricht Nutzung / Datenverlust</span>
-  <span><span class="dot" style="background:var(--hoch)"></span>hoch – klarer Defekt / Fehler</span>
-  <span><span class="dot" style="background:var(--mittel)"></span>mittel – spürbare Reibung</span>
-  <span><span class="dot" style="background:var(--niedrig)"></span>niedrig – Qualität / Aufräumen</span>
-  <span><span class="dot" style="background:var(--info)"></span>info – Hinweis / Modernisierung</span>
-</div>
+    <div class="legend">
+      <span
+        ><span class="dot" style="background: var(--krit)"></span>kritisch –
+        bricht Nutzung / Datenverlust</span
+      >
+      <span
+        ><span class="dot" style="background: var(--hoch)"></span>hoch – klarer
+        Defekt / Fehler</span
+      >
+      <span
+        ><span class="dot" style="background: var(--mittel)"></span>mittel –
+        spürbare Reibung</span
+      >
+      <span
+        ><span class="dot" style="background: var(--niedrig)"></span>niedrig –
+        Qualität / Aufräumen</span
+      >
+      <span
+        ><span class="dot" style="background: var(--info)"></span>info – Hinweis
+        / Modernisierung</span
+      >
+    </div>
 
-<nav class="toc">
-  <h2>Inhalt</h2>
-  <ol>
-    <li><a href="#offen">Offene Findings</a></li>
-    <li><a href="#stark">Was schon stark ist</a></li>
-    <li><a href="#entschieden">Bewusst entschieden</a></li>
-  </ol>
-</nav>
+    <nav class="toc">
+      <h2>Inhalt</h2>
+      <ol>
+        <li><a href="#offen">Offene Findings</a></li>
+        <li><a href="#stark">Was schon stark ist</a></li>
+        <li><a href="#entschieden">Bewusst entschieden</a></li>
+      </ol>
+    </nav>
 
-<h2 class="section" id="offen">1 · Offene Findings</h2>
+    <h2 class="section" id="offen">1 · Offene Findings</h2>
 
-<p class="empty">Keine offenen Findings. Die zuvor gelisteten Punkte (LINT-1, LINT-2,
-CQ-1, CQ-2, DOC-1) sind behoben; UX-1 wurde bewusst nicht im Code geändert und steht
-jetzt unter „Bewusst entschieden".</p>
+    <p class="empty">
+      Keine offenen Findings. Die zuvor gelisteten Punkte (LINT-1, LINT-2, CQ-1,
+      CQ-2, DOC-1) sind behoben; UX-1 wurde bewusst nicht im Code geändert und
+      steht jetzt unter „Bewusst entschieden".
+    </p>
 
-<h2 class="section" id="stark">2 · Was schon stark ist</h2>
+    <h2 class="section" id="stark">2 · Was schon stark ist</h2>
 
-<div class="card good">
-  <div class="card-head"><span class="id">Saubere Modulstruktur</span></div>
-  <p><code>init.lua</code> lädt gezielt <code>config.lazy</code> → <code>options</code> → <code>keymaps</code>
-  → <code>autocmds</code>; Plugins liegen einzeln unter <code>lua/plugins/</code> und werden per
-  <code>{ import = "plugins" }</code> automatisch eingesammelt. Übersichtlich und gut wartbar.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Robuster lazy.nvim-Bootstrap</span></div>
-  <p>Der Bootstrap in <code>lazy.lua</code> nutzt <code>vim.uv</code> mit <code>vim.loop</code>-Fallback,
-  behandelt Clone-Fehler sauber und deaktiviert die störende <code>change_detection</code>-Notification.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Moderne LSP-Einrichtung</span></div>
-  <p><code>lsp.lua</code> nutzt die neue <code>vim.lsp.config</code>-API (Neovim 0.11+) mit
-  per-Server-Konfiguration, die Server werden über <code>mason-lspconfig</code>
-  (<code>ensure_installed</code>, <code>mason-org</code>-Org) installiert und automatisch aktiviert.
-  Capabilities kommen aus <code>blink.cmp</code>, <code>lazydev.nvim</code> versorgt Lua mit den
-  Neovim-Runtime-Typen. Keymaps sauber per <code>LspAttach</code>-Autocmd.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Moderner Editing-Stack</span></div>
-  <p>Completion via <code>blink.cmp</code> (Ghost Text, Signature Help, LuaSnip),
-  Formatierung via <code>conform.nvim</code> (Format-on-Save mit LSP-Fallback) und Linting via
-  <code>nvim-lint</code>. Nicht-LSP-Tools installiert <code>mason-tool-installer</code> automatisch.
-  <code>mini.pairs</code>/<code>mini.icons</code> ersetzen ältere Einzelplugins.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Treesitter auf dem main-Branch</span></div>
-  <p><code>nvim-treesitter</code> läuft auf dem zukunftssicheren <code>main</code>-Branch mit expliziter
-  Parserliste, FileType-gesteuertem Highlighting/Indent und Textobjects. Die im main-Branch
-  entfallene Incremental Selection ist schlank über die <code>vim.treesitter</code>-API nachgebaut.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Durchdachte Editor-Defaults</span></div>
-  <p><code>options.lua</code> setzt sinnvolle Grundlagen: <code>scrolloff=10</code>, stets sichtbare
-  <code>signcolumn</code>, deaktivierte Swap/Backup-Dateien, konsistente 2-Space-Indents,
-  System-Clipboard (<code>unnamedplus</code>) und ein kompiliertes kanagawa-Theme.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Guter Plugin-Kern</span></div>
-  <p>oil.nvim als Datei-Manager (mit Trash-Support), gitsigns, Telescope, Harpoon, Comment.nvim
-  und typst-preview bilden eine schlanke, praxistaugliche Auswahl ohne Overhead.</p>
-</div>
-<div class="card good">
-  <div class="card-head"><span class="id">Konsistente Formatierung &amp; lesbare Diagnosen</span></div>
-  <p>Eine <code>stylua.toml</code> (<code>Spaces</code>, Breite&nbsp;2) fixiert die Einrückung passend
-  zu <code>options.lua</code>; <code>stylua --check lua/</code> ist grün. Linting läuft ohne
-  Fehlalarme (Lua über <code>lua_ls</code>, kein selene/markdownlint mehr), und Diagnosen werden per
-  <code>virtual_lines</code> mehrzeilig unter der betroffenen Zeile angezeigt – man sieht die volle
-  Meldung, nicht nur eine Wellenlinie.</p>
-</div>
+    <div class="card good">
+      <div class="card-head"><span class="id">Saubere Modulstruktur</span></div>
+      <p>
+        <code>init.lua</code> lädt gezielt <code>config.lazy</code> →
+        <code>options</code> → <code>keymaps</code> → <code>autocmds</code>;
+        Plugins liegen einzeln unter <code>lua/plugins/</code> und werden per
+        <code>{ import = "plugins" }</code> automatisch eingesammelt.
+        Übersichtlich und gut wartbar.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head">
+        <span class="id">Robuster lazy.nvim-Bootstrap</span>
+      </div>
+      <p>
+        Der Bootstrap in <code>lazy.lua</code> nutzt <code>vim.uv</code> mit
+        <code>vim.loop</code>-Fallback, behandelt Clone-Fehler sauber und
+        deaktiviert die störende <code>change_detection</code>-Notification.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head">
+        <span class="id">Moderne LSP-Einrichtung</span>
+      </div>
+      <p>
+        <code>lsp.lua</code> nutzt die neue <code>vim.lsp.config</code>-API
+        (Neovim 0.11+) mit per-Server-Konfiguration, die Server werden über
+        <code>mason-lspconfig</code> (<code>ensure_installed</code>,
+        <code>mason-org</code>-Org) installiert und automatisch aktiviert.
+        Capabilities kommen aus <code>blink.cmp</code>,
+        <code>lazydev.nvim</code> versorgt Lua mit den Neovim-Runtime-Typen.
+        Keymaps sauber per <code>LspAttach</code>-Autocmd.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head">
+        <span class="id">Moderner Editing-Stack</span>
+      </div>
+      <p>
+        Completion via <code>blink.cmp</code> (Ghost Text, Signature Help,
+        LuaSnip), Formatierung via <code>conform.nvim</code> (Format-on-Save mit
+        LSP-Fallback) und Linting via <code>nvim-lint</code>. Nicht-LSP-Tools
+        installiert <code>mason-tool-installer</code> automatisch.
+        <code>mini.pairs</code>/<code>mini.icons</code> ersetzen ältere
+        Einzelplugins.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head">
+        <span class="id">Treesitter auf dem main-Branch</span>
+      </div>
+      <p>
+        <code>nvim-treesitter</code> läuft auf dem zukunftssicheren
+        <code>main</code>-Branch mit expliziter Parserliste,
+        FileType-gesteuertem Highlighting/Indent und Textobjects. Die im
+        main-Branch entfallene Incremental Selection ist schlank über die
+        <code>vim.treesitter</code>-API nachgebaut.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head">
+        <span class="id">Durchdachte Editor-Defaults</span>
+      </div>
+      <p>
+        <code>options.lua</code> setzt sinnvolle Grundlagen:
+        <code>scrolloff=10</code>, stets sichtbare <code>signcolumn</code>,
+        deaktivierte Swap/Backup-Dateien, konsistente 2-Space-Indents,
+        System-Clipboard (<code>unnamedplus</code>) und ein kompiliertes
+        kanagawa-Theme.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head"><span class="id">Guter Plugin-Kern</span></div>
+      <p>
+        oil.nvim als Datei-Manager (mit Trash-Support), gitsigns, Telescope,
+        Harpoon, Comment.nvim und typst-preview bilden eine schlanke,
+        praxistaugliche Auswahl ohne Overhead.
+      </p>
+    </div>
+    <div class="card good">
+      <div class="card-head">
+        <span class="id">Konsistente Formatierung &amp; lesbare Diagnosen</span>
+      </div>
+      <p>
+        Eine <code>stylua.toml</code> (<code>Spaces</code>, Breite&nbsp;2)
+        fixiert die Einrückung passend zu <code>options.lua</code>;
+        <code>stylua --check lua/</code> ist grün. Linting läuft ohne Fehlalarme
+        (Lua über <code>lua_ls</code>, kein selene/markdownlint mehr), und
+        Diagnosen werden per <code>virtual_lines</code> mehrzeilig unter der
+        betroffenen Zeile angezeigt – man sieht die volle Meldung, nicht nur
+        eine Wellenlinie.
+      </p>
+    </div>
 
-<h2 class="section" id="entschieden">3 · Bewusst entschieden</h2>
+    <h2 class="section" id="entschieden">3 · Bewusst entschieden</h2>
 
-<div class="card info">
-  <div class="card-head"><span class="id">&lt;leader&gt;s als Aktion + Präfix (UX-1)</span></div>
-  <p><code>&lt;leader&gt;s</code> ist zugleich Standalone-Aktion (Wort suchen&amp;ersetzen) und Präfix
-  der Telescope-Maps. Der lang genutzte Shortcut bleibt bewusst unverändert; Umlege-Optionen sind in
-  <code>prompts/keymap-vorschlaege.md</code> dokumentiert. Die einzige Auswirkung ist eine
-  <code>timeoutlen</code>-Wartezeit nach <code>&lt;leader&gt;s</code>.</p>
-</div>
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">&lt;leader&gt;s als Aktion + Präfix (UX-1)</span>
+      </div>
+      <p>
+        <code>&lt;leader&gt;s</code> ist zugleich Standalone-Aktion (Wort
+        suchen&amp;ersetzen) und Präfix der Telescope-Maps. Der lang genutzte
+        Shortcut bleibt bewusst unverändert; Umlege-Optionen sind in
+        <code>prompts/keymap-vorschlaege.md</code> dokumentiert. Die einzige
+        Auswirkung ist eine <code>timeoutlen</code>-Wartezeit nach
+        <code>&lt;leader&gt;s</code>.
+      </p>
+    </div>
 
-<div class="card info">
-  <div class="card-head"><span class="id">Maus deaktiviert</span></div>
-  <p><code>vim.opt.mouse = ""</code> schaltet die Maus bewusst komplett ab – konsequente
-  Keyboard-First-Nutzung, kein Finding.</p>
-</div>
-<div class="card info">
-  <div class="card-head"><span class="id">hlsearch aus, incsearch an</span></div>
-  <p>Suchtreffer werden nicht dauerhaft hervorgehoben (<code>hlsearch=false</code>), nur inkrementell –
-  bewusste Ruhe im Buffer.</p>
-</div>
+    <div class="card info">
+      <div class="card-head"><span class="id">Maus deaktiviert</span></div>
+      <p>
+        <code>vim.opt.mouse = ""</code> schaltet die Maus bewusst komplett ab –
+        konsequente Keyboard-First-Nutzung, kein Finding.
+      </p>
+    </div>
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">hlsearch aus, incsearch an</span>
+      </div>
+      <p>
+        Suchtreffer werden nicht dauerhaft hervorgehoben
+        (<code>hlsearch=false</code>), nur inkrementell – bewusste Ruhe im
+        Buffer.
+      </p>
+    </div>
 
-<footer>
-  Automatisch erstellter Health-Check · Momentaufnahme, keine Historie ·
-  Betrachtet ausschließlich den Neovim-Ordner (<code>nvim/.config/nvim</code>).
-</footer>
-</body>
+    <footer>
+      Automatisch erstellter Health-Check · Momentaufnahme, keine Historie ·
+      Betrachtet ausschließlich den Neovim-Ordner
+      (<code>nvim/.config/nvim</code>).
+    </footer>
+  </body>
 </html>

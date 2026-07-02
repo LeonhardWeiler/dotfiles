@@ -28,11 +28,11 @@ return {
         ["g\\"] = { "actions.toggle_trash", mode = "n" },
       },
       view_options = {
-        show_hidden = true, -- 🔑 unbedingt auf true setzen
-        is_hidden_file = function(name, bufnr)
+        show_hidden = true,
+        is_hidden_file = function(name, _)
           return name:match("^%.") ~= nil
         end,
-        is_always_hidden = function(name, bufnr)
+        is_always_hidden = function(_, _)
           return false
         end,
       },

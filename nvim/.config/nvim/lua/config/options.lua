@@ -16,8 +16,6 @@ vim.opt.expandtab = true
 vim.opt.autoindent = true
 vim.opt.smartindent = true
 
--- Standardmäßig ins System-Clipboard yanken/löschen/einfügen (konsistent für
--- y/d/c/p statt manueller "+-Mappings).
 vim.opt.clipboard = "unnamedplus"
 
 vim.opt.hlsearch = false
