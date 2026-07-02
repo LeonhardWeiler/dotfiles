@@ -9,7 +9,9 @@ return {
       typescript = { "biomejs" },
       javascriptreact = { "biomejs" },
       typescriptreact = { "biomejs" },
-      lua = { "selene" },
+      -- Lua: keine selene-Diagnosen – lua_ls (LSP) liefert die Lua-Diagnosen
+      -- bereits sauber. selene ohne Neovim-std würde jeden Buffer mit
+      -- falsch-positiven `vim is not defined` fluten.
       go = { "golangcilint" },
       markdown = { "markdownlint" },
     }
