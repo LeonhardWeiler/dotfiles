@@ -119,16 +119,19 @@
   <div class="meta">
     Momentaufnahme · Stand <strong>2026-07-02</strong> · Branch <code>main</code> ·
     GNU-Stow-Dotfiles (Arch Linux / Hyprland)<br>
-    Geprüft: install-Skripte, Bash, Hyprland, nvim, Scripts, systemd, Alacritty, Mako, Rofi, Ly, mpv, Typst.
-    KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und fremde mpv-Lua-Scripts nur oberflächlich.<br>
-    <strong>Stand nach Umsetzung:</strong> alle Findings dieser Runde behoben.
+    Geprüft: install-Skripte, Bash, Hyprland, nvim, Scripts, systemd, Alacritty,
+    Mako, Rofi, Ly, mpv, Typst, git-config und README.
+    KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und fremde
+    mpv-Lua-Scripts nur oberflächlich.<br>
+    Insgesamt ein sehr sauberes Repo; die offenen Punkte betreffen fast
+    ausschließlich Doku-Genauigkeit und Skript-Robustheit.
   </div>
 
   <div class="summary">
     <div class="stat krit"><span class="n">0</span><span class="l">Kritisch</span></div>
     <div class="stat hoch"><span class="n">0</span><span class="l">Hoch</span></div>
-    <div class="stat mittel"><span class="n">0</span><span class="l">Mittel</span></div>
-    <div class="stat niedrig"><span class="n">0</span><span class="l">Niedrig</span></div>
+    <div class="stat mittel"><span class="n">1</span><span class="l">Mittel</span></div>
+    <div class="stat niedrig"><span class="n">4</span><span class="l">Niedrig</span></div>
   </div>
 
   <nav class="toc">
@@ -144,13 +147,81 @@
   <section id="offen">
     <h2>1 · Offene Findings</h2>
 
-    <div class="card good">
-      <div class="card-head"><span class="badge good">erledigt</span></div>
+    <div class="card mittel">
+      <div class="card-head"><span class="badge mittel">mittel</span>
+        <span class="id">DOC-1</span>
+        <span class="loc"><code>README.md:112</code></span></div>
       <p>
-        Aktuell keine offenen Findings. Alle zuvor dokumentierten Punkte
-        (SEC-1/2, BUG-1&ndash;5, SETUP-1, NVIM-1&ndash;4, BASH-1/2, CLEAN-1,
-        KM-1, REPO-1, LY-1, MPV-1, ROFI-1) wurden umgesetzt.
+        Die Anleitung verweist auf ein Skript <code>./update_programs.sh</code>,
+        das es nicht gibt – die tatsächliche Datei heißt
+        <code>update-package-list.sh</code>. Wer der README folgt, läuft in einen
+        „command not found". Zusätzlich Tippfehler „update <em>de</em> program list".
       </p>
+      <div class="rec"><b>Empfehlung:</b> Auf <code>./update-package-list.sh</code>
+        korrigieren und „de" → „the" ausbessern.</div>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head"><span class="badge niedrig">niedrig</span>
+        <span class="id">DOC-2</span>
+        <span class="loc"><code>README.md</code> · Contents-Tabelle &amp; Service-Liste</span></div>
+      <p>
+        Die „Contents"-Tabelle und die Systemd-Enable-Liste nennen Einträge, für
+        die im Repo <em>keine</em> Dateien getrackt sind: <code>mkinitcpio</code>
+        (<code>/etc/mkinitcpio.conf</code>), <code>Passwords</code>
+        (<code>~/.config/passwords</code>) und <code>Zram</code> bzw.
+        <code>zram.service</code>. Ein Nutzer, der das Repo klont, findet diese
+        Dateien nicht – die Tabelle suggeriert mehr Inhalt, als vorhanden ist.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> Nicht enthaltene Zeilen entfernen oder
+        klar als „nicht Teil des Repos / manuell einzurichten" kennzeichnen.
+        (Die KeePassXC-DB ist bewusst per <code>.claudeignore</code>/<code>.gitignore</code>
+        ausgeschlossen – dann sollte die Passwords-Zeile das auch sagen.)</div>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head"><span class="badge niedrig">niedrig</span>
+        <span class="id">SEC-1</span>
+        <span class="loc"><code>scripts/.config/scripts/rofi_keepassxc:189-200</code></span></div>
+      <p>
+        Das entschlüsselte Eintrags-Listing der KeePass-DB wird nach
+        <code>$CACHE/tmp</code> (<code>~/.cache/rofi-keepassxc/</code>) geschrieben
+        und erst in der <em>letzten</em> Zeile mit <code>rm</code> gelöscht. Die
+        vielen frühen <code>exit</code>-Pfade in den Funktionen (Abbruch per Escape
+        etc.) umgehen dieses Cleanup, sodass die Klartext-Eintragsnamen im Cache
+        liegen bleiben. Keine Passwörter, aber Metadaten.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> Cleanup per
+        <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> absichern, statt am Skriptende
+        einmalig zu löschen.</div>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head"><span class="badge niedrig">niedrig</span>
+        <span class="id">BUG-1</span>
+        <span class="loc"><code>scripts/.config/scripts/bat_check:3</code></span></div>
+      <p>
+        <code>cat /sys/class/power_supply/BAT0/capacity</code> ohne Existenz-Check.
+        Fehlt <code>BAT0</code> (Desktop, anderer Akku-Name, ausgebauter Akku),
+        liefert <code>cat</code> nichts, und <code>[ "$PERCENT" -lt 10 ]</code>
+        wirft „integer expression expected". Da der Timer alle 2&nbsp;Minuten läuft,
+        füllt sich das Journal mit wiederkehrenden Fehlern.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> Vorab prüfen
+        (<code>[ -r /sys/class/power_supply/BAT0/capacity ] || exit 0</code>) und
+        sicherstellen, dass <code>$PERCENT</code> numerisch ist.</div>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head"><span class="badge niedrig">niedrig</span>
+        <span class="id">BUG-2</span>
+        <span class="loc"><code>scripts/.config/scripts/restic-backup:11</code></span></div>
+      <p>
+        <code>read ans</code> ohne <code>-r</code>: Backslashes in der Eingabe
+        würden interpretiert. Für ein simples y/n unkritisch, aber inkonsistent zur
+        sonst sauberen Skript-Hygiene (Shellcheck SC2162).
+      </p>
+      <div class="rec"><b>Empfehlung:</b> <code>read -r ans</code> verwenden.</div>
     </div>
   </section>
 
@@ -176,13 +247,13 @@
       <p>
         Doppelte Bestätigungs-Prompts vor destruktiven Aktionen, saubere Trennung von Root- und
         User-Paketen, Nutzung von <code>stow -R</code> (Restow) und automatische Paketerkennung über
-        die Verzeichnisstruktur.
+        die Verzeichnisstruktur inkl. <code>IGNORE_PKGS</code> für <code>prompts/</code>.
       </p>
     </div>
 
     <div class="card good">
       <div class="card-head"><span class="badge good">stark</span>
-        <span class="loc">alacritty · mako · rofi · hyprlock</span></div>
+        <span class="loc">alacritty · mako · rofi · hyprlock · hyprland</span></div>
       <p>
         Durchgängig konsistentes, dunkles Farbschema (<code>#141414</code> / <code>#dddddd</code> /
         Akzent <code>#768e84</code>) über alle UI-Komponenten hinweg – wirkt wie aus einem Guss.
@@ -205,7 +276,7 @@
 
     <div class="card info">
       <div class="card-head"><span class="badge info">bewusst</span>
-        <span class="loc"><code>.bashrc:34</code> · <code>workspace_slf:75</code></span></div>
+        <span class="loc"><code>.bashrc:33</code> · <code>workspace_slf:75</code></span></div>
       <p>
         Alias <code>c='claude --dangerously-skip-permissions'</code> (Bypass-All-Modus). Bewusste
         Workflow-Entscheidung für schnelles Arbeiten. Zur Kenntnis: läuft ohne Permission-Prompts –
@@ -215,10 +286,10 @@
 
     <div class="card info">
       <div class="card-head"><span class="badge info">bewusst</span>
-        <span class="loc"><code>hyprland.conf:93</code> · <code>options.lua:3</code></span></div>
+        <span class="loc"><code>hyprland.conf:89</code> · <code>options.lua:3</code></span></div>
       <p>
-        Animationen in Hyprland deaktiviert und Maus in nvim (<code>mouse = ""</code>) ausgeschaltet –
-        bewusst minimalistischer, tastaturzentrierter Workflow.
+        Animationen in Hyprland deaktiviert (<code>enabled = false</code>) und Maus in nvim
+        (<code>mouse = ""</code>) ausgeschaltet – bewusst minimalistischer, tastaturzentrierter Workflow.
       </p>
     </div>
 
@@ -227,7 +298,7 @@
         <span class="loc"><code>mpv.conf:49-55</code></span></div>
       <p>
         Sehr große Demuxer-Caches (4000M, 300&nbsp;s Readahead) – laut Kommentar bewusst, „viel RAM
-        vorhanden". Legitim; nur der Größen-Kommentar ist irreführend (siehe MPV-1).
+        vorhanden". Legitim; nur der Kommentar „~4 GiB" ist minimal ungenau (4000&nbsp;MiB ≈ 3,9 GiB).
       </p>
     </div>
 
