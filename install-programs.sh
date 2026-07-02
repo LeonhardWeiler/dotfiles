@@ -19,8 +19,9 @@ do
     # Nur den Paketnamen extrahieren (alles vor dem ersten Leerzeichen)
     package=$(echo "$line" | awk '{print $1}')
 
-    # Prüfen, ob Paket bereits installiert ist (yay prüft sowohl Pacman als auch AUR)
-    if yay -Qs "^${package}$" &> /dev/null
+    # Prüfen, ob Paket bereits installiert ist (exakter Namensabgleich, kein
+    # Beschreibungs-Match wie bei -Qs)
+    if yay -Q "$package" &> /dev/null
     then
         echo "$package is already installed."
     else
