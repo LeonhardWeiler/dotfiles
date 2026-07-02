@@ -1,12 +1,13 @@
 return {
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     build = ":MasonUpdate",
-    config = true,
+    opts = {},
   },
   {
-    "williamboman/mason-lspconfig.nvim",
+    "mason-org/mason-lspconfig.nvim",
     dependencies = {
+      "mason-org/mason.nvim",
       "neovim/nvim-lspconfig",
       "saghen/blink.cmp",
     },
@@ -15,9 +16,35 @@ return {
       local capabilities = require("blink.cmp").get_lsp_capabilities()
       vim.lsp.config("*", { capabilities = capabilities })
 
-      -- Installierte Server werden automatisch aktiviert (automatic_enable).
+      -- lua_ls optimal für Neovim (lazydev liefert die Runtime-Library dazu)
+      vim.lsp.config("lua_ls", {
+        settings = {
+          Lua = {
+            completion = { callSnippet = "Replace" },
+            diagnostics = { globals = { "vim" } },
+            workspace = { checkThirdParty = false },
+          },
+        },
+      })
+
+      vim.lsp.config("emmet_ls", {
+        filetypes = {
+          "html", "css", "scss", "javascriptreact", "typescriptreact",
+        },
+      })
+
+      -- Server installieren und (via automatic_enable) automatisch aktivieren.
       require("mason-lspconfig").setup({
-        automatic_installation = true,
+        ensure_installed = {
+          "lua_ls",
+          "html",
+          "cssls",
+          "vtsls",
+          "gopls",
+          "marksman",
+          "tinymist",
+          "emmet_ls",
+        },
       })
 
       -- Buffer-lokale LSP-Keymaps, sobald ein Server attached ist
@@ -38,4 +65,3 @@ return {
     end,
   },
 }
-
