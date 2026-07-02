@@ -1,0 +1,14 @@
+[Unit]
+Description=Dotfiles: Config-Sync (commit + push) beim Login
+# Best effort: falls Netzwerk noch nicht bereit ist, schlaegt nur der Push fehl.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Gleiche Git-Config wie in der interaktiven Shell (SSH-Signing etc.).
+Environment=GIT_CONFIG_GLOBAL=%h/.config/git/.gitconfig
+ExecStart=%h/.config/scripts/dotfiles_sync
+
+[Install]
+WantedBy=default.target

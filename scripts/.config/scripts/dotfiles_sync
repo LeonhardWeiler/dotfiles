@@ -1,0 +1,43 @@
+#!/bin/bash
+# dotfiles_sync — aktualisiert generierte Configs, committet Aenderungen und
+# pusht sie. Wird beim Login per systemd-User-Service (dotfiles-sync.service)
+# ausgefuehrt und ist bewusst erweiterbar:
+#   - weitere Generatoren  -> GENERATORS ergaenzen
+#   - weitere zu versionierende Pfade -> PATHS ergaenzen
+#
+# Robust: laeuft als oneshot, toleriert Offline/kein-Upstream (best effort push)
+# und beendet sich mit 0, damit der Login nicht blockiert wird.
+set -uo pipefail
+
+DOTFILES="${DOTFILES_DIR:-$HOME/dotfiles}"
+SCRIPTS="${SCRIPTS_DIR:-$HOME/.config/scripts}"
+cd "$DOTFILES" || exit 0
+
+# --- Generatoren: erzeugen/aktualisieren versionierte Artefakte --------------
+GENERATORS=(
+  "$SCRIPTS/update_programs_list"
+)
+
+# --- Zu versionierende Pfade (relativ zum Repo) ------------------------------
+PATHS=(
+  "programs.txt"
+)
+
+for gen in "${GENERATORS[@]}"; do
+  "$gen" || echo "dotfiles_sync: Generator '$gen' fehlgeschlagen" >&2
+done
+
+git add -- "${PATHS[@]}" 2>/dev/null || true
+
+# Nur committen, wenn wirklich etwas gestaged ist.
+if ! git diff --cached --quiet; then
+  git commit -q -m "chore: automatischer Config-Sync ($(date +%F))" \
+    || echo "dotfiles_sync: commit fehlgeschlagen (Signing-Key/Passphrase?)" >&2
+fi
+
+# Best effort: nur pushen, wenn ein Upstream existiert.
+if git rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
+  git push --quiet || echo "dotfiles_sync: push fehlgeschlagen (offline/divergiert?)" >&2
+fi
+
+exit 0

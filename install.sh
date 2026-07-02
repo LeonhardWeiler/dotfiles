@@ -12,7 +12,7 @@ fi
 
 cd "$DOTFILES_DIR"
 
-ROOT_PKGS=("ly" "systemd-system")
+ROOT_PKGS=("ly" "systemd-system" "pacman")
 # Verzeichnisse, die keine Stow-Pakete sind und weder als User- noch als
 # Root-Paket verlinkt werden sollen.
 IGNORE_PKGS=("prompts")

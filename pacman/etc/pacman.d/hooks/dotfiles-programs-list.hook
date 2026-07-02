@@ -1,0 +1,15 @@
+# Aktualisiert nach jeder Paket-Transaktion die programs.txt im Dotfiles-Repo.
+# Greift auch bei yay (nutzt intern pacman). Laeuft als root -> das Skript gibt
+# die Datei anschliessend dem User zurueck.
+[Trigger]
+Operation = Install
+Operation = Remove
+Operation = Upgrade
+Type = Package
+Target = *
+
+[Action]
+Description = Dotfiles: programs.txt aktualisieren...
+When = PostTransaction
+Exec = /home/leo/.config/scripts/update_programs_list
+Depends = awk

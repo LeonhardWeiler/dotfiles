@@ -1,0 +1,23 @@
+#!/bin/bash
+# update_programs_list — regeneriert programs.txt im Dotfiles-Repo aus den
+# explizit installierten Paketen (ohne base-Gruppe). Non-interaktiv.
+#
+# Aufrufer:
+#   - pacman-Hook (PostTransaction, laeuft als root)
+#   - dotfiles_sync (Startup-Sync, laeuft als User)
+#   - manuell
+#
+# Laeuft der Aufruf als root (Hook), wird die Datei anschliessend dem User
+# zurueckgegeben, damit sie im Repo nicht root gehoert.
+set -euo pipefail
+
+DOTFILES="${DOTFILES_DIR:-/home/leo/dotfiles}"
+OWNER="${DOTFILES_OWNER:-leo}"
+OUT="$DOTFILES/programs.txt"
+
+# -Q liest nur die lokale DB (keine Lock-Kollision) -> im Hook sicher.
+pacman -Qe | awk 'NR==FNR{skip[$1];next} !($1 in skip)' <(pacman -Qq base) - > "$OUT"
+
+if [ "$(id -u)" -eq 0 ]; then
+  chown "$OWNER" "$OUT"
+fi
