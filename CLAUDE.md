@@ -46,10 +46,13 @@ Struktur das Zielverzeichnis spiegelt — meist `$HOME` (z. B.
   `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
 - Hyprland-Config: Seit 0.55 ist **hyprlang (`.conf`) deprecated** zugunsten der
   **Lua-Config** (`hyprland.lua`, API-Global `hl`, geladen aus
-  `~/.config/hypr/hyprland.lua`). Das Repo enthält beides: `hyprland.lua` (aktiv
-  gepflegt) und `hyprland.conf` (Fallback). Bei Änderungen die `.lua` pflegen;
-  Lua-Syntax mit `luac -p hyprland.lua` prüfen. Konvertierung erfolgte mit
-  `hyprlang2lua`.
+  `~/.config/hypr/hyprland.lua`). Nur `hyprland.lua` ist die Quelle und wird
+  getrackt/gepflegt. `hyprland.conf` wird von Hyprland bei Lua-Nutzung als Stub
+  **autogeneriert** und ist daher **gitignored** — nicht bearbeiten. Die alte
+  hyprlang-Config liegt noch in der Git-History (vor der Lua-Umstellung) bzw.
+  lokal als `hyprland.conf.bak`. Bei Änderungen die `.lua` pflegen und mit
+  `luac -p hyprland.lua` prüfen; formatiert wird mit **stylua** (Tabs).
+  Konvertierung erfolgte mit `hyprlang2lua`.
 - **KeePassXC-DB** (`*.kdbx`) ist per `.gitignore` ausgeschlossen und der
   `keepassxc/`-Ordner per `.claudeignore`.
 - Commits werden SSH-signiert (`git/.config/git/.gitconfig`).

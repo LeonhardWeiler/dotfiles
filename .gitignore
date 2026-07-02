@@ -3,3 +3,6 @@
 
 # Editor-/Backup-Reste
 *.bak
+
+# Von Hyprland bei Lua-Nutzung autogenerierter Stub (echte Config: hyprland.lua)
+hypr/.config/hypr/hyprland.conf

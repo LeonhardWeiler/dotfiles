@@ -18,17 +18,17 @@ hl.env("HYPRCURSOR_SIZE", "18")
 
 -- See https://wiki.hypr.land/Configuring/Monitors/
 hl.monitor({
-    output = "HDMI-A-1",
-    mode = "preferred",
-    position = "2560x0",
-    scale = "1",
+	output = "HDMI-A-1",
+	mode = "preferred",
+	position = "2560x0",
+	scale = "1",
 })
 
 hl.monitor({
-    output = "eDP-1",
-    mode = "2560x1600@60",
-    position = "auto",
-    scale = "1.6",
+	output = "eDP-1",
+	mode = "2560x1600@60",
+	position = "auto",
+	scale = "1.6",
 })
 
 -- monitor=eDP-1,2560x1600@60,auto,1.6
@@ -73,116 +73,116 @@ hl.curve("linear", { type = "bezier", points = { { 0, 0 }, { 1, 1 } } })
 hl.curve("almostLinear", { type = "bezier", points = { { 0.5, 0.5 }, { 0.75, 1 } } })
 hl.curve("quick", { type = "bezier", points = { { 0.15, 0 }, { 0.1, 1 } } })
 hl.animation({
-    leaf = "global",
-    enabled = true,
-    speed = 10,
-    bezier = "default",
+	leaf = "global",
+	enabled = true,
+	speed = 10,
+	bezier = "default",
 })
 hl.animation({
-    leaf = "border",
-    enabled = true,
-    speed = 5.39,
-    bezier = "easeOutQuint",
+	leaf = "border",
+	enabled = true,
+	speed = 5.39,
+	bezier = "easeOutQuint",
 })
 hl.animation({
-    leaf = "windows",
-    enabled = true,
-    speed = 4.79,
-    bezier = "easeOutQuint",
+	leaf = "windows",
+	enabled = true,
+	speed = 4.79,
+	bezier = "easeOutQuint",
 })
 hl.animation({
-    leaf = "windowsIn",
-    enabled = true,
-    speed = 4.1,
-    bezier = "easeOutQuint",
-    style = "popin 87%",
+	leaf = "windowsIn",
+	enabled = true,
+	speed = 4.1,
+	bezier = "easeOutQuint",
+	style = "popin 87%",
 })
 hl.animation({
-    leaf = "windowsOut",
-    enabled = true,
-    speed = 1.49,
-    bezier = "linear",
-    style = "popin 87%",
+	leaf = "windowsOut",
+	enabled = true,
+	speed = 1.49,
+	bezier = "linear",
+	style = "popin 87%",
 })
 hl.animation({
-    leaf = "fadeIn",
-    enabled = true,
-    speed = 1.73,
-    bezier = "almostLinear",
+	leaf = "fadeIn",
+	enabled = true,
+	speed = 1.73,
+	bezier = "almostLinear",
 })
 hl.animation({
-    leaf = "fadeOut",
-    enabled = true,
-    speed = 1.46,
-    bezier = "almostLinear",
+	leaf = "fadeOut",
+	enabled = true,
+	speed = 1.46,
+	bezier = "almostLinear",
 })
 hl.animation({
-    leaf = "fade",
-    enabled = true,
-    speed = 3.03,
-    bezier = "quick",
+	leaf = "fade",
+	enabled = true,
+	speed = 3.03,
+	bezier = "quick",
 })
 hl.animation({
-    leaf = "layers",
-    enabled = true,
-    speed = 3.81,
-    bezier = "easeOutQuint",
+	leaf = "layers",
+	enabled = true,
+	speed = 3.81,
+	bezier = "easeOutQuint",
 })
 hl.animation({
-    leaf = "layersIn",
-    enabled = true,
-    speed = 4,
-    bezier = "easeOutQuint",
-    style = "fade",
+	leaf = "layersIn",
+	enabled = true,
+	speed = 4,
+	bezier = "easeOutQuint",
+	style = "fade",
 })
 hl.animation({
-    leaf = "layersOut",
-    enabled = true,
-    speed = 1.5,
-    bezier = "linear",
-    style = "fade",
+	leaf = "layersOut",
+	enabled = true,
+	speed = 1.5,
+	bezier = "linear",
+	style = "fade",
 })
 hl.animation({
-    leaf = "fadeLayersIn",
-    enabled = true,
-    speed = 1.79,
-    bezier = "almostLinear",
+	leaf = "fadeLayersIn",
+	enabled = true,
+	speed = 1.79,
+	bezier = "almostLinear",
 })
 hl.animation({
-    leaf = "fadeLayersOut",
-    enabled = true,
-    speed = 1.39,
-    bezier = "almostLinear",
+	leaf = "fadeLayersOut",
+	enabled = true,
+	speed = 1.39,
+	bezier = "almostLinear",
 })
 hl.animation({
-    leaf = "workspaces",
-    enabled = true,
-    speed = 3.5,
-    bezier = "easeOutQuint",
-    style = "slide",
+	leaf = "workspaces",
+	enabled = true,
+	speed = 3.5,
+	bezier = "easeOutQuint",
+	style = "slide",
 })
 hl.animation({
-    leaf = "workspacesIn",
-    enabled = true,
-    speed = 3,
-    bezier = "easeOutQuint",
+	leaf = "workspacesIn",
+	enabled = true,
+	speed = 3,
+	bezier = "easeOutQuint",
 })
 hl.animation({
-    leaf = "workspacesOut",
-    enabled = true,
-    speed = 3.5,
-    bezier = "easeOutQuint",
+	leaf = "workspacesOut",
+	enabled = true,
+	speed = 3.5,
+	bezier = "easeOutQuint",
 })
 hl.animation({
-    leaf = "zoomFactor",
-    enabled = true,
-    speed = 7,
-    bezier = "quick",
+	leaf = "zoomFactor",
+	enabled = true,
+	speed = 7,
+	bezier = "quick",
 })
 
 hl.device({
-    name = "epic-mouse-v1",
-    sensitivity = -0.5,
+	name = "epic-mouse-v1",
+	sensitivity = -0.5,
 })
 
 local mainMod = "ALT" -- Sets "Windows" key as main modifier
@@ -192,7 +192,7 @@ hl.bind(mainMod .. " + SHIFT + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exit())
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd(pass))
+hl.bind(mainMod .. " + SHIFT + o", hl.dsp.exec_cmd(pass))
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd(files))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd(browser))
 hl.bind("SUPER + L", hl.dsp.exec_cmd(lock))
@@ -240,84 +240,83 @@ hl.bind(mainMod .. " + F6", hl.dsp.exec_cmd("~/.config/scripts/bright_ctl up"), 
 hl.bind(mainMod .. " + F5", hl.dsp.exec_cmd("~/.config/scripts/bright_ctl down"), { locked = true, repeating = true })
 hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region --clipboard-only"))
 hl.config({
-    general = {
-        gaps_in = 3,
-        gaps_out = 10,
-        border_size = 2,
-        -- https://wiki.hypr.land/Configuring/Variables/#variable-types for info about colors
-        col = {
-            active_border = "rgb(dddddd)",
-            inactive_border = "rgb(595959)",
-        },
-        -- Set to true enable resizing windows by clicking and dragging on borders and gaps
-        resize_on_border = true,
-        -- Please see https://wiki.hypr.land/Configuring/Tearing/ before you turn this on
-        allow_tearing = false,
-        layout = "master",
-    },
-    xwayland = {
-        force_zero_scaling = true,
-    },
-    -- https://wiki.hypr.land/Configuring/Variables/#decoration
-    decoration = {
-        rounding = 0,
-        rounding_power = 0,
-    },
-    -- https://wiki.hypr.land/Configuring/Variables/#animations
-    animations = {
-        enabled = false,
-        -- Default curves, see https://wiki.hypr.land/Configuring/Animations/#curves
-        --        NAME,           X0,   Y0,   X1,   Y1
-        -- Default animations, see https://wiki.hypr.land/Configuring/Animations/
-        --           NAME,          ONOFF, SPEED, CURVE,        [STYLE]
-    },
-    -- See https://wiki.hypr.land/Configuring/Master-Layout/ for more
-    master = {
-        new_status = "slave",
-    },
-    -- https://wiki.hypr.land/Configuring/Variables/#misc
-    misc = {
-        force_default_wallpaper = -1,
-        disable_hyprland_logo = true,
-        disable_splash_rendering = true,
-    },
-    --############
-    --## INPUT ###
-    --############
-    -- https://wiki.hypr.land/Configuring/Variables/#input
-    input = {
-        kb_layout = "us",
-        kb_variant = "colemak_dh",
-        kb_options = "caps:swapescape",
-        -- kb_layout = de
-        repeat_delay = 300,
-        follow_mouse = 1,
-        sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
-        touchpad = {
-            natural_scroll = false,
-        },
-    },
-    -- Example per-device config
-    -- See https://wiki.hypr.land/Configuring/Keywords/#per-device-input-configs for more
-    --##################
-    --## KEYBINDINGS ###
-    --##################
-    -- See https://wiki.hypr.land/Configuring/Keywords/
-    -- Example binds, see https://wiki.hypr.land/Configuring/Binds/ for more
-    -- Move focus with mainMod + arrow keys
-    -- resizeactive
-    -- moveactive
-    -- fullscreen
-    -- Fenster zum Masterbereich verschieben
-    -- Switch workspaces with mainMod + [0-9]
-    -- Move active window to a workspace with mainMod + SHIFT + [0-9]
-    -- Move/resize windows with mainMod + LMB/RMB and dragging
-    -- Laptop multimedia keys for volume and LCD brightness
+	general = {
+		gaps_in = 3,
+		gaps_out = 10,
+		border_size = 2,
+		-- https://wiki.hypr.land/Configuring/Variables/#variable-types for info about colors
+		col = {
+			active_border = "rgb(dddddd)",
+			inactive_border = "rgb(595959)",
+		},
+		-- Set to true enable resizing windows by clicking and dragging on borders and gaps
+		resize_on_border = true,
+		-- Please see https://wiki.hypr.land/Configuring/Tearing/ before you turn this on
+		allow_tearing = false,
+		layout = "master",
+	},
+	xwayland = {
+		force_zero_scaling = true,
+	},
+	-- https://wiki.hypr.land/Configuring/Variables/#decoration
+	decoration = {
+		rounding = 0,
+		rounding_power = 0,
+	},
+	-- https://wiki.hypr.land/Configuring/Variables/#animations
+	animations = {
+		enabled = false,
+		-- Default curves, see https://wiki.hypr.land/Configuring/Animations/#curves
+		--        NAME,           X0,   Y0,   X1,   Y1
+		-- Default animations, see https://wiki.hypr.land/Configuring/Animations/
+		--           NAME,          ONOFF, SPEED, CURVE,        [STYLE]
+	},
+	-- See https://wiki.hypr.land/Configuring/Master-Layout/ for more
+	master = {
+		new_status = "slave",
+	},
+	-- https://wiki.hypr.land/Configuring/Variables/#misc
+	misc = {
+		force_default_wallpaper = -1,
+		disable_hyprland_logo = true,
+		disable_splash_rendering = true,
+	},
+	--############
+	--## INPUT ###
+	--############
+	-- https://wiki.hypr.land/Configuring/Variables/#input
+	input = {
+		kb_layout = "us",
+		kb_variant = "colemak_dh",
+		kb_options = "caps:swapescape",
+		-- kb_layout = de
+		repeat_delay = 300,
+		follow_mouse = 1,
+		sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
+		touchpad = {
+			natural_scroll = false,
+		},
+	},
+	-- Example per-device config
+	-- See https://wiki.hypr.land/Configuring/Keywords/#per-device-input-configs for more
+	--##################
+	--## KEYBINDINGS ###
+	--##################
+	-- See https://wiki.hypr.land/Configuring/Keywords/
+	-- Example binds, see https://wiki.hypr.land/Configuring/Binds/ for more
+	-- Move focus with mainMod + arrow keys
+	-- resizeactive
+	-- moveactive
+	-- fullscreen
+	-- Fenster zum Masterbereich verschieben
+	-- Switch workspaces with mainMod + [0-9]
+	-- Move active window to a workspace with mainMod + SHIFT + [0-9]
+	-- Move/resize windows with mainMod + LMB/RMB and dragging
+	-- Laptop multimedia keys for volume and LCD brightness
 })
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("mako")
-    hl.exec_cmd("gsettings set org.gnome.desktop.interface color-scheme \"prefer-dark\"")
-    hl.exec_cmd("~/files/projects/wallpaper/change-wallpaper.sh")
+	hl.exec_cmd("mako")
+	hl.exec_cmd('gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"')
+	hl.exec_cmd("~/files/projects/wallpaper/change-wallpaper.sh")
 end)
-
