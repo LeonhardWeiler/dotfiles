@@ -131,7 +131,7 @@
     <div class="stat krit"><span class="n">0</span><span class="l">Kritisch</span></div>
     <div class="stat hoch"><span class="n">0</span><span class="l">Hoch</span></div>
     <div class="stat mittel"><span class="n">0</span><span class="l">Mittel</span></div>
-    <div class="stat niedrig"><span class="n">3</span><span class="l">Niedrig</span></div>
+    <div class="stat niedrig"><span class="n">2</span><span class="l">Niedrig</span></div>
   </div>
 
   <nav class="toc">
@@ -146,23 +146,6 @@
   <!-- ================= OFFENE FINDINGS ================= -->
   <section id="offen">
     <h2>1 · Offene Findings</h2>
-
-    <div class="card niedrig">
-      <div class="card-head"><span class="badge niedrig">niedrig</span>
-        <span class="id">SEC-1</span>
-        <span class="loc"><code>scripts/.config/scripts/rofi_keepassxc:189-200</code></span></div>
-      <p>
-        Das entschlüsselte Eintrags-Listing der KeePass-DB wird nach
-        <code>$CACHE/tmp</code> (<code>~/.cache/rofi-keepassxc/</code>) geschrieben
-        und erst in der <em>letzten</em> Zeile mit <code>rm</code> gelöscht. Die
-        vielen frühen <code>exit</code>-Pfade in den Funktionen (Abbruch per Escape
-        etc.) umgehen dieses Cleanup, sodass die Klartext-Eintragsnamen im Cache
-        liegen bleiben. Keine Passwörter, aber Metadaten.
-      </p>
-      <div class="rec"><b>Empfehlung:</b> Cleanup per
-        <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> absichern, statt am Skriptende
-        einmalig zu löschen.</div>
-    </div>
 
     <div class="card niedrig">
       <div class="card-head"><span class="badge niedrig">niedrig</span>
