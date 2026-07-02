@@ -35,7 +35,9 @@ After installation, restart your shell or run the following to apply the Bash co
 source ~/.bashrc
 ```
 
-The script will overwrite the `programs.txt` file with your current package list.
+After applying the changes, the script asks whether to refresh `programs.txt`
+from your currently installed packages. This prompt defaults to **yes** (just
+press Enter); answer `n` to keep the existing list.
 
 All symlinks will be created in the directories defined in the repository.
 
