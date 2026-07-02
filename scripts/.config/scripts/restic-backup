@@ -8,7 +8,7 @@ restic backup \
   /home/leo/files/school
 
 echo "Cleanup? (y/n)"
-read ans
+read -r ans
 
 if [ "$ans" = "y" ]; then
   restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune

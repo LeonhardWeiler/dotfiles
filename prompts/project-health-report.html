@@ -131,7 +131,7 @@
     <div class="stat krit"><span class="n">0</span><span class="l">Kritisch</span></div>
     <div class="stat hoch"><span class="n">0</span><span class="l">Hoch</span></div>
     <div class="stat mittel"><span class="n">0</span><span class="l">Mittel</span></div>
-    <div class="stat niedrig"><span class="n">1</span><span class="l">Niedrig</span></div>
+    <div class="stat niedrig"><span class="n">0</span><span class="l">Niedrig</span></div>
   </div>
 
   <nav class="toc">
@@ -147,16 +147,12 @@
   <section id="offen">
     <h2>1 · Offene Findings</h2>
 
-    <div class="card niedrig">
-      <div class="card-head"><span class="badge niedrig">niedrig</span>
-        <span class="id">BUG-2</span>
-        <span class="loc"><code>scripts/.config/scripts/restic-backup:11</code></span></div>
+    <div class="card good">
+      <div class="card-head"><span class="badge good">erledigt</span></div>
       <p>
-        <code>read ans</code> ohne <code>-r</code>: Backslashes in der Eingabe
-        würden interpretiert. Für ein simples y/n unkritisch, aber inkonsistent zur
-        sonst sauberen Skript-Hygiene (Shellcheck SC2162).
+        Aktuell keine offenen Findings. Die zuletzt dokumentierten Punkte
+        (DOC-1/2, SEC-1, BUG-1/2) wurden umgesetzt.
       </p>
-      <div class="rec"><b>Empfehlung:</b> <code>read -r ans</code> verwenden.</div>
     </div>
   </section>
 
