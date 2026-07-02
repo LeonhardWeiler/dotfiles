@@ -98,9 +98,9 @@
 
 <section class="summary">
   <div class="count krit"><span class="n">0</span><span class="l">kritisch</span></div>
-  <div class="count hoch"><span class="n">0</span><span class="l">hoch</span></div>
-  <div class="count mittel"><span class="n">0</span><span class="l">mittel</span></div>
-  <div class="count niedrig"><span class="n">0</span><span class="l">niedrig</span></div>
+  <div class="count hoch"><span class="n">1</span><span class="l">hoch</span></div>
+  <div class="count mittel"><span class="n">2</span><span class="l">mittel</span></div>
+  <div class="count niedrig"><span class="n">3</span><span class="l">niedrig</span></div>
   <div class="count info"><span class="n">0</span><span class="l">info</span></div>
 </section>
 
@@ -123,12 +123,99 @@
 
 <h2 class="section" id="offen">1 · Offene Findings</h2>
 
-<div class="card good">
-  <div class="card-head"><span class="id">Keine offenen Findings</span></div>
-  <p class="empty">Alle zuvor erfassten Findings (TS-1, UX-1/2, QUAL-1–4, DOC-1,
-  PKG-1, MOD-1) wurden umgesetzt und daher entfernt. Insbesondere die
-  Modernisierung aus <code>prompts/refactor.md</code> ist vollständig
-  eingespielt.</p>
+<!-- HOCH -->
+<div class="card hoch">
+  <div class="card-head">
+    <span class="id">LINT-1</span>
+    <span class="badge hoch">hoch</span>
+    <span class="loc">lua/plugins/lint.lua:12 · selene.toml (fehlend)</span>
+  </div>
+  <p><code>nvim-lint</code> ruft für Lua <code>selene</code> auf, es existiert aber keine
+  <code>selene.toml</code> mit der Neovim-Standardbibliothek. Ein realer Lauf
+  (<code>selene lua/</code>) meldet <strong>126 Fehler und 68 Warnungen</strong> – nahezu alle
+  <code>error[undefined_variable]: `vim` is not defined</code>. Damit ist das Lua-Linting in der
+  Praxis unbrauchbar: jeder Lua-Buffer wird mit falsch-positiven Diagnosen geflutet.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Eine <code>selene.toml</code> mit einer
+  Neovim-<code>std</code> anlegen (z. B. via <code>selene-vim</code>/Neodev-Std) oder für Lua auf die
+  <code>lua_ls</code>-Diagnostik setzen und selene aus <code>linters_by_ft.lua</code> nehmen.</p>
+</div>
+
+<!-- MITTEL -->
+<div class="card mittel">
+  <div class="card-head">
+    <span class="id">UX-1</span>
+    <span class="badge mittel">mittel</span>
+    <span class="loc">lua/config/keymaps.lua:25 · lua/plugins/telescope.lua:8-18</span>
+  </div>
+  <p><code>&lt;leader&gt;s</code> ist gleichzeitig eine <em>vollständige</em> Zuordnung
+  (Suchen&amp;Ersetzen des Worts unter dem Cursor) <em>und</em> das Präfix der Telescope-Maps
+  (<code>&lt;leader&gt;sf</code>, <code>sg</code>, <code>sh</code>, <code>sc</code>, <code>sq</code>,
+  <code>sl</code>, <code>sk</code>, <code>st</code>). Neovim muss daher bei jedem <code>&lt;leader&gt;s</code>
+  erst <code>timeoutlen</code> abwarten – spürbare Verzögerung und Mehrdeutigkeit.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Die Standalone-Aktion auf eine kollisionsfreie Taste
+  legen (z. B. <code>&lt;leader&gt;S</code> oder <code>&lt;leader&gt;rw</code>), damit
+  <code>&lt;leader&gt;s…</code> ein sauberes Such-Präfix bleibt.</p>
+</div>
+
+<div class="card mittel">
+  <div class="card-head">
+    <span class="id">CQ-1</span>
+    <span class="badge mittel">mittel</span>
+    <span class="loc">stylua.toml (fehlend) · lua/config/options.lua:11-15</span>
+  </div>
+  <p>Es gibt keine <code>stylua.toml</code>. conform ruft <code>stylua</code> mit dessen Default auf –
+  und der ist <strong>Tab-Einrückung</strong>, während <code>options.lua</code> bewusst
+  <code>expandtab</code> mit 2 Spaces setzt. Ergebnis: die per Format-on-Save gespeicherten
+  <code>lua/plugins/*</code>-Dateien sind bereits auf Tabs umgestellt, die noch nicht gespeicherten
+  <code>lua/config/*</code>-Dateien nicht – <code>stylua --check lua/</code> ist entsprechend rot und
+  das Repo uneinheitlich eingerückt.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Eine <code>stylua.toml</code> mit
+  <code>indent_type = "Spaces"</code> und <code>indent_width = 2</code> anlegen und danach einmal
+  <code>stylua lua/</code> über das gesamte Verzeichnis laufen lassen.</p>
+</div>
+
+<!-- NIEDRIG -->
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">LINT-2</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">lua/plugins/lint.lua:14 · .markdownlint.json (fehlend)</span>
+  </div>
+  <p>Für Markdown laufen <code>prettierd</code> (Formatter) und <code>markdownlint</code> (Linter)
+  nebeneinander, ohne Konfiguration. <code>markdownlint README.md CLAUDE.md</code> meldet u. a.
+  reihenweise <code>MD013/line-length</code> (&gt; 80 Zeichen) und <code>MD040</code> – Regeln, die
+  prettierd nicht auflöst (es bricht Prosa/Tabellen nicht auf 80 Zeichen um). Die beiden Tools
+  arbeiten damit gegeneinander und erzeugen Dauer-Diagnosen.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Eine <code>.markdownlint.json</code> anlegen, die die
+  mit prettierd unvereinbaren Regeln entschärft (z. B. <code>MD013</code> aus), oder markdownlint für
+  Markdown weglassen.</p>
+</div>
+
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">CQ-2</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">lua/config/autocmds.lua:29-33</span>
+  </div>
+  <p>Der <code>BufWritePre</code>-Autocmd <code>%s/\s\+$//e</code> (Trailing-Whitespace) läuft parallel
+  zum Format-on-Save von conform. Für formatierte Dateitypen ist er redundant (stylua/prettierd/…
+  trimmen bereits), und ohne <code>keeppatterns</code> bzw. Sicherung von Cursor/View verändert er
+  Suchmuster-Historie und Position.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Den Autocmd entfernen (conform übernimmt) oder – für
+  nicht-formatierte Dateitypen – mit <code>keeppatterns</code> und gesichertem Cursor umsetzen.</p>
+</div>
+
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">DOC-1</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">CLAUDE.md</span>
+  </div>
+  <p><code>CLAUDE.md</code> hält als Konvention „Einrückung bei 2 Spaces" fest, der tatsächlich aktive
+  Formatter (stylua, Default) schreibt jedoch Tabs. Solange CQ-1 offen ist, widerspricht die Doku dem
+  realen Verhalten.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Nach Festlegung von CQ-1 (Spaces vs. Tabs) die
+  <code>CLAUDE.md</code> entsprechend angleichen. Dieser Report ändert die Doku nicht selbst.</p>
 </div>
 
 <h2 class="section" id="stark">2 · Was schon stark ist</h2>
