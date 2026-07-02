@@ -23,12 +23,10 @@ export EDITOR="nvim"
 
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM=wayland
-export QT_AUTO_SCREEN_SCALE_FACTOR=0
-export QT_SCALE_FACTOR=2
-export GDK_SCALE=2
-export GDK_DPI_SCALE=0.5
-export XCURSOR_SIZE=32
 export BROWSER=zen-browser
+# Skalierung/Cursor werden bewusst NICHT hier gesetzt, sondern ausschliesslich
+# als Session-Env in hyprland.conf (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE,
+# ...). So rendern GUI-Apps unabhaengig vom Startweg (Terminal vs. Rofi) gleich.
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 export TYPST_PACKAGE_PATH="$HOME/.config/typst/packages"
