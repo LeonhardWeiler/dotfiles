@@ -119,4 +119,4 @@ sudo mkinitcpio -P
 
 ## License
 
-GPL-2.0 License
+GPL-3.0 License
