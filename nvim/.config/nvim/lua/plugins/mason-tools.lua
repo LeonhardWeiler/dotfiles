@@ -8,6 +8,13 @@ return {
   opts = {
     ensure_installed = {
       "tree-sitter-cli",
+      -- Formatter (conform.nvim)
+      "stylua",
+      "biome",
+      "prettierd",
+      "goimports",
+      "gofumpt",
+      "typstyle",
     },
   },
 }
