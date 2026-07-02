@@ -259,13 +259,13 @@
         <span class="n">0</span><span class="l">hoch</span>
       </div>
       <div class="count mittel">
-        <span class="n">0</span><span class="l">mittel</span>
+        <span class="n">1</span><span class="l">mittel</span>
       </div>
       <div class="count niedrig">
-        <span class="n">0</span><span class="l">niedrig</span>
+        <span class="n">2</span><span class="l">niedrig</span>
       </div>
       <div class="count info">
-        <span class="n">0</span><span class="l">info</span>
+        <span class="n">3</span><span class="l">info</span>
       </div>
     </section>
 
@@ -303,12 +303,148 @@
 
     <h2 class="section" id="offen">1 · Offene Findings</h2>
 
-    <p class="empty">
-      Keine offenen Findings. Die zuletzt gelisteten Punkte (UX-2, CQ-1,
-      INFO-1) sind behoben – UX-2 durch buffer-lokale markdown-Optionen, CQ-1
-      durch Entfernen der toten netrw-Config, INFO-1 durch die Migration auf
-      Harpoon&nbsp;2.
+    <p class="meta" style="margin: 0 0 1rem; color: var(--fg-dim)">
+      Schwerpunkt dieser Runde: typische Nutzungs-Flows durchgespielt (Git-Hunks
+      bearbeiten, Editier-Session über Neustarts hinweg, Prosa/Markdown
+      schreiben, projektweit navigieren &amp; refactoren) und auf fehlende bzw.
+      besser umsetzbare Bausteine geprüft.
     </p>
+
+    <div class="card mittel">
+      <div class="card-head">
+        <span class="id">UX-3</span>
+        <span class="badge mittel">mittel</span>
+        <span class="loc">lua/plugins/plugins.lua:21</span>
+      </div>
+      <p>
+        <strong>Git-Hunk-Flow ist praktisch unbenutzbar.</strong>
+        <code>gitsigns.nvim</code> ist mit <code>opts = {}</code> ganz ohne
+        <code>on_attach</code>/Keymaps eingebunden. Aktuelle gitsigns-Versionen
+        setzen <strong>keine</strong> Default-Mappings mehr – empirisch bestätigt
+        sind <code>]c</code>/<code>[c</code> ungemappt, obwohl das Plugin geladen
+        und <code>stage_hunk</code> &amp; Co. verfügbar sind. Du siehst zwar die
+        Änderungszeichen in der <code>signcolumn</code>, kannst Hunks aber weder
+        <em>anspringen</em> noch <em>stagen/reverten/previewen</em> oder eine
+        Zeilen-Blame sehen.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> In <code>gitsigns</code> ein
+        <code>on_attach</code> definieren (buffer-lokale Maps), z. B.
+        <code>]c</code>/<code>[c</code> (<code>nav_hunk</code>),
+        <code>&lt;leader&gt;hs</code>/<code>hr</code> (stage/reset hunk),
+        <code>&lt;leader&gt;hp</code> (preview) und
+        <code>&lt;leader&gt;hb</code> (blame line). Passt zur bestehenden
+        <code>&lt;leader&gt;h…</code>-Logik (Harpoon liegt auf
+        <code>&lt;leader&gt;h</code> – ggf. Präfix wählen, das nicht
+        kollidiert).
+      </p>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head">
+        <span class="id">CQ-2</span>
+        <span class="badge niedrig">niedrig</span>
+        <span class="loc">lua/config/options.lua:37–39</span>
+      </div>
+      <p>
+        <strong>Keine persistente Undo-Historie.</strong> Swap/Backup sind
+        bewusst aus, aber <code>undofile</code> ist nicht gesetzt (zur Laufzeit
+        <code>false</code> bestätigt). Damit ist die komplette Undo-Historie
+        eines Buffers <strong>weg, sobald die Datei geschlossen wird</strong> –
+        gerade bei Keyboard-First-Nutzung mit vielen kurzen Sitzungen ein
+        spürbarer Verlust.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> <code>vim.opt.undofile = true</code>
+        setzen (Undodir defaultet nach <code>stdpath("state")/undo</code>).
+        Kostenlos, sofort spürbar, passt zur „kein Swap/Backup"-Linie.
+      </p>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head">
+        <span class="id">UX-4</span>
+        <span class="badge niedrig">niedrig</span>
+        <span class="loc">lua/config/autocmds.lua:23–33 · telescope.lua:15</span>
+      </div>
+      <p>
+        <strong>Rechtschreibprüfung nur halb verkabelt.</strong> Es gibt eine
+        Keymap <code>&lt;leader&gt;sl</code> → <code>spell_suggest</code>, aber
+        <code>spell</code> wird nirgends aktiviert (zur Laufzeit
+        <code>false</code>). Beim Schreiben von Markdown/Text siehst du also
+        <em>keine</em> markierten Tippfehler – die Vorschlags-Keymap greift ins
+        Leere bzw. wirkt nur zufällig auf das Wort unter dem Cursor.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> Im vorhandenen
+        <code>markdown/text</code>-<code>FileType</code>-Autocmd
+        <code>vim.opt_local.spell = true</code> (und z. B.
+        <code>spelllang = "en,de"</code>) setzen, damit Rechtschreibung genau
+        dort greift, wo Prosa geschrieben wird.
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">INFO-2</span>
+        <span class="badge info">info</span>
+        <span class="loc">lua/plugins/telescope.lua · lua/plugins/lsp.lua</span>
+      </div>
+      <p>
+        <strong>Kein projektweiter Blick auf Diagnosen.</strong>
+        <code>&lt;leader&gt;e</code> öffnet den Float und <code>[d</code>/
+        <code>]d</code> springen einzeln – es fehlt eine Übersicht „alle
+        Fehler/Warnungen im Projekt/Buffer". Bei mehreren offenen LSP-Fehlern
+        muss man sie einzeln durchsteppen.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> Eine Keymap auf
+        <code>telescope.builtin.diagnostics</code> (z. B.
+        <code>&lt;leader&gt;sd</code>, fügt sich ins Such-Präfix ein) oder
+        alternativ <code>vim.diagnostic.setqflist()</code> in die Quickfix-Liste.
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">INFO-3</span>
+        <span class="badge info">info</span>
+        <span class="loc">lua/plugins/treesitter.lua (HTML/TSX-Flow)</span>
+      </div>
+      <p>
+        <strong>HTML/JSX-Editing ohne Tag-Komfort.</strong> Für
+        <code>html</code>/<code>tsx</code> sind Parser, <code>emmet_ls</code>,
+        <code>vtsls</code> und <code>mini.pairs</code> vorhanden, aber es fehlt
+        das automatische Schließen/Umbenennen von Tags. Beim Bearbeiten von
+        Markup muss das schließende Tag jedes Mal von Hand gepflegt werden.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> <code>windwp/nvim-ts-autotag</code>
+        ergänzen (nutzt Treesitter, das bereits läuft) für Auto-Close und
+        Auto-Rename von Tags in HTML/JSX/TSX.
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">INFO-4</span>
+        <span class="badge info">info</span>
+        <span class="loc">lua/config/keymaps.lua:16 · telescope live_grep</span>
+      </div>
+      <p>
+        <strong>Kein projektweites Suchen &amp; Ersetzen.</strong>
+        <code>&lt;leader&gt;S</code> ersetzt nur im aktuellen Buffer und
+        <code>&lt;leader&gt;sg</code> (live_grep) ist rein lesend. Für ein
+        Symbol-/String-Refactoring über mehrere Dateien gibt es aktuell keinen
+        Workflow außerhalb von LSP-Rename (<code>&lt;leader&gt;rn</code>, nur
+        Symbole).
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> Ein Multi-File-Replace-Tool wie
+        <code>MagicDuck/grug-far.nvim</code> ergänzen (Suchen &amp; Ersetzen mit
+        Vorschau über das ganze Projekt).
+      </p>
+    </div>
 
     <h2 class="section" id="stark">2 · Was schon stark ist</h2>
 
