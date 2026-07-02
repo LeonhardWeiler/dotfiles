@@ -120,18 +120,19 @@
     Momentaufnahme · Stand <strong>2026-07-02</strong> · Branch <code>main</code> ·
     GNU-Stow-Dotfiles (Arch Linux / Hyprland)<br>
     Geprüft: install-Skripte, Bash, Hyprland, nvim, Scripts, systemd, Alacritty,
-    Mako, Rofi, Ly, mpv, Typst, git-config und README.
+    Mako, Rofi, Ly, mpv, Typst, git-config, programs.txt und README.
     KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und fremde
     mpv-Lua-Scripts nur oberflächlich.<br>
-    Insgesamt ein sehr sauberes Repo; die offenen Punkte betreffen fast
-    ausschließlich Doku-Genauigkeit und Skript-Robustheit.
+    Insgesamt ein sehr sauberes Repo; die offenen Punkte betreffen ausschließlich
+    fehlende Laufzeit-Abhängigkeiten, eine falsche Installations-Anweisung und
+    kleinere Skript-Robustheit.
   </div>
 
   <div class="summary">
     <div class="stat krit"><span class="n">0</span><span class="l">Kritisch</span></div>
     <div class="stat hoch"><span class="n">0</span><span class="l">Hoch</span></div>
-    <div class="stat mittel"><span class="n">0</span><span class="l">Mittel</span></div>
-    <div class="stat niedrig"><span class="n">0</span><span class="l">Niedrig</span></div>
+    <div class="stat mittel"><span class="n">3</span><span class="l">Mittel</span></div>
+    <div class="stat niedrig"><span class="n">2</span><span class="l">Niedrig</span></div>
   </div>
 
   <nav class="toc">
@@ -147,12 +148,84 @@
   <section id="offen">
     <h2>1 · Offene Findings</h2>
 
-    <div class="card good">
-      <div class="card-head"><span class="badge good">erledigt</span></div>
+    <div class="card mittel">
+      <div class="card-head"><span class="badge mittel">mittel</span><span class="id">DEP-1</span>
+        <span class="loc"><code>scripts/.config/scripts/rofi_keepassxc</code> · <code>clip_*</code></span></div>
       <p>
-        Aktuell keine offenen Findings. Die zuletzt dokumentierten Punkte
-        (DOC-1/2, SEC-1, BUG-1/2) wurden umgesetzt.
+        Die Clip-Funktionen (<code>clip_username</code>, <code>clip_title</code>,
+        <code>clip_url</code>, <code>clip_notes</code>) rufen <code>xclip -sel clip</code>
+        auf. <code>xclip</code> ist jedoch <strong>gar nicht installiert</strong> und steht
+        auch nicht in <code>programs.txt</code>. Zusätzlich ist <code>xclip</code>
+        X11-only – unter dem hier genutzten Wayland/Hyprland funktioniert es
+        allenfalls über XWayland. Damit brechen alle Clip-Aktionen außer
+        „Clip password" (das <code>keepassxc-cli clip</code> selbst nutzt).
       </p>
+      <div class="rec"><b>Empfehlung:</b> Auf <code>wl-copy</code> (Paket
+        <code>wl-clipboard</code>) umstellen und die Abhängigkeit in
+        <code>programs.txt</code> bzw. den README-Requirements aufnehmen.</div>
+    </div>
+
+    <div class="card mittel">
+      <div class="card-head"><span class="badge mittel">mittel</span><span class="id">DEP-2</span>
+        <span class="loc"><code>scripts/.config/scripts/lib_hypr.sh</code> · <code>workspace_slf</code></span></div>
+      <p>
+        Die gesamte Workspace-Automatisierung hängt hart von <code>jq</code> ab
+        (<code>require_cmds hyprctl jq …</code>). <code>jq</code> ist derzeit aber nur
+        <em>als Fremd-Abhängigkeit</em> installiert und taucht deshalb <strong>nicht in
+        <code>programs.txt</code></strong> auf (die Liste enthält nur explizit
+        installierte Pakete aus <code>pacman -Qe</code>). Eine frische Maschine, die
+        allein über <code>install-programs.sh</code> aufgesetzt wird, bekäme <code>jq</code>
+        nicht garantiert – die Automatisierung würde mit „fehlendes Kommando: jq"
+        abbrechen.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> <code>jq</code> explizit markieren
+        (<code>pacman -D --asexplicit jq</code>) und die Paketliste neu erzeugen, oder
+        <code>jq</code> in den README-Requirements dokumentieren.</div>
+    </div>
+
+    <div class="card mittel">
+      <div class="card-head"><span class="badge mittel">mittel</span><span class="id">DOC-1</span>
+        <span class="loc"><code>README.md:29</code> · <code>install.sh</code></span></div>
+      <p>
+        Das README weist an, die Installation mit <code>sudo ./install.sh</code>
+        auszuführen. <code>install.sh</code> ist aber bewusst für den
+        <strong>Nicht-Root-Betrieb</strong> gebaut: Es stowt die User-Pakete ohne
+        <code>sudo</code> und ruft <code>sudo stow</code> nur intern für die Root-Pakete
+        (<code>ly</code>, <code>systemd-system</code>) auf. Wird das ganze Skript als root
+        gestartet, entstehen <strong>root-eigene Symlinks in <code>/home/leo</code></strong>
+        und ein root-eigenes <code>programs.txt</code> im Repo – spätere Git-/Stow-Aufrufe
+        ohne <code>sudo</code> brechen dann an Rechteproblemen.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> Im README <code>./install.sh</code> (ohne
+        <code>sudo</code>) angeben; das Skript fordert die Root-Rechte für die
+        System-Pakete selbst an.</div>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head"><span class="badge niedrig">niedrig</span><span class="id">PKG-1</span>
+        <span class="loc"><code>install-programs.sh:23</code></span></div>
+      <p>
+        Der Installiert-Check nutzt <code>yay -Qs "^${package}$"</code>. <code>-Qs</code>
+        ist eine Suche, die auch Paket-<em>Beschreibungen</em> durchsucht; trotz Anker
+        (<code>^…$</code>) kann das zu Falsch-Positiven führen, sodass ein noch fehlendes
+        Paket fälschlich als „already installed" übersprungen wird.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> Exakten Namensabgleich verwenden, z.&nbsp;B.
+        <code>yay -Q "$package"</code> (Rückgabecode prüfen) statt <code>-Qs</code>.</div>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head"><span class="badge niedrig">niedrig</span><span class="id">SH-1</span>
+        <span class="loc"><code>bash/.bashrc:7-11</code></span></div>
+      <p>
+        <code>PS1</code> ruft bei <strong>jedem</strong> Prompt <code>battery_status()</code>
+        und damit <code>acpi -b</code> auf – ein Subprozess pro Eingabeaufforderung.
+        Auf einem Gerät ohne Akku (oder wenn <code>acpi</code> nichts liefert) bleibt
+        außerdem nur ein nacktes <code>%</code> stehen.
+      </p>
+      <div class="rec"><b>Empfehlung:</b> Ausgabe cachen bzw. seltener aktualisieren
+        und den Akku-Teil weglassen, wenn kein Akku vorhanden ist (analog zur
+        <code>BAT0</code>-Prüfung in <code>bat_check</code>).</div>
     </div>
   </section>
 
