@@ -88,15 +88,12 @@ systemctl --user status <name>.service
 | Ly             | `/etc/ly`              |
 | Mako           | `~/.config/mako`       |
 | MPV            | `~/.config/mpv`        |
-| mkinitcpio     | `/etc/mkinitcpio.conf` |
 | Neovim         | `~/.config/nvim`       |
-| Passwords      | `~/.config/passwords`  |
 | Rofi           | `~/.config/rofi`       |
 | Scripts        | `~/.config/scripts`    |
 | Systemd User   | `~/.config/systemd/`   |
 | Systemd System | `/etc/systemd/system/` |
 | Typst          | `~/.config/typst`      |
-| Zram           | `/etc/systemd/system/` |
 
 ## My Setup
 
