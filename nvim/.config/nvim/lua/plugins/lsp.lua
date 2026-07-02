@@ -16,6 +16,16 @@ return {
       local capabilities = require("blink.cmp").get_lsp_capabilities()
       vim.lsp.config("*", { capabilities = capabilities })
 
+      -- Diagnosen sichtbar machen: virtual_lines zeigt die volle Meldung
+      -- mehrzeilig direkt unter der betroffenen Zeile (statt nur Wellenlinie +
+      -- Zeichen in der signcolumn). <leader>e oeffnet zusaetzlich den Float.
+      vim.diagnostic.config({
+        virtual_lines = true,
+        underline = true,
+        severity_sort = true,
+        float = { border = "rounded", source = true },
+      })
+
       -- lua_ls optimal für Neovim (lazydev liefert die Runtime-Library dazu)
       vim.lsp.config("lua_ls", {
         settings = {
