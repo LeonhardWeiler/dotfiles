@@ -259,7 +259,7 @@
         <span class="n">0</span><span class="l">hoch</span>
       </div>
       <div class="count mittel">
-        <span class="n">1</span><span class="l">mittel</span>
+        <span class="n">0</span><span class="l">mittel</span>
       </div>
       <div class="count niedrig">
         <span class="n">2</span><span class="l">niedrig</span>
@@ -309,36 +309,6 @@
       schreiben, projektweit navigieren &amp; refactoren) und auf fehlende bzw.
       besser umsetzbare Bausteine geprüft.
     </p>
-
-    <div class="card mittel">
-      <div class="card-head">
-        <span class="id">UX-3</span>
-        <span class="badge mittel">mittel</span>
-        <span class="loc">lua/plugins/plugins.lua:21</span>
-      </div>
-      <p>
-        <strong>Git-Hunk-Flow ist praktisch unbenutzbar.</strong>
-        <code>gitsigns.nvim</code> ist mit <code>opts = {}</code> ganz ohne
-        <code>on_attach</code>/Keymaps eingebunden. Aktuelle gitsigns-Versionen
-        setzen <strong>keine</strong> Default-Mappings mehr – empirisch bestätigt
-        sind <code>]c</code>/<code>[c</code> ungemappt, obwohl das Plugin geladen
-        und <code>stage_hunk</code> &amp; Co. verfügbar sind. Du siehst zwar die
-        Änderungszeichen in der <code>signcolumn</code>, kannst Hunks aber weder
-        <em>anspringen</em> noch <em>stagen/reverten/previewen</em> oder eine
-        Zeilen-Blame sehen.
-      </p>
-      <p class="rec">
-        <strong>Empfehlung:</strong> In <code>gitsigns</code> ein
-        <code>on_attach</code> definieren (buffer-lokale Maps), z. B.
-        <code>]c</code>/<code>[c</code> (<code>nav_hunk</code>),
-        <code>&lt;leader&gt;hs</code>/<code>hr</code> (stage/reset hunk),
-        <code>&lt;leader&gt;hp</code> (preview) und
-        <code>&lt;leader&gt;hb</code> (blame line). Passt zur bestehenden
-        <code>&lt;leader&gt;h…</code>-Logik (Harpoon liegt auf
-        <code>&lt;leader&gt;h</code> – ggf. Präfix wählen, das nicht
-        kollidiert).
-      </p>
-    </div>
 
     <div class="card niedrig">
       <div class="card-head">
@@ -543,6 +513,18 @@
 
     <h2 class="section" id="entschieden">3 · Bewusst entschieden</h2>
 
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">Git nur als Signs, Aktionen im Terminal (UX-3)</span>
+      </div>
+      <p>
+        <code>gitsigns.nvim</code> bleibt bewusst ohne Hunk-Keymaps: Gewollt ist
+        allein die Anzeige der geänderten Zeilen in der <code>signcolumn</code>
+        (das läuft per Default). Git-Aktionen (stage/reset/commit/blame) werden
+        bewusst im Terminal erledigt, nicht aus Neovim heraus – daher kein
+        <code>on_attach</code> nötig.
+      </p>
+    </div>
     <div class="card info">
       <div class="card-head"><span class="id">Maus deaktiviert</span></div>
       <p>
