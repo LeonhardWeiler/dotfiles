@@ -25,8 +25,8 @@ Make the installation script executable and run it:
 
 ```bash
 chmod +x install.sh
-# sudo is required to write to system directories
-sudo ./install.sh
+# Run as your normal user — the script requests sudo itself for system packages
+./install.sh
 ```
 
 After installation, restart your shell or run the following to apply the Bash configuration:
