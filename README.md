@@ -70,7 +70,15 @@ sudo systemctl status <name>.service
 
 ```bash
 systemctl --user enable --now battery-check.timer
+# Sync von `programs.txt` (und weiteren Configs) bei jedem Login: commit + push
+systemctl --user enable --now dotfiles-sync.service
 ```
+
+> `dotfiles-sync.service` committet und **pusht** automatisch. Das setzt einen
+> ohne Interaktion nutzbaren SSH-Key voraus (passphrase-los oder per `ssh-agent`
+> beim Login bereitgestellt); sonst schlägt nur der Push fehl (best effort, der
+> Login wird nicht blockiert). Erweiterbar über `GENERATORS`/`PATHS` in
+> `~/.config/scripts/dotfiles_sync`.
 
 Check status:
 
@@ -91,6 +99,7 @@ systemctl --user status <name>.service
 | Mako           | `~/.config/mako`       |
 | MPV            | `~/.config/mpv`        |
 | Neovim         | `~/.config/nvim`       |
+| Pacman hooks   | `/etc/pacman.d/hooks`  |
 | Rofi           | `~/.config/rofi`       |
 | Scripts        | `~/.config/scripts`    |
 | Systemd User   | `~/.config/systemd/`   |
@@ -99,7 +108,7 @@ systemctl --user status <name>.service
 
 ## My Setup
 
-I use Arch Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages and is updated when the installation script is run.
+I use Arch Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles-sync.service` commits and pushes it on login. You can still refresh it manually while installing via the install script.
 
 > Note: This setup has been primarily tested on Arch Linux. Other distributions may require adjustments.
 
