@@ -46,9 +46,8 @@ Halte die Einrückung bei 2 Spaces (siehe `options.lua`/`stylua.toml`).
   `require('nvim-treesitter').install{…}` ins `site`-Verzeichnis installiert und
   benötigen die `tree-sitter`-CLI (kommt über mason). Highlighting/Indent werden
   in `treesitter.lua` per `FileType`-Autocmd (`vim.treesitter.start`) aktiviert.
-- **Incremental Selection** ist im treesitter-`main`-Branch nicht mehr enthalten
-  und in `treesitter.lua` als eigene Umsetzung über die `vim.treesitter`-API
-  nachgebaut (`<C-Space>`/`<BS>`).
+  Treesitter Text Objects und Incremental Selection werden **bewusst nicht**
+  verwendet.
 - **mini.icons ersetzt nvim-web-devicons**; per `package.preload`-Mock in
   `plugins.lua` funktionieren Plugins weiter, die `require("nvim-web-devicons")`
   erwarten.

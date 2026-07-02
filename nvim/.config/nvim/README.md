@@ -50,7 +50,7 @@ lua/plugins/             je eine Datei pro Plugin/Bereich (auto-import)
 | Git           | gitsigns.nvim |
 | Kommentare    | Comment.nvim |
 | Bearbeitung   | mini.pairs, mini.icons |
-| Treesitter    | nvim-treesitter (`main`), nvim-treesitter-textobjects (`main`) |
+| Treesitter    | nvim-treesitter (`main`) |
 | LSP           | mason.nvim, mason-lspconfig.nvim, nvim-lspconfig, lazydev.nvim, mason-tool-installer.nvim |
 | Completion    | blink.cmp, LuaSnip, friendly-snippets |
 | Formatter     | conform.nvim (stylua, biome, prettierd, goimports+gofumpt, typstyle) |
@@ -84,11 +84,6 @@ Leader = `<Space>`.
 ### LSP (buffer-lokal bei Attach)
 `gd` Definition · `gr` Referenzen · `K` Hover · `<leader>rn` Rename ·
 `<leader>ca` Code-Action · `<leader>e` Diagnostik · `[d`/`]d` Diagnostik navigieren
-
-### Treesitter
-- Incremental Selection: `<C-Space>` erweitern, `<BS>` verkleinern
-- Textobjects: `af`/`if` Funktion, `ac`/`ic` Klasse, `aa`/`ia` Parameter
-- Sprünge: `]f`/`[f` Funktion, `]c`/`[c` Klasse
 
 ## Formatierung & Linting
 
