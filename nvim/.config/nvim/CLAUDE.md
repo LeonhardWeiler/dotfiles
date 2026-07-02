@@ -25,9 +25,11 @@ lazy.nvim. Keyboard-first (Maus deaktiviert). Sprache der Kommentare: **Deutsch*
 - **Voller Start inkl. Plugin-Install/-Clean**: `nvim --headless "+qa"`
   (installiert fehlende Plugins, aktualisiert `lazy-lock.json`).
 - Für einzelne Module: `nvim --headless "+lua require('config.autocmds')" +qa`.
+- **Lua-Formatierung** der Config: `stylua lua/` (bzw. `stylua --check lua/` zum
+  Prüfen). Die `stylua.toml` im Repo-Root fixiert **Spaces mit 2 Breite** —
+  passend zu `options.lua`. stylua läuft auch per Format-on-Save (conform).
 
-Es gibt keinen Formatter/Linter für die Config selbst außer den Editor-Tools;
-halte Einrückung bei 2 Spaces (siehe `options.lua`).
+Halte die Einrückung bei 2 Spaces (siehe `options.lua`/`stylua.toml`).
 
 ## Plugin-Management
 
