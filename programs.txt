@@ -1,5 +1,6 @@
 acpi 1.8-2
 alacritty 0.17.0-1
+base-devel 1-2
 blender-launcher-v2-bin 2.7.3-1
 brightnessctl 0.5.1-3
 btop 1.4.7-1
@@ -28,11 +29,12 @@ nodejs-lts-jod 22.23.1-1
 noto-fonts 1:2026.07.01-1
 noto-fonts-cjk 20240730-1
 noto-fonts-emoji 1:2.051-1
+npm 11.16.0-1
 openssh 10.3p1-1
 pipewire 1:1.6.7-1
 pipewire-alsa 1:1.6.7-1
 pipewire-pulse 1:1.6.7-1
-qemu-desktop 11.0.1-1
+qemu-desktop 11.0.2-1
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
 restic 0.19.0-1
