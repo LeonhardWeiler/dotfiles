@@ -17,6 +17,17 @@ Deine Aufgabe ist nicht nur Fehler zu beheben, sondern die komplette Konfigurati
 
 ---
 
+## HARTE MIGRATIONSVORGABEN (MUSS umgesetzt werden)
+
+- Entferne jedes bestehende autopairs Plugin vollständig.
+  → Ersetze es durch `echasnovski/mini.pairs` (keine Alternativen verwenden).
+
+- Ersetze `nvim-web-devicons` vollständig durch:
+  → `echasnovski/mini.icons`
+  Falls ein Plugin zwingend web-devicons erwartet, adaptiere die Konfiguration entsprechend oder finde eine kompatible Lösung.
+
+---
+
 ## LSP
 
 Nutze die neuen Neovim-0.11+-APIs.
