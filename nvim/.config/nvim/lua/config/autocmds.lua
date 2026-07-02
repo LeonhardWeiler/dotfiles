@@ -26,12 +26,10 @@ autocmd("TextYankPost", {
   end,
 })
 
--- Whitespace am Zeilenende beim Speichern entfernen
-autocmd("BufWritePre", {
-  group = augroup("TrimWhitespace", {}),
-  pattern = "*",
-  command = [[%s/\s\+$//e]],
-})
+-- Trailing-Whitespace wird bewusst NICHT per BufWritePre getrimmt: conform
+-- (Format-on-Save) uebernimmt das fuer formatierte Dateitypen. Ein eigener
+-- `%s/\s\+$//e` liefe redundant und wuerde ohne keeppatterns Suchhistorie
+-- und Cursor-Position veraendern.
 
 -- Weitere nützliche Einstellungen für Textdateien
 vim.api.nvim_create_autocmd("FileType", {
