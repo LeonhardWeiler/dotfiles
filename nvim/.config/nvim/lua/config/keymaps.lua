@@ -19,12 +19,7 @@ vim.keymap.set("n", "N", "Nzzzv")
 -- Replace ohne Register zu überschreiben
 vim.keymap.set("x", "<leader>r", "\"_dp")
 
--- Yank in System-Clipboard
-vim.keymap.set('n','y','"+y')
-vim.keymap.set('n','yy','"+yy')
-vim.keymap.set('n','Y','"+Y')
-vim.keymap.set('x','y','"+y')
-vim.keymap.set('x','Y','"+Y')
+-- System-Clipboard: siehe vim.opt.clipboard = "unnamedplus" in options.lua
 
 -- Suche und Ersetze aktuellem Wort
 vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
