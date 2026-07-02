@@ -259,13 +259,13 @@
         <span class="n">0</span><span class="l">hoch</span>
       </div>
       <div class="count mittel">
-        <span class="n">0</span><span class="l">mittel</span>
+        <span class="n">1</span><span class="l">mittel</span>
       </div>
       <div class="count niedrig">
-        <span class="n">0</span><span class="l">niedrig</span>
+        <span class="n">1</span><span class="l">niedrig</span>
       </div>
       <div class="count info">
-        <span class="n">0</span><span class="l">info</span>
+        <span class="n">1</span><span class="l">info</span>
       </div>
     </section>
 
@@ -303,11 +303,76 @@
 
     <h2 class="section" id="offen">1 · Offene Findings</h2>
 
-    <p class="empty">
-      Keine offenen Findings. Die zuvor gelisteten Punkte (LINT-1, LINT-2, CQ-1,
-      CQ-2, DOC-1, UX-1) sind behoben – UX-1 wurde durch Umlegen der
-      Standalone-Aktion auf <code>&lt;leader&gt;S</code> aufgelöst.
-    </p>
+    <div class="card mittel">
+      <div class="card-head">
+        <span class="id">UX-2</span>
+        <span class="badge mittel">mittel</span>
+        <span class="loc">lua/config/autocmds.lua:23–31</span>
+      </div>
+      <p>
+        Der <code>FileType</code>-Autocmd für
+        <code>markdown/text/txt/md</code> setzt <code>vim.opt.wrap</code> und
+        <code>vim.opt.linebreak</code> <strong>global</strong> und legt die
+        <code>j</code>/<code>k</code>→<code>gj</code>/<code>gk</code>-Maps ohne
+        <code>buffer</code>-Flag an. Beides <strong>leakt in andere
+        Buffer</strong>: Nach dem Öffnen einer Markdown-Datei bleibt
+        <code>wrap</code> auch in einem danach geöffneten Lua-Buffer aktiv und
+        <code>j</code> bleibt global auf <code>gj</code> umgebogen (empirisch
+        bestätigt). Dadurch wird die zeilenweise Navigation dauerhaft zur
+        „display-line"-Navigation, obwohl das nur für Prosa gewollt ist.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> Im Autocmd
+        <code>vim.opt_local.wrap</code>/<code>vim.opt_local.linebreak</code>
+        verwenden und die Keymaps mit <code>{ buffer = args.buf }</code> (bzw.
+        <code>buffer = true</code>) buffer-lokal setzen, damit die Einstellungen
+        auf den Markdown-Buffer beschränkt bleiben.
+      </p>
+    </div>
+
+    <div class="card niedrig">
+      <div class="card-head">
+        <span class="id">CQ-1</span>
+        <span class="badge niedrig">niedrig</span>
+        <span class="loc">lua/config/options.lua:33–35</span>
+      </div>
+      <p>
+        Die <code>vim.g.netrw_*</code>-Optionen
+        (<code>netrw_browse_split</code>, <code>netrw_banner</code>,
+        <code>netrw_winsize</code>) stammen aus einem Pre-oil-Setup. Da
+        <code>oil.nvim</code> (<code>lazy = false</code>) als Dateimanager netrw
+        für das Verzeichnis-Browsing übernimmt, sind diese Einstellungen im
+        normalen Workflow wirkungslos – toter Konfigurationsrest.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> Die drei <code>netrw_*</code>-Zeilen
+        entfernen (oder, falls netrw bewusst als Fallback bleiben soll, als
+        solches kommentieren).
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head">
+        <span class="id">INFO-1</span>
+        <span class="badge info">info</span>
+        <span class="loc">lua/plugins/harpoon.lua:1–15</span>
+      </div>
+      <p>
+        Harpoon wird ohne <code>branch</code> eingebunden und zieht damit
+        <code>master</code> = die <strong>Harpoon-1-API</strong>
+        (<code>require("harpoon.mark")</code> /
+        <code>require("harpoon.ui")</code>). Harpoon&nbsp;1 gilt als
+        eingefroren; aktiv gepflegt wird Harpoon&nbsp;2 (Branch
+        <code>harpoon2</code>) mit
+        <code>require("harpoon"):setup()</code> und
+        <code>list:add()</code>/<code>ui.toggle_quick_menu(list)</code>.
+      </p>
+      <p class="rec">
+        <strong>Empfehlung:</strong> Bei Gelegenheit auf Harpoon&nbsp;2
+        umstellen (Branch <code>harpoon2</code>, neue API). Funktional besteht
+        aktuell kein Defekt – rein Modernisierung.
+      </p>
+    </div>
 
     <h2 class="section" id="stark">2 · Was schon stark ist</h2>
 
