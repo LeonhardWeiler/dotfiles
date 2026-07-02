@@ -4,11 +4,19 @@ export HISTFILE=~/.config/bash/.bash_history
 mkdir -p "$(dirname "$HISTFILE")"
 shopt -s histappend
 
-battery_status() {
-  echo "$(acpi -b | grep -P -o '[0-9]+(?=%)')%"
+BAT_CAPACITY=/sys/class/power_supply/BAT0/capacity
+# Akkustand vor jedem Prompt aus sysfs lesen (Bash-Builtin, kein acpi-Subprozess).
+# Ohne Akku (Desktop) bleibt die Anzeige leer statt eines nackten "%".
+update_battery() {
+  if [ -r "$BAT_CAPACITY" ]; then
+    battery="$(<"$BAT_CAPACITY")% "
+  else
+    battery=""
+  fi
 }
+PROMPT_COMMAND=update_battery
 
-PS1='$(battery_status) \w \$ '
+PS1='${battery}\w \$ '
 
 export PATH="$HOME/.config/scripts:$PATH"
 export EDITOR="nvim"
