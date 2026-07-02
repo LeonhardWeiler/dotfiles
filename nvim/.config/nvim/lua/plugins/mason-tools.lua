@@ -15,6 +15,10 @@ return {
       "goimports",
       "gofumpt",
       "typstyle",
+      -- Linter (nvim-lint); biome deckt JS/TS bereits ab
+      "selene",
+      "golangci-lint",
+      "markdownlint",
     },
   },
 }
