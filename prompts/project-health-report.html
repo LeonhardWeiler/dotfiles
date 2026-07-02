@@ -303,7 +303,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">2</span><span class="l">Niedrig</span>
+          <span class="n">1</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -319,29 +319,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card niedrig">
-          <div class="card-head">
-            <span class="badge niedrig">niedrig</span>
-            <span class="id">DOC-1</span>
-            <span class="loc">Repo-Root (keine <code>CLAUDE.md</code>)</span>
-          </div>
-          <p>
-            Der nvim-Unterordner hat eine gepflegte <code>CLAUDE.md</code>, das
-            Repo-Root aber nicht — obwohl hier die nicht-triviale Logik liegt
-            (Stow-Paketerkennung in <code>install.sh</code>, Root- vs.
-            User-Pakete, <code>IGNORE_PKGS</code>, die
-            Hyprland-Workspace-Automatisierung). Ohne Root-<code
-              >CLAUDE.md</code
-            >
-            muss sich jede Session diese Konventionen neu erarbeiten.
-          </p>
-          <div class="rec">
-            <b>Empfehlung:</b> Root-<code>CLAUDE.md</code> via
-            <code>create-claude-md</code> anlegen (Stow-Konventionen,
-            Skript-Struktur, Verifikations-/Install-Befehle).
-          </div>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">
