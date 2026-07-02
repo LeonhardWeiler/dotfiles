@@ -22,11 +22,12 @@ autocmd("TextYankPost", {
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "markdown", "text", "txt", "md" },
-  callback = function()
-    vim.opt.wrap = true
-    vim.opt.linebreak = true
-    vim.keymap.set("n", "j", "gj", { noremap = true })
-    vim.keymap.set("n", "k", "gk", { noremap = true })
+  callback = function(args)
+    -- buffer-lokal, damit wrap/linebreak und die gj/gk-Maps nicht in andere Buffer leaken
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.keymap.set("n", "j", "gj", { noremap = true, buffer = args.buf })
+    vim.keymap.set("n", "k", "gk", { noremap = true, buffer = args.buf })
   end,
 })
 
