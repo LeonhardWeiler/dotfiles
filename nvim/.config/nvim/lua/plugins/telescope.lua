@@ -6,8 +6,8 @@ return {
 
     -- Keymaps
     vim.keymap.set('n', '<leader>sf', function()
-      builtin.find_files({ hidden = true, no_ignore = true })
-    end, { desc = "Find files (inkl. hidden)" })
+      builtin.find_files({ hidden = true })
+    end, { desc = "Find files (inkl. hidden, ohne gitignore)" })
 
     vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = "Live grep" })
     vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = "Help tags" })
