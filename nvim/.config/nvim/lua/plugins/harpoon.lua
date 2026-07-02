@@ -4,13 +4,15 @@ return {
     local mark = require("harpoon.mark")
     local ui = require("harpoon.ui")
 
-    vim.keymap.set("n", "<leader>a", mark.add_file)
-    vim.keymap.set("n", "<leader>h", ui.toggle_quick_menu)
+    vim.keymap.set("n", "<leader>a", mark.add_file, { desc = "Harpoon: Datei anheften" })
+    vim.keymap.set("n", "<leader>h", ui.toggle_quick_menu, { desc = "Harpoon: Menü" })
 
-    vim.keymap.set("n", "<C-t>", function() ui.nav_file(1) end)
-    vim.keymap.set("n", "<C-h>", function() ui.nav_file(2) end)
-    vim.keymap.set("n", "<C-n>", function() ui.nav_file(3) end)
-    vim.keymap.set("n", "<C-s>", function() ui.nav_file(4) end)
+    -- Sequentielle, kollisionsarme Slots: <leader>1 … <leader>4.
+    -- (Ersetzt <C-h>/<C-s>, die Fenster-links bzw. Speichern belegten.)
+    for i = 1, 4 do
+      vim.keymap.set("n", "<leader>" .. i, function() ui.nav_file(i) end,
+        { desc = "Harpoon: Datei " .. i })
+    end
   end
 }
 
