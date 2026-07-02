@@ -265,7 +265,7 @@
         <span class="n">0</span><span class="l">niedrig</span>
       </div>
       <div class="count info">
-        <span class="n">1</span><span class="l">info</span>
+        <span class="n">0</span><span class="l">info</span>
       </div>
     </section>
 
@@ -303,28 +303,12 @@
 
     <h2 class="section" id="offen">1 · Offene Findings</h2>
 
-    <div class="card info">
-      <div class="card-head">
-        <span class="id">INFO-1</span>
-        <span class="badge info">info</span>
-        <span class="loc">lua/plugins/harpoon.lua:1–15</span>
-      </div>
-      <p>
-        Harpoon wird ohne <code>branch</code> eingebunden und zieht damit
-        <code>master</code> = die <strong>Harpoon-1-API</strong>
-        (<code>require("harpoon.mark")</code> /
-        <code>require("harpoon.ui")</code>). Harpoon&nbsp;1 gilt als
-        eingefroren; aktiv gepflegt wird Harpoon&nbsp;2 (Branch
-        <code>harpoon2</code>) mit
-        <code>require("harpoon"):setup()</code> und
-        <code>list:add()</code>/<code>ui.toggle_quick_menu(list)</code>.
-      </p>
-      <p class="rec">
-        <strong>Empfehlung:</strong> Bei Gelegenheit auf Harpoon&nbsp;2
-        umstellen (Branch <code>harpoon2</code>, neue API). Funktional besteht
-        aktuell kein Defekt – rein Modernisierung.
-      </p>
-    </div>
+    <p class="empty">
+      Keine offenen Findings. Die zuletzt gelisteten Punkte (UX-2, CQ-1,
+      INFO-1) sind behoben – UX-2 durch buffer-lokale markdown-Optionen, CQ-1
+      durch Entfernen der toten netrw-Config, INFO-1 durch die Migration auf
+      Harpoon&nbsp;2.
+    </p>
 
     <h2 class="section" id="stark">2 · Was schon stark ist</h2>
 

@@ -45,7 +45,7 @@ lua/plugins/             je eine Datei pro Plugin/Bereich (auto-import)
 | Theme         | kanagawa.nvim |
 | Dateimanager  | oil.nvim |
 | Suche         | telescope.nvim, plenary.nvim |
-| Navigation    | harpoon |
+| Navigation    | harpoon (`harpoon2`) |
 | Statusline    | lualine.nvim |
 | Git           | gitsigns.nvim |
 | Kommentare    | Comment.nvim |
