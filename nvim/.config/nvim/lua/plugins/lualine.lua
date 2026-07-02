@@ -25,7 +25,7 @@ return {
         lualine_b = {'branch', 'diff', 'diagnostics'},
         lualine_c = {
           {
-            '',
+            'filename',
             file_status = true,
             newfile_status = true,
             path = 1,
@@ -37,11 +37,11 @@ return {
             }
           },
         },
-        lualine_x = {'filename'},
+        lualine_x = {'encoding', 'fileformat'},
         lualine_y = {'filetype'},
         lualine_z = {'location'}
       },
-      extensions = {'fugitive', 'mason', 'trouble'}
+      extensions = {'mason'}
     }
   end
 }
