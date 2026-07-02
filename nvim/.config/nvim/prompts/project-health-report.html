@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Health Report – Neovim Config</title>
+<style>
+  :root {
+    --bg: #16161d;
+    --bg-card: #1f1f28;
+    --bg-elev: #2a2a37;
+    --fg: #dcd7ba;
+    --fg-dim: #9e9b93;
+    --border: #363646;
+    --accent: #7e9cd8;
+    --krit: #e82424;
+    --hoch: #ff9e3b;
+    --mittel: #e6c384;
+    --niedrig: #7aa89f;
+    --info: #7e9cd8;
+    --good: #98bb6c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0 1rem 4rem;
+    background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6; max-width: 980px; margin: 0 auto;
+  }
+  header { padding: 2.5rem 0 1rem; border-bottom: 1px solid var(--border); }
+  h1 { margin: 0 0 .3rem; font-size: 1.9rem; color: #fff; }
+  .meta { color: var(--fg-dim); font-size: .9rem; }
+  .meta code { background: var(--bg-elev); padding: .1rem .4rem; border-radius: 4px; }
+  .summary { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.4rem 0; }
+  .count {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: .6rem 1rem; min-width: 78px;
+  }
+  .count .n { font-size: 1.5rem; font-weight: 700; }
+  .count .l { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-dim); }
+  .count.krit .n { color: var(--krit); }
+  .count.hoch .n { color: var(--hoch); }
+  .count.mittel .n { color: var(--mittel); }
+  .count.niedrig .n { color: var(--niedrig); }
+  .count.info .n { color: var(--info); }
+  nav.toc {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.4rem; margin: 1.4rem 0;
+  }
+  nav.toc h2 { margin: 0 0 .6rem; font-size: 1rem; color: var(--fg-dim); text-transform: uppercase; letter-spacing: .05em; }
+  nav.toc ol { margin: 0; padding-left: 1.3rem; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  h2.section { margin: 2.4rem 0 1rem; font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-left-width: 4px; border-radius: 8px;
+    padding: 1rem 1.2rem; margin: .9rem 0;
+  }
+  .card.krit { border-left-color: var(--krit); }
+  .card.hoch { border-left-color: var(--hoch); }
+  .card.mittel { border-left-color: var(--mittel); }
+  .card.niedrig { border-left-color: var(--niedrig); }
+  .card.info { border-left-color: var(--info); }
+  .card.good { border-left-color: var(--good); }
+  .card-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .4rem; }
+  .card-head .id { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 700; color: #fff; }
+  .badge {
+    font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    padding: .15rem .5rem; border-radius: 20px; color: #16161d;
+  }
+  .badge.krit { background: var(--krit); color: #fff; }
+  .badge.hoch { background: var(--hoch); }
+  .badge.mittel { background: var(--mittel); }
+  .badge.niedrig { background: var(--niedrig); }
+  .badge.info { background: var(--info); }
+  .loc { font-family: ui-monospace, Menlo, monospace; font-size: .82rem; color: var(--fg-dim); }
+  .card p { margin: .5rem 0; }
+  .card .rec { margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--border); }
+  .card .rec strong { color: var(--good); }
+  code { background: var(--bg-elev); padding: .1rem .35rem; border-radius: 4px; font-size: .85em; }
+  .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.4rem 0; font-size: .82rem; color: var(--fg-dim); }
+  .legend span { display: inline-flex; align-items: center; gap: .35rem; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--fg-dim); font-size: .82rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🩺 Project Health Report</h1>
+  <div class="meta">
+    Neovim-Konfiguration · Momentaufnahme vom <strong>2026-07-02</strong> ·
+    Branch <code>main</code> · Neovim <code>v0.12.3</code>
+  </div>
+</header>
+
+<section class="summary">
+  <div class="count krit"><span class="n">0</span><span class="l">kritisch</span></div>
+  <div class="count hoch"><span class="n">1</span><span class="l">hoch</span></div>
+  <div class="count mittel"><span class="n">2</span><span class="l">mittel</span></div>
+  <div class="count niedrig"><span class="n">5</span><span class="l">niedrig</span></div>
+  <div class="count info"><span class="n">2</span><span class="l">info</span></div>
+</section>
+
+<div class="legend">
+  <span><span class="dot" style="background:var(--krit)"></span>kritisch – bricht Nutzung / Datenverlust</span>
+  <span><span class="dot" style="background:var(--hoch)"></span>hoch – klarer Defekt / Fehler</span>
+  <span><span class="dot" style="background:var(--mittel)"></span>mittel – spürbare Reibung</span>
+  <span><span class="dot" style="background:var(--niedrig)"></span>niedrig – Qualität / Aufräumen</span>
+  <span><span class="dot" style="background:var(--info)"></span>info – Hinweis / Modernisierung</span>
+</div>
+
+<nav class="toc">
+  <h2>Inhalt</h2>
+  <ol>
+    <li><a href="#offen">Offene Findings</a></li>
+    <li><a href="#stark">Was schon stark ist</a></li>
+    <li><a href="#entschieden">Bewusst entschieden</a></li>
+  </ol>
+</nav>
+
+<h2 class="section" id="offen">1 · Offene Findings</h2>
+
+<!-- HOCH -->
+<div class="card hoch">
+  <div class="card-head">
+    <span class="id">TS-1</span>
+    <span class="badge hoch">hoch</span>
+    <span class="loc">lua/plugins/treesitter.lua · lazy-lock.json</span>
+  </div>
+  <p><code>nvim-treesitter</code> ist auf den <code>master</code>-Branch gepinnt und wird per
+  <code>require('nvim-treesitter.configs').setup{…}</code> konfiguriert. Der master-Branch ist seit 2025
+  eingefroren und offiziell <em>nicht</em> mehr für Neovim 0.11+/0.12 vorgesehen – hier läuft
+  <strong>v0.12.3</strong>. Genau daraus entsteht der in <code>prompts/TODO.md</code> festgehaltene
+  Laufzeitfehler des Highlighters
+  (<code>treesitter.lua:197: attempt to call method 'range' (a nil value)</code>): die alten,
+  über master installierten Parser sind ABI-inkompatibel zur neueren Treesitter-Core der Runtime.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Auf den <code>main</code>-Branch migrieren
+  (neue Setup-API ohne <code>configs</code>-Modul, explizite <code>ensure_installed</code>-Parserliste)
+  – oder als Sofortmaßnahme sämtliche Parser mit <code>:TSUpdate</code> gegen die aktuelle Neovim-Version
+  neu bauen. Solange master genutzt wird, den Lock bewusst pinnen.</p>
+</div>
+
+<!-- MITTEL -->
+<div class="card mittel">
+  <div class="card-head">
+    <span class="id">UX-1</span>
+    <span class="badge mittel">mittel</span>
+    <span class="loc">lua/plugins/harpoon.lua:10-13</span>
+  </div>
+  <p>Die Harpoon-Navigation belegt im Normal-Mode <code>&lt;C-t&gt;</code>→Datei 1,
+  <code>&lt;C-h&gt;</code>→Datei 2, <code>&lt;C-n&gt;</code>→Datei 3, <code>&lt;C-s&gt;</code>→Datei 4.
+  Zwei Reibungspunkte: (a) <code>&lt;C-h&gt;</code> überschreibt die verbreitete
+  Fenster-links-Navigation, <code>&lt;C-s&gt;</code> die gewohnte Speichern-Konvention; (b) die
+  Zuordnung Taste→Slot ist nicht sequentiell (t=1, h=2, n=3, s=4) und dadurch schwer zu merken.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Auf eine einprägsame, kollisionsarme Reihe umstellen
+  (z. B. <code>&lt;leader&gt;1</code>…<code>&lt;leader&gt;4</code>) und <code>&lt;C-h&gt;</code>/<code>&lt;C-s&gt;</code>
+  ihren Standardfunktionen belassen.</p>
+</div>
+
+<div class="card mittel">
+  <div class="card-head">
+    <span class="id">UX-2</span>
+    <span class="badge mittel">mittel</span>
+    <span class="loc">lua/plugins/telescope.lua:8-10</span>
+  </div>
+  <p><code>find_files</code> wird mit <code>hidden = true, no_ignore = true</code> aufgerufen. Dadurch
+  erscheinen in jeder Dateisuche auch <code>.gitignore</code>-Ausschlüsse und der komplette
+  <code>.git/</code>-Ordner (sowie z. B. <code>node_modules/</code>), was die Suche in echten Projekten
+  unübersichtlich macht. In <code>prompts/TODO.md</code> (Punkt 2) ist genau dieser Wunsch notiert.</p>
+  <div class="rec"><strong>Empfehlung:</strong> <code>no_ignore = true</code> entfernen, damit
+  gitignorierte Dateien ausgeblendet werden; <code>hidden = true</code> kann bleiben, um Dotfiles zu zeigen.
+  Optional <code>.git/</code> per <code>file_ignore_patterns</code> ausschließen.</p>
+</div>
+
+<!-- NIEDRIG -->
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">QUAL-1</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">lua/config/lazy.lua:20 · lua/config/keymaps.lua:2</span>
+  </div>
+  <p><code>vim.g.mapleader = " "</code> wird zweimal gesetzt. In <code>lazy.lua</code> ist es korrekt
+  (vor dem Laden von lazy.nvim); die Wiederholung in <code>keymaps.lua</code> ist redundant und suggeriert
+  fälschlich, der Ort spiele hier eine Rolle.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Die Zeile in <code>keymaps.lua</code> entfernen.</div>
+</div>
+
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">QUAL-2</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">lua/plugins/lualine.lua:26-44</span>
+  </div>
+  <p>Zwei tote/kaputte Stellen in der Statusline: (a) <code>extensions = {'fugitive', 'mason', 'trouble'}</code>
+  referenziert <code>fugitive</code> und <code>trouble</code>, die in keiner Plugin-Spec installiert sind
+  (nur <code>mason</code> existiert). (b) <code>lualine_c</code> enthält eine Komponente mit leerem Namen
+  (<code>''</code>) samt Symbolen, die nichts rendert, während der Dateiname stattdessen unter
+  <code>lualine_x = {'filename'}</code> ohne die konfigurierten Symbole angezeigt wird.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Nicht installierte Extensions entfernen; die
+  Dateinamen-Komponente korrekt als <code>'filename'</code> in <code>lualine_c</code> mit den gewünschten
+  Symbolen konfigurieren und die Dublette in <code>lualine_x</code> auflösen.</p>
+</div>
+
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">QUAL-3</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">lua/config/autocmds.lua:6-19</span>
+  </div>
+  <p>In Zeile 6 steht ein an ein KI-Tool gerichteter Instruktions-Kommentar
+  („rewrite this Toggle Zathura funktion …") mitten im produktiven Code. Die Funktion
+  <code>ToggleZathura</code> überlappt inhaltlich mit <code>OpenBrowser</code>; laut
+  <code>prompts/TODO.md</code> (Punkt 1) soll sie zugunsten einer einzigen, dateityp-unabhängigen
+  <code>OpenBrowser</code>-Funktion entfallen.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Instruktions-Kommentar entfernen und die Zathura/Browser-Öffner
+  zu einer Funktion zusammenführen (Absicht aus dem TODO umsetzen).</div>
+</div>
+
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">QUAL-4</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">lua/config/keymaps.lua:24-28</span>
+  </div>
+  <p>Der System-Clipboard-Yank wird über manuelle Mappings von <code>y</code>, <code>yy</code>,
+  <code>Y</code> (Normal + Visual) auf <code>"+…</code> nachgebaut. Das ist umständlich und deckt nicht
+  alle Fälle konsistent ab (z. B. <code>d</code>/<code>c</code>/<code>p</code> nutzen weiterhin das
+  unbenannte Register), was zu überraschendem Verhalten beim Einfügen führen kann.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Falls generell das System-Clipboard gewünscht ist,
+  die fünf Mappings durch <code>vim.opt.clipboard = "unnamedplus"</code> ersetzen – kürzer und konsistent.</div>
+</div>
+
+<div class="card niedrig">
+  <div class="card-head">
+    <span class="id">DOC-1</span>
+    <span class="badge niedrig">niedrig</span>
+    <span class="loc">Repo-Root (fehlend)</span>
+  </div>
+  <p>Es gibt weder <code>README.md</code>, <code>CLAUDE.md</code> noch eine sonstige Doku im nvim-Ordner.
+  Die zahlreichen eigenen Keymaps (Harpoon-Slots, <code>&lt;leader&gt;</code>-Suchen, PDF/Browser-Öffner)
+  und die Modulstruktur sind nirgends erklärt.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Eine <code>CLAUDE.md</code> via Skill
+  <code>create-claude-md</code> anlegen (Struktur, Keymap-Übersicht, Plugin-Liste). Dieser Report nimmt
+  selbst keine Änderung daran vor.</div>
+</div>
+
+<!-- INFO -->
+<div class="card info">
+  <div class="card-head">
+    <span class="id">PKG-1</span>
+    <span class="badge info">info</span>
+    <span class="loc">lazy-lock.json:8</span>
+  </div>
+  <p><code>lazy-lock.json</code> enthält einen Eintrag für <code>copilot.vim</code>, der in keiner
+  Plugin-Spec unter <code>lua/plugins/</code> referenziert wird. Damit ist der Lock-Eintrag verwaist;
+  lazy.nvim behandelt das Plugin als nicht verwaltet (Kandidat für <code>:Lazy clean</code>).</p>
+  <div class="rec"><strong>Empfehlung:</strong> Entweder eine Spec für <code>copilot.vim</code> ergänzen
+  (falls gewünscht) oder den verwaisten Eintrag über <code>:Lazy clean</code> aus dem Lock entfernen.</div>
+</div>
+
+<div class="card info">
+  <div class="card-head">
+    <span class="id">MOD-1</span>
+    <span class="badge info">info</span>
+    <span class="loc">gesamte Config</span>
+  </div>
+  <p>Es ist kein dedizierter Formatter (z. B. <code>conform.nvim</code>) und kein Linter
+  (<code>nvim-lint</code>) eingebunden – aktuell übernimmt nur ein <code>BufWritePre</code>-Autocmd das
+  Trimmen von Trailing-Whitespace. <code>prompts/refactor.md</code> skizziert eine umfassendere
+  Modernisierung (blink.cmp, mini.pairs/mini.icons, lazydev, conform, nvim-lint). Kein Defekt, aber
+  Ausbaupotenzial.</p>
+  <div class="rec"><strong>Empfehlung:</strong> Bei Bedarf schrittweise umsetzen; die Ziele aus
+  <code>refactor.md</code> als Roadmap nutzen. Der Whitespace-Autocmd könnte zusätzlich Cursor/View
+  bewahren (<code>keeppatterns</code> + Position sichern).</div>
+</div>
+
+<h2 class="section" id="stark">2 · Was schon stark ist</h2>
+
+<div class="card good">
+  <div class="card-head"><span class="id">Saubere Modulstruktur</span></div>
+  <p><code>init.lua</code> lädt gezielt <code>config.lazy</code> → <code>options</code> → <code>keymaps</code>
+  → <code>autocmds</code>; Plugins liegen einzeln unter <code>lua/plugins/</code> und werden per
+  <code>{ import = "plugins" }</code> automatisch eingesammelt. Übersichtlich und gut wartbar.</p>
+</div>
+<div class="card good">
+  <div class="card-head"><span class="id">Robuster lazy.nvim-Bootstrap</span></div>
+  <p>Der Bootstrap in <code>lazy.lua</code> nutzt <code>vim.uv</code> mit <code>vim.loop</code>-Fallback,
+  behandelt Clone-Fehler sauber und deaktiviert die störende <code>change_detection</code>-Notification.</p>
+</div>
+<div class="card good">
+  <div class="card-head"><span class="id">Moderne LSP-Einrichtung</span></div>
+  <p><code>lsp.lua</code> nutzt bereits die neue <code>vim.lsp.config("*", …)</code>-API (Neovim 0.11+),
+  reicht cmp-Capabilities korrekt weiter und setzt Buffer-lokale Keymaps sauber per
+  <code>LspAttach</code>-Autocmd mit eigener augroup.</p>
+</div>
+<div class="card good">
+  <div class="card-head"><span class="id">Durchdachte Editor-Defaults</span></div>
+  <p><code>options.lua</code> setzt sinnvolle Grundlagen: <code>scrolloff=10</code>, stets sichtbare
+  <code>signcolumn</code>, deaktivierte Swap/Backup-Dateien, konsistente 2-Space-Indents und ein
+  kompiliertes kanagawa-Theme. Dazu Yank-Highlight und zentriertes Scrollen/Suchen.</p>
+</div>
+<div class="card good">
+  <div class="card-head"><span class="id">Guter Plugin-Kern</span></div>
+  <p>oil.nvim als Datei-Manager (mit Trash-Support), gitsigns, Telescope, Harpoon, Comment.nvim,
+  autopairs und typst-preview bilden eine schlanke, praxistaugliche Auswahl ohne Overhead.</p>
+</div>
+
+<h2 class="section" id="entschieden">3 · Bewusst entschieden</h2>
+
+<div class="card info">
+  <div class="card-head"><span class="id">Maus deaktiviert</span></div>
+  <p><code>vim.opt.mouse = ""</code> schaltet die Maus bewusst komplett ab – konsequente
+  Keyboard-First-Nutzung, kein Finding.</p>
+</div>
+<div class="card info">
+  <div class="card-head"><span class="id">hlsearch aus, incsearch an</span></div>
+  <p>Suchtreffer werden nicht dauerhaft hervorgehoben (<code>hlsearch=false</code>), nur inkrementell –
+  bewusste Ruhe im Buffer.</p>
+</div>
+<div class="card info">
+  <div class="card-head"><span class="id">nvim-cmp statt blink.cmp</span></div>
+  <p>Die Completion läuft weiterhin über <code>nvim-cmp</code> mit LuaSnip. Voll funktionsfähig und
+  gepflegt; der Wechsel zu blink.cmp (siehe <code>refactor.md</code>) ist optional, kein Mangel.</p>
+</div>
+
+<footer>
+  Automatisch erstellter Health-Check · Momentaufnahme, keine Historie ·
+  Betrachtet ausschließlich den Neovim-Ordner (<code>nvim/.config/nvim</code>).
+</footer>
+</body>
+</html>
