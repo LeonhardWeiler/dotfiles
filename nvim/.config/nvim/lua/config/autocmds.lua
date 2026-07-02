@@ -23,9 +23,12 @@ autocmd("TextYankPost", {
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "markdown", "text", "txt", "md" },
   callback = function(args)
-    -- buffer-lokal, damit wrap/linebreak und die gj/gk-Maps nicht in andere Buffer leaken
+    -- buffer-lokal, damit wrap/linebreak/spell und die gj/gk-Maps nicht in andere Buffer leaken
     vim.opt_local.wrap = true
     vim.opt_local.linebreak = true
+    -- Rechtschreibung nur beim Schreiben von Prosa (<leader>sl liefert dann Vorschlaege)
+    vim.opt_local.spell = true
+    vim.opt_local.spelllang = "en,de"
     vim.keymap.set("n", "j", "gj", { noremap = true, buffer = args.buf })
     vim.keymap.set("n", "k", "gk", { noremap = true, buffer = args.buf })
   end,

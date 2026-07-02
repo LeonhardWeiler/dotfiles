@@ -262,7 +262,7 @@
         <span class="n">0</span><span class="l">mittel</span>
       </div>
       <div class="count niedrig">
-        <span class="n">1</span><span class="l">niedrig</span>
+        <span class="n">0</span><span class="l">niedrig</span>
       </div>
       <div class="count info">
         <span class="n">3</span><span class="l">info</span>
@@ -309,29 +309,6 @@
       schreiben, projektweit navigieren &amp; refactoren) und auf fehlende bzw.
       besser umsetzbare Bausteine geprüft.
     </p>
-
-    <div class="card niedrig">
-      <div class="card-head">
-        <span class="id">UX-4</span>
-        <span class="badge niedrig">niedrig</span>
-        <span class="loc">lua/config/autocmds.lua:23–33 · telescope.lua:15</span>
-      </div>
-      <p>
-        <strong>Rechtschreibprüfung nur halb verkabelt.</strong> Es gibt eine
-        Keymap <code>&lt;leader&gt;sl</code> → <code>spell_suggest</code>, aber
-        <code>spell</code> wird nirgends aktiviert (zur Laufzeit
-        <code>false</code>). Beim Schreiben von Markdown/Text siehst du also
-        <em>keine</em> markierten Tippfehler – die Vorschlags-Keymap greift ins
-        Leere bzw. wirkt nur zufällig auf das Wort unter dem Cursor.
-      </p>
-      <p class="rec">
-        <strong>Empfehlung:</strong> Im vorhandenen
-        <code>markdown/text</code>-<code>FileType</code>-Autocmd
-        <code>vim.opt_local.spell = true</code> (und z. B.
-        <code>spelllang = "en,de"</code>) setzen, damit Rechtschreibung genau
-        dort greift, wo Prosa geschrieben wird.
-      </p>
-    </div>
 
     <div class="card info">
       <div class="card-head">
