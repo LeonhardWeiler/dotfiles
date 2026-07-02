@@ -13,7 +13,13 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 vim.keymap.set("x", "<leader>r", '"_dp')
 
-vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+-- <leader>S (nicht <leader>s), damit <leader>s… als Telescope-Präfix kollisionsfrei bleibt
+vim.keymap.set(
+  "n",
+  "<leader>S",
+  [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
+  { desc = "Wort unter Cursor suchen & ersetzen" }
+)
 
 vim.keymap.set("n", "<Backspace>", "<Nop>")
 vim.keymap.set("n", "<F1>", "<Nop>")
