@@ -1,0 +1,13 @@
+#!/bin/bash
+
+PERCENT=$(cat /sys/class/power_supply/BAT0/capacity)
+
+if [ "$PERCENT" -lt 10 ]; then
+    notify-send \
+      -h string:x-canonical-private-synchronous:bat \
+      -h int:value:"$PERCENT" \
+      "Battery" "${PERCENT}%" \
+      -t 0 \
+      -u critical
+fi
+

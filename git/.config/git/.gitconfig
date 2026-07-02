@@ -1,0 +1,10 @@
+[user]
+	email = Laser_Leo@hotmail.com
+	name = Leonhard Weiler
+	signingkey = /home/leo/.ssh/id_ed25519.pub
+[core]
+	editor = nvim
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true

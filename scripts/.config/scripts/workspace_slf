@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# workspace_slf — stellt den kompletten SLF-AI-Workspace her.
+#
+# Zielzustand (Monitor eDP-1):
+#   WS1  links: zen            | rechts: alacritty (claude, bypass-all) in ~/files/projects/slf
+#   WS2  links: zen (Review-HTML + 2x localhost:5173 als Tabs)
+#        rechts oben: alacritty `nvim .`   | rechts unten: alacritty (Shell) in slf
+#   WS3  links: alacritty `nix develop` -> frontend -> `bun run dev`
+#        rechts: alacritty `nix develop` -> backend -> `air`
+#
+# Verhalten: master-Layout, Terminals immer frisch, zen-Fenster werden wieder-
+# verwendet bzw. nur ergaenzt (nie geschlossen), alle sonstigen Fremdfenster
+# werden geschlossen. Idempotent: liegt zen schon auf dem Ziel-WS, bleibt es.
+
+set -o pipefail
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=/home/leo/.config/scripts/lib_hypr.sh
+. "$DIR/lib_hypr.sh"
+
+SLF="$HOME/files/projects/slf"
+MONITOR="eDP-1"
+REVIEW="file://$SLF/prompts/project-health-report.html"
+DEV_URL="http://localhost:5173"
+
+# Adressen aller von diesem Skript verwalteten Fenster (fuers Aufraeumen).
+MANAGED=()
+
+require_cmds hyprctl jq alacritty zen-browser setsid
+
+[ -d "$SLF" ] || die "Projektverzeichnis nicht gefunden: $SLF"
+
+# --- Selbstschutz ------------------------------------------------------------
+# Wird das Skript aus einem Terminal gestartet (tty), darf dieses Fenster beim
+# Aufraeumen nicht geschlossen werden. Beim Start per Keybind gibt es kein tty.
+SELF_GUARD=""
+if [ -t 2 ]; then
+  SELF_GUARD="$(hyprctl activewindow -j | jq -r '.address // empty')"
+fi
+
+# --- Workspaces auf den Zielmonitor binden -----------------------------------
+if hyprctl monitors -j | jq -e --arg m "$MONITOR" 'any(.[]; .name==$m)' >/dev/null; then
+  for ws in 1 2 3; do
+    hyprctl dispatch moveworkspacetomonitor "$ws $MONITOR" >/dev/null 2>&1
+  done
+else
+  log "Monitor $MONITOR nicht verbunden — nutze aktuellen Monitor."
+fi
+
+# --- Zen: WS2 (mit Tabs) -----------------------------------------------------
+z2="$(zen_on_ws 2)"
+if [ -z "$z2" ]; then
+  z2="$(spawn_zen_window --new-window "$REVIEW" --new-tab "$DEV_URL" --new-tab "$DEV_URL")" \
+    || die "Zen-Fenster fuer WS2 liess sich nicht oeffnen."
+  move_window_to_ws "$z2" 2
+fi
+MANAGED+=("$z2")
+
+# --- Zen: WS1 (normal) -------------------------------------------------------
+z1="$(zen_on_ws 1)"
+if [ -z "$z1" ]; then
+  # Bestehendes zen-Fenster (weder auf WS2 noch das WS2-Fenster) uebernehmen ...
+  z1="$(hyprctl clients -j \
+        | jq -r --arg z2 "$z2" '.[] | select(.class=="zen" and .workspace.id!=2 and .address!=$z2) | .address' \
+        | head -n1)"
+  # ... sonst ein neues oeffnen.
+  [ -z "$z1" ] && { z1="$(spawn_zen_window --new-window about:home)" \
+    || die "Zen-Fenster fuer WS1 liess sich nicht oeffnen."; }
+  move_window_to_ws "$z1" 1
+fi
+MANAGED+=("$z1")
+
+# --- Terminals: immer frisch starten ----------------------------------------
+# WS1 rechts: Claude Code im Bypass-All-Modus.
+a="$(spawn_alacritty "$SLF" "claude --dangerously-skip-permissions")" \
+  || die "Terminal (WS1) liess sich nicht starten."
+move_window_to_ws "$a" 1
+MANAGED+=("$a")
+
+# WS2 rechts oben: nvim.
+t="$(spawn_alacritty "$SLF" "nvim .")" \
+  || die "Terminal nvim (WS2) liess sich nicht starten."
+move_window_to_ws "$t" 2
+MANAGED+=("$t")
+
+# WS2 rechts unten: reine Shell im Projektverzeichnis.
+b="$(spawn_alacritty "$SLF" "")" \
+  || die "Terminal Shell (WS2) liess sich nicht starten."
+move_window_to_ws "$b" 2
+MANAGED+=("$b")
+
+# WS3 links: frontend dev server im nix-Shell.
+f="$(spawn_alacritty "$SLF" "nix develop -c bash -ic 'cd frontend && bun run dev'")" \
+  || die "Terminal frontend (WS3) liess sich nicht starten."
+move_window_to_ws "$f" 3
+MANAGED+=("$f")
+
+# WS3 rechts: backend (air) im nix-Shell.
+g="$(spawn_alacritty "$SLF" "nix develop -c bash -ic 'cd backend && air'")" \
+  || die "Terminal backend (WS3) liess sich nicht starten."
+move_window_to_ws "$g" 3
+MANAGED+=("$g")
+
+# --- Fremdfenster schliessen -------------------------------------------------
+# Alles Mapped ausser zen-Fenstern und den selbst verwalteten Fenstern.
+managed_list="$(printf '%s\n' "${MANAGED[@]}")"
+while read -r addr class; do
+  [ -n "$addr" ] || continue
+  [ "$class" = "zen" ] && continue
+  case "$managed_list" in *"$addr"*) continue ;; esac
+  [ -n "$SELF_GUARD" ] && [ "$addr" = "$SELF_GUARD" ] && continue
+  hyprctl dispatch closewindow "address:$addr" >/dev/null 2>&1
+done < <(hyprctl clients -j | jq -r '.[] | select(.mapped==true) | "\(.address) \(.class)"')
+
+# --- Endgueltige Anordnung (nach dem Aufraeumen) -----------------------------
+ensure_master "$z1" 1   # WS1: zen links Master, alacritty rechts
+ensure_master "$z2" 2   # WS2: zen links Master, nvim/shell rechts gestapelt
+ensure_master "$f"  3   # WS3: frontend links Master, backend rechts
+
+focus_ws 1
+log "SLF-Workspace hergestellt."

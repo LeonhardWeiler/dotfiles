@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dotfiles – Health Report</title>
+<style>
+  :root {
+    --bg: #141414;
+    --bg-card: #1c1c1c;
+    --bg-alt: #232323;
+    --fg: #dddddd;
+    --fg-dim: #9c9a9a;
+    --border: #595959;
+    --accent: #768e84;
+    --krit: #ff8888;
+    --krit-bg: #301010;
+    --hoch: #e8a06a;
+    --hoch-bg: #2e1f10;
+    --mittel: #d8c56a;
+    --mittel-bg: #2b2810;
+    --niedrig: #7fa8c9;
+    --niedrig-bg: #14203a;
+    --info: #9c9a9a;
+    --info-bg: #232323;
+    --good: #8fbf8f;
+    --good-bg: #14240f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -0.5px; }
+  .meta { color: var(--fg-dim); font-size: 13px; margin-bottom: 28px; }
+  .meta code { color: var(--accent); }
+
+  .summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 32px; }
+  .stat {
+    flex: 1 1 120px; background: var(--bg-card); border: 1px solid var(--border);
+    padding: 14px 16px; border-radius: 6px;
+  }
+  .stat .n { font-size: 26px; font-weight: 700; display: block; line-height: 1.1; }
+  .stat .l { font-size: 12px; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat.krit .n { color: var(--krit); }
+  .stat.hoch .n { color: var(--hoch); }
+  .stat.mittel .n { color: var(--mittel); }
+  .stat.niedrig .n { color: var(--niedrig); }
+
+  nav.toc {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px 22px; margin-bottom: 40px;
+  }
+  nav.toc h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-dim); margin: 0 0 10px; }
+  nav.toc ol { margin: 0; padding-left: 22px; }
+  nav.toc a { color: var(--fg); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  section { margin-bottom: 48px; }
+  section > h2 {
+    font-size: 20px; border-bottom: 1px solid var(--border);
+    padding-bottom: 8px; margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-left-width: 4px; border-radius: 6px;
+    padding: 16px 20px; margin-bottom: 16px;
+  }
+  .card.krit    { border-left-color: var(--krit); }
+  .card.hoch    { border-left-color: var(--hoch); }
+  .card.mittel  { border-left-color: var(--mittel); }
+  .card.niedrig { border-left-color: var(--niedrig); }
+  .card.info    { border-left-color: var(--info); }
+  .card.good    { border-left-color: var(--good); }
+
+  .card-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .card-head .id { font-weight: 700; font-size: 15px; }
+  .badge {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 2px 8px; border-radius: 4px; font-weight: 700;
+  }
+  .badge.krit    { color: var(--krit);    background: var(--krit-bg); }
+  .badge.hoch    { color: var(--hoch);    background: var(--hoch-bg); }
+  .badge.mittel  { color: var(--mittel);  background: var(--mittel-bg); }
+  .badge.niedrig { color: var(--niedrig); background: var(--niedrig-bg); }
+  .badge.info    { color: var(--info);    background: var(--info-bg); }
+  .badge.good    { color: var(--good);    background: var(--good-bg); }
+  .loc { color: var(--fg-dim); font-size: 12px; }
+  .loc code { color: var(--accent); background: var(--bg-alt); padding: 1px 5px; border-radius: 3px; }
+  .card p { margin: 8px 0 0; }
+  .card .rec { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .card .rec b { color: var(--accent); }
+  code { font-family: inherit; }
+  p code { background: var(--bg-alt); padding: 1px 5px; border-radius: 3px; color: var(--fg); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px;
+    color: var(--fg-dim); background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot.krit { background: var(--krit); } .dot.hoch { background: var(--hoch); }
+  .dot.mittel { background: var(--mittel); } .dot.niedrig { background: var(--niedrig); }
+  .dot.info { background: var(--info); }
+  footer { color: var(--fg-dim); font-size: 12px; text-align: center; margin-top: 48px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Dotfiles – Health Report</h1>
+  <div class="meta">
+    Momentaufnahme · Stand <strong>2026-07-02</strong> · Branch <code>main</code> ·
+    GNU-Stow-Dotfiles (Arch Linux / Hyprland)<br>
+    Geprüft: install-Skripte, Bash, Hyprland, nvim, Scripts, systemd, Alacritty, Mako, Rofi, Ly, mpv, Typst.
+    KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und fremde mpv-Lua-Scripts nur oberflächlich.<br>
+    <strong>Stand nach Umsetzung:</strong> alle Findings dieser Runde behoben.
+  </div>
+
+  <div class="summary">
+    <div class="stat krit"><span class="n">0</span><span class="l">Kritisch</span></div>
+    <div class="stat hoch"><span class="n">0</span><span class="l">Hoch</span></div>
+    <div class="stat mittel"><span class="n">0</span><span class="l">Mittel</span></div>
+    <div class="stat niedrig"><span class="n">0</span><span class="l">Niedrig</span></div>
+  </div>
+
+  <nav class="toc">
+    <h2>Inhalt</h2>
+    <ol>
+      <li><a href="#offen">Offene Findings</a></li>
+      <li><a href="#stark">Was schon stark ist</a></li>
+      <li><a href="#bewusst">Bewusst entschieden</a></li>
+    </ol>
+  </nav>
+
+  <!-- ================= OFFENE FINDINGS ================= -->
+  <section id="offen">
+    <h2>1 · Offene Findings</h2>
+
+    <div class="card good">
+      <div class="card-head"><span class="badge good">erledigt</span></div>
+      <p>
+        Aktuell keine offenen Findings. Alle zuvor dokumentierten Punkte
+        (SEC-1/2, BUG-1&ndash;5, SETUP-1, NVIM-1&ndash;4, BASH-1/2, CLEAN-1,
+        KM-1, REPO-1, LY-1, MPV-1, ROFI-1) wurden umgesetzt.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= WAS STARK IST ================= -->
+  <section id="stark">
+    <h2>2 · Was schon stark ist</h2>
+
+    <div class="card good">
+      <div class="card-head"><span class="badge good">stark</span>
+        <span class="loc"><code>scripts/.config/scripts/lib_hypr.sh</code> · <code>workspace_slf</code></span></div>
+      <p>
+        Die Workspace-Automatisierung ist bemerkenswert robust: Fenster werden über ihre stabile
+        <em>Adresse</em> statt über fragile Titel angesprochen, neue Fenster via Adress-Diff erkannt,
+        es gibt Timeout/Poll-Logik (<code>wait_for_new_window</code>), einen <code>SELF_GUARD</code>
+        gegen das Schließen des eigenen Terminals, idempotentes Verhalten und Fehlermeldungen als
+        Rofi-Popup. Sauber dokumentiert und modular (Lib + Runner).
+      </p>
+    </div>
+
+    <div class="card good">
+      <div class="card-head"><span class="badge good">stark</span>
+        <span class="loc"><code>install.sh</code></span></div>
+      <p>
+        Doppelte Bestätigungs-Prompts vor destruktiven Aktionen, saubere Trennung von Root- und
+        User-Paketen, Nutzung von <code>stow -R</code> (Restow) und automatische Paketerkennung über
+        die Verzeichnisstruktur.
+      </p>
+    </div>
+
+    <div class="card good">
+      <div class="card-head"><span class="badge good">stark</span>
+        <span class="loc">alacritty · mako · rofi · hyprlock</span></div>
+      <p>
+        Durchgängig konsistentes, dunkles Farbschema (<code>#141414</code> / <code>#dddddd</code> /
+        Akzent <code>#768e84</code>) über alle UI-Komponenten hinweg – wirkt wie aus einem Guss.
+      </p>
+    </div>
+
+    <div class="card good">
+      <div class="card-head"><span class="badge good">stark</span>
+        <span class="loc"><code>git/.config/git/.gitconfig</code></span></div>
+      <p>
+        SSH-basiertes Commit-Signing (<code>gpg.format = ssh</code>, <code>commit.gpgsign = true</code>)
+        ist eingerichtet – gute Sicherheitshygiene für die Commit-Authentizität.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= BEWUSST ENTSCHIEDEN ================= -->
+  <section id="bewusst">
+    <h2>3 · Bewusst entschieden</h2>
+
+    <div class="card info">
+      <div class="card-head"><span class="badge info">bewusst</span>
+        <span class="loc"><code>.bashrc:34</code> · <code>workspace_slf:75</code></span></div>
+      <p>
+        Alias <code>c='claude --dangerously-skip-permissions'</code> (Bypass-All-Modus). Bewusste
+        Workflow-Entscheidung für schnelles Arbeiten. Zur Kenntnis: läuft ohne Permission-Prompts –
+        nur in vertrauenswürdigen Projektverzeichnissen sinnvoll.
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head"><span class="badge info">bewusst</span>
+        <span class="loc"><code>hyprland.conf:93</code> · <code>options.lua:3</code></span></div>
+      <p>
+        Animationen in Hyprland deaktiviert und Maus in nvim (<code>mouse = ""</code>) ausgeschaltet –
+        bewusst minimalistischer, tastaturzentrierter Workflow.
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head"><span class="badge info">bewusst</span>
+        <span class="loc"><code>mpv.conf:49-55</code></span></div>
+      <p>
+        Sehr große Demuxer-Caches (4000M, 300&nbsp;s Readahead) – laut Kommentar bewusst, „viel RAM
+        vorhanden". Legitim; nur der Größen-Kommentar ist irreführend (siehe MPV-1).
+      </p>
+    </div>
+
+    <div class="card info">
+      <div class="card-head"><span class="badge info">bewusst</span>
+        <span class="loc"><code>scripts/restic-backup:4</code></span></div>
+      <p>
+        Restic-Repo als SFTP zu einer LAN-IP mit Windows-Pfad (<code>D:\ResticBackup</code>). Interne
+        IP ist kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im Skript – wird interaktiv
+        abgefragt. In Ordnung, solange das Skript nicht non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
+      </p>
+    </div>
+  </section>
+
+  <div class="legend">
+    <span><span class="dot krit"></span> kritisch – sofort handeln</span>
+    <span><span class="dot hoch"></span> hoch – zeitnah beheben</span>
+    <span><span class="dot mittel"></span> mittel – einplanen</span>
+    <span><span class="dot niedrig"></span> niedrig – bei Gelegenheit</span>
+    <span><span class="dot info"></span> info / bewusst entschieden</span>
+  </div>
+
+  <footer>
+    Health-Report – reine Momentaufnahme, keine Historie. Erzeugt aus einem frischen Scan des Repos.
+  </footer>
+
+</div>
+</body>
+</html>

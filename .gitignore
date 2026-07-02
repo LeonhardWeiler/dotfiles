@@ -1,0 +1,5 @@
+# KeePassXC-Passwortdatenbanken niemals versionieren
+*.kdbx
+
+# Editor-/Backup-Reste
+*.bak
