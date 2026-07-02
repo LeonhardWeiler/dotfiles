@@ -1,5 +1,4 @@
--- Leader
-vim.g.mapleader = " "
+-- Leader wird in config/lazy.lua vor dem Laden von lazy.nvim gesetzt.
 
 -- Datei-Browser
 vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
