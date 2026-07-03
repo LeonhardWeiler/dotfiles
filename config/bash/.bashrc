@@ -35,7 +35,6 @@ alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
 alias openimg='zen-browser'
 alias arst='sudo shutdown now'
-alias c='claude --dangerously-skip-permissions'
 export NIX_CONFIG="experimental-features = nix-command flakes"
 # Nur einbinden, wenn Nix installiert ist (sonst Fehler in jeder Shell ohne Nix).
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
