@@ -12,7 +12,7 @@ elif [[ $EUID -ne 0 ]]; then
     echo "Für Root-Pakete sind erhöhte Rechte erforderlich. Falls gewünscht mit 'sudo' ausführen."
 fi
 
-ROOT_PKGS=("ly" "systemd-system" "pacman")
+ROOT_PKGS=("ly" "systemd-system" "pacman" "mkinitcpio")
 USER_PKGS=()
 
 chmod +x "$DOTFILES_DIR/scripts/update-package-list.sh"
