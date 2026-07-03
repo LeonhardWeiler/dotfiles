@@ -37,7 +37,10 @@ Pfaden: `README.md`.
 - **`scripts/`** = Repo-Werkzeuge, **kein** Stow-Paket: `install.sh`,
   `install-programs.sh`, `update-package-list.sh`, `programs.txt`.
 - **Root-Pakete** (`ROOT_PKGS` in `scripts/install.sh`, Ziel `/`): `ly`,
-  `systemd-system`, `pacman`.
+  `systemd-system`, `pacman`, `mkinitcpio` (`/etc/mkinitcpio.conf`).
+- **System-Dienste**: `install.sh` bietet optional an, die Units aus
+  `SYSTEM_UNITS` per `systemctl enable` (ohne `--now`) zu aktivieren; User-Units
+  sind bereits über die gestowten `*.wants`-Links im Paket `systemd-user` aktiv.
 - **Nicht gestowt**: `AGENT/` bleibt im Repo-Root (reine Arbeits-/Workflow-
   Dateien: `TODO.md`, `project-health-report.html`) und wird **nicht** verlinkt.
   Da unter `config/` nur Stow-Pakete liegen, entfällt die frühere
