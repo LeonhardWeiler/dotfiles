@@ -12,7 +12,7 @@ Ein Commit pro abgearbeitetem Punkt (siehe Skill `implement-todo`).
 
 ## P13 – Config-Fixes aus der P12-Bewertung umsetzen
 
-Reaktion auf die Findings in `prompts/project-health-report.html`. Reihenfolge
+Reaktion auf die Findings in `AGENT/project-health-report.html`. Reihenfolge
 grob nach Priorität. Jeder Punkt = eigener Commit; nach dem Umsetzen das
 zugehörige Finding aus dem Report **entfernen** und Zähler anpassen.
 
