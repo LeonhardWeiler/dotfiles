@@ -338,11 +338,11 @@
           <p>
             <b>Widersprüchliches Qt-Platform-Theme.</b> Die Hyprland-Session
             setzt <code>QT_QPA_PLATFORMTHEME=qt6ct</code> (env.lua), die
-            <code>.bash_profile</code> aber <code>qt5ct</code>. Im Repo existiert
-            nur ein <code>qt5ct</code>-Paket (keine qt6ct-Config). Je nach
-            Startweg/Qt-Version greift damit ein anderes (oder gar kein) Theme –
-            genau die Art Inkonsistenz, die das ENV-Setup eigentlich vermeiden
-            will.
+            <code>.bash_profile</code> aber <code>qt5ct</code>. Im Repo
+            existiert nur ein <code>qt5ct</code>-Paket (keine qt6ct-Config). Je
+            nach Startweg/Qt-Version greift damit ein anderes (oder gar kein)
+            Theme – genau die Art Inkonsistenz, die das ENV-Setup eigentlich
+            vermeiden will.
           </p>
           <p class="rec">
             <b>Empfehlung (ändern):</b> Auf <em>eine</em> Variante
@@ -360,7 +360,8 @@
             <span class="id">SH-1</span>
             <span class="badge niedrig">niedrig</span>
             <span class="loc"
-              ><code>scripts/install.sh</code> · <code>remove_stale_links()</code></span
+              ><code>scripts/install.sh</code> ·
+              <code>remove_stale_links()</code></span
             >
           </div>
           <p>
@@ -369,17 +370,19 @@
             <code>*.wants</code>/<code>*.requires</code> aber bewusst aus (damit
             kein Dienst deaktiviert wird). Kehrseite: Wurde eine Unit per
             <em>In-Repo-Pfad</em> aktiviert (Enablement-Link zeigt direkt ins
-            Repo, z. B. <code>legion-conservation</code>), dann zeigt dieser Link
-            nach einem Layout-Umzug ins Leere und wird von
+            Repo, z. B. <code>legion-conservation</code>), dann zeigt dieser
+            Link nach einem Layout-Umzug ins Leere und wird von
             <code>install.sh</code> <em>nicht</em> repariert – der Dienst ist
             still „enabled, aber Unit not-found" und startet nicht mehr
             automatisch. (Im aktuellen System bereits manuell via
-            <code>reenable</code> behoben; ein frischer Klon ist nicht betroffen.)
+            <code>reenable</code> behoben; ein frischer Klon ist nicht
+            betroffen.)
           </p>
           <p class="rec">
             <b>Empfehlung:</b> Nach einem Layout-Umzug betroffene Units einmal
             <code>systemctl reenable &lt;unit&gt;</code> (bzw.
-            <code>--user</code>) – oder diesen Schritt in <code>install.sh</code>
+            <code>--user</code>) – oder diesen Schritt in
+            <code>install.sh</code>
             für bekannte Units automatisieren bzw. im README als Migrations-
             Hinweis dokumentieren. Robuster wäre, Units generell über
             <code>/etc/systemd/system/&lt;unit&gt;</code> statt per Repo-Pfad zu
@@ -397,17 +400,18 @@
           </div>
           <p>
             <b>btop-Config ist praktisch die komplette Default-Datei</b> (286
-            Zeilen, 88 gesetzte Keys – u. a. <code>color_theme = "Default"</code>,
-            <code>vim_keys = false</code>, <code>update_ms = 2000</code>). btop
-            schreibt bei Bedarf selbst alle Keys; fehlende Werte werden als
-            Default gelesen.
+            Zeilen, 88 gesetzte Keys – u. a.
+            <code>color_theme = "Default"</code>, <code>vim_keys = false</code>,
+            <code>update_ms = 2000</code>). btop schreibt bei Bedarf selbst alle
+            Keys; fehlende Werte werden als Default gelesen.
           </p>
           <p class="rec">
             <b>Empfehlung (entfernen):</b> Auf die <em>bewusst</em> abweichenden
             Keys eindampfen (z. B. <code>presets</code>,
             <code>proc_sorting</code>, ggf. <code>update_ms</code>). Ergebnis:
             kleine, lesbare Datei, in der jede Zeile eine Absicht ist. Vor dem
-            Kürzen einmal die aktuellen Werte gegen die btop-Defaults abgleichen.
+            Kürzen einmal die aktuellen Werte gegen die btop-Defaults
+            abgleichen.
           </p>
         </div>
 
@@ -420,8 +424,8 @@
           <p>
             <b>ly-Config ist ein vollständiger Default-Dump</b> (87 gesetzte
             Keys, inkl. cmatrix-/doom-fire-/colormix-Spielereien, die bei
-            <code>animation = none</code> ungenutzt sind). ly liest fehlende Keys
-            aus dem eingebauten Default.
+            <code>animation = none</code> ungenutzt sind). ly liest fehlende
+            Keys aus dem eingebauten Default.
           </p>
           <p class="rec">
             <b>Empfehlung (entfernen):</b> Auf die tatsächlich abweichenden Keys
@@ -464,10 +468,11 @@
             <span class="loc"><code>config/bash/.bash_profile</code></span>
           </div>
           <p>
-            <b>Nix-Profil doppelt eingebunden.</b> <code>.bash_profile</code>
-            sourced zuerst <code>.bashrc</code> (die <code>nix.sh</code> bereits
-            bedingt lädt) und danach nochmals die vom Nix-Installer angehängte
-            Zeile <code>. …/nix.sh</code>. Das ist redundant.
+            <b>Nix-Profil doppelt eingebunden.</b>
+            <code>.bash_profile</code> sourced zuerst <code>.bashrc</code> (die
+            <code>nix.sh</code> bereits bedingt lädt) und danach nochmals die
+            vom Nix-Installer angehängte Zeile <code>. …/nix.sh</code>. Das ist
+            redundant.
           </p>
           <p class="rec">
             <b>Empfehlung (entfernen):</b> Die vom Installer angehängte
@@ -520,8 +525,8 @@
           </p>
           <p class="rec">
             <b>Empfehlung (ändern/begründen):</b> Ohne konkreten Low-Latency-
-            Bedarf <code>min-quantum</code> auf einen konservativeren Wert
-            (z. B. 64/128) anheben – oder den niedrigen Wert mit dem konkreten
+            Bedarf <code>min-quantum</code> auf einen konservativeren Wert (z.
+            B. 64/128) anheben – oder den niedrigen Wert mit dem konkreten
             Use-Case im File kommentieren.
           </p>
         </div>
@@ -539,18 +544,18 @@
           <p>
             Ohne Änderungsbedarf (jede Option trägt): <b>alacritty</b> (Font,
             Farben, <code>Shift+Return</code>-Binding für TUI-Apps),
-            <b>mako</b> (Urgency-Regeln, konsistentes Farbschema), <b>rofi</b>
-            (Theme + <code>drun</code>/<code>filebrowser</code>-Modi, keine
-            ungenutzten Modi), <b>git</b> (Signing + knappe
-            <code>ignore</code>), <b>mpv</b> (bewusste Cache-/Screenshot-Profile,
-            fremde Lua-Scripts unangetastet), <b>typst</b> (lokales Paket
+            <b>mako</b> (Urgency-Regeln, konsistentes Farbschema),
+            <b>rofi</b> (Theme +
+            <code>drun</code>/<code>filebrowser</code>-Modi, keine ungenutzten
+            Modi), <b>git</b> (Signing + knappe <code>ignore</code>),
+            <b>mpv</b> (bewusste Cache-/Screenshot-Profile, fremde Lua-Scripts
+            unangetastet), <b>typst</b> (lokales Paket
             <code>school-theme</code> + <code>TYPST_PACKAGE_PATH</code>),
-            <b>systemd</b> (battery-check-Timer, dotfiles-sync mit
-            passendem <code>GIT_CONFIG_GLOBAL</code>), <b>pacman</b>-Hook
-            (minimaler Trigger). <b>keepassxc</b>: nur Config, DB ist
-            gitignored (nicht im Detail geprüft, per <code>.claudeignore</code>
-            ausgeschlossen). <b>nvim</b> wird in dessen eigenem Health-Report
-            vertieft.
+            <b>systemd</b> (battery-check-Timer, dotfiles-sync mit passendem
+            <code>GIT_CONFIG_GLOBAL</code>), <b>pacman</b>-Hook (minimaler
+            Trigger). <b>keepassxc</b>: nur Config, DB ist gitignored (nicht im
+            Detail geprüft, per <code>.claudeignore</code> ausgeschlossen).
+            <b>nvim</b> wird in dessen eigenem Health-Report vertieft.
           </p>
         </div>
 
@@ -608,7 +613,9 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"><code>config/git/.config/git/.gitconfig</code></span>
+            <span class="loc"
+              ><code>config/git/.config/git/.gitconfig</code></span
+            >
           </div>
           <p>
             SSH-basiertes Commit-Signing (<code>gpg.format = ssh</code>,
@@ -664,12 +671,15 @@
             >
           </div>
           <p>
-            Animationen in Hyprland deaktiviert (<code>animations.enabled = false</code>
-            in <code>looknfeel.lua</code>) und Maus in nvim
-            (<code>mouse = ""</code>) ausgeschaltet – bewusst minimalistischer,
-            tastaturzentrierter Workflow. Die Animations-Kurven/-Leaves bleiben
-            in <code>animations.lua</code> definiert, damit ein Aktivieren nur
-            das Umschalten des Flags erfordert (P12: <b>behalten</b>).
+            Animationen in Hyprland deaktiviert (<code
+              >animations.enabled = false</code
+            >
+            in <code>looknfeel.lua</code>) und Maus in nvim (<code
+              >mouse = ""</code
+            >) ausgeschaltet – bewusst minimalistischer, tastaturzentrierter
+            Workflow. Die Animations-Kurven/-Leaves bleiben in
+            <code>animations.lua</code> definiert, damit ein Aktivieren nur das
+            Umschalten des Flags erfordert (P12: <b>behalten</b>).
           </p>
         </div>
 
