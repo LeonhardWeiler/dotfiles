@@ -11,8 +11,12 @@
 # zurueckgegeben, damit sie im Repo nicht root gehoert.
 set -euo pipefail
 
-DOTFILES="${DOTFILES_DIR:-/home/leo/dotfiles}"
-OWNER="${DOTFILES_OWNER:-leo}"
+# Realen Login-User bestimmen — auch wenn der pacman-Hook als root laeuft
+# (logname liefert den angemeldeten User, nicht root). Home per getent, damit
+# kein /home/leo hardcodiert ist. Alles per Environment ueberschreibbar.
+OWNER="${DOTFILES_OWNER:-$(logname 2>/dev/null || id -un)}"
+OWNER_HOME="$(getent passwd "$OWNER" | cut -d: -f6)"
+DOTFILES="${DOTFILES_DIR:-${OWNER_HOME:-$HOME}/dotfiles}"
 OUT="$DOTFILES/scripts/programs.txt"
 
 # -Q liest nur die lokale DB (keine Lock-Kollision) -> im Hook sicher.
