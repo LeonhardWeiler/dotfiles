@@ -1,11 +1,17 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-export RESTIC_REPOSITORY="sftp:Leo@192.168.178.23:D:\ResticBackup"
+command -v restic >/dev/null 2>&1 || {
+  echo "restic-backup: 'restic' nicht gefunden" >&2
+  exit 1
+}
+
+# Repo/Host per Environment ueberschreibbar (portabel); Default = eigenes NAS.
+export RESTIC_REPOSITORY="${RESTIC_REPOSITORY:-sftp:Leo@192.168.178.23:D:\\ResticBackup}"
 
 restic backup \
-  /home/leo/files/projects \
-  /home/leo/files/school
+  "$HOME/files/projects" \
+  "$HOME/files/school"
 
 echo "Cleanup? (y/n)"
 read -r ans
