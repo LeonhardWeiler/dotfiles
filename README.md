@@ -54,7 +54,9 @@ All symlinks will be created in the directories defined in the repository.
 
 ### System Services
 
-The following system services should be enabled:
+The following system services should be enabled. `install.sh` can do this for
+you (it prompts near the end and runs `systemctl enable` — without `--now`, so
+the running session is not disturbed; start them manually or reboot to activate):
 
 ```bash
 sudo systemctl enable --now zram.service
@@ -108,6 +110,7 @@ systemctl --user status <name>.service
 | Ly             | `/etc/ly`                 |
 | Mako           | `~/.config/mako`          |
 | MIME defaults  | `~/.config/mimeapps.list` |
+| mkinitcpio     | `/etc/mkinitcpio.conf`    |
 | MPV            | `~/.config/mpv`           |
 | Neovim         | `~/.config/nvim`          |
 | Pacman hooks   | `/etc/pacman.d/hooks`     |
@@ -135,7 +138,8 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 
 ### New Initramfs
 
-After modifying the `mkinitcpio.conf`, regenerate the initramfs with:
+`mkinitcpio.conf` is tracked as a root Stow package (`config/mkinitcpio`, linked
+to `/etc/mkinitcpio.conf`). After modifying it, regenerate the initramfs with:
 
 ```bash
 sudo mkinitcpio -P
