@@ -282,13 +282,17 @@
     <div class="wrap">
       <h1>Dotfiles – Health Report</h1>
       <div class="meta">
-        Momentaufnahme · Stand <strong>2026-07-02</strong> · Branch
+        Momentaufnahme · Stand <strong>2026-07-03</strong> · Branch
         <code>main</code> · GNU-Stow-Dotfiles (Arch Linux / Hyprland)<br />
         Geprüft: install-Skripte, Bash, Hyprland, nvim, Scripts, systemd,
         Alacritty, Mako, Rofi, Ly, mpv, Typst, git-config, programs.txt und
         README. KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und
         fremde mpv-Lua-Scripts nur oberflächlich.<br />
-        Insgesamt ein sehr sauberes Repo; aktuell keine offenen Findings.
+        <strong>P12 – kritische Config-Bewertung:</strong> jede Config auf
+        <em>behalten / ändern / entfernen</em> geprüft. Das Repo ist insgesamt
+        sehr sauber; die offenen Findings sind durchweg Aufräum-/Konsistenz-
+        Punkte (keine Funktionsfehler). Fixes bewusst noch offen (erst nach
+        Bewertung).
       </div>
 
       <div class="summary">
@@ -299,10 +303,10 @@
           <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">0</span><span class="l">Mittel</span>
+          <span class="n">1</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">0</span><span class="l">Niedrig</span>
+          <span class="n">6</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -317,13 +321,173 @@
 
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
-        <h2>1 · Offene Findings</h2>
+        <h2>1 · Offene Findings (P12 – Config-Bewertung)</h2>
 
-        <div class="card good">
-          <div class="card-head"><span class="badge good">erledigt</span></div>
+        <div class="card mittel">
+          <div class="card-head">
+            <span class="id">CFG-QT-2</span>
+            <span class="badge mittel">mittel</span>
+            <span class="loc"
+              ><code>config/hypr/.config/hypr/env.lua</code> ·
+              <code>config/bash/.bash_profile</code></span
+            >
+          </div>
           <p>
-            Aktuell keine offenen Findings. Die zuletzt dokumentierten Punkte
-            (ENV-1, SH-1, DOC-1, DOC-2) wurden umgesetzt.
+            <b>Widersprüchliches Qt-Platform-Theme.</b> Die Hyprland-Session
+            setzt <code>QT_QPA_PLATFORMTHEME=qt6ct</code> (env.lua), die
+            <code>.bash_profile</code> aber <code>qt5ct</code>. Im Repo existiert
+            nur ein <code>qt5ct</code>-Paket (keine qt6ct-Config). Je nach
+            Startweg/Qt-Version greift damit ein anderes (oder gar kein) Theme –
+            genau die Art Inkonsistenz, die das ENV-Setup eigentlich vermeiden
+            will.
+          </p>
+          <p class="rec">
+            <b>Empfehlung (ändern):</b> Auf <em>eine</em> Variante
+            vereinheitlichen. Wenn die Apps Qt6 sind: überall
+            <code>qt6ct</code> setzen und eine <code>qt6ct</code>-Config als
+            Stow-Paket anlegen (oder das bestehende <code>qt5ct.conf</code> nach
+            <code>qt6ct</code> übernehmen); das <code>qt5ct</code> in
+            <code>.bash_profile</code> entsprechend angleichen. Andernfalls
+            konsequent bei <code>qt5ct</code> bleiben und env.lua korrigieren.
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">CFG-BTOP-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"
+              ><code>config/btop/.config/btop/btop.conf</code></span
+            >
+          </div>
+          <p>
+            <b>btop-Config ist praktisch die komplette Default-Datei</b> (286
+            Zeilen, 88 gesetzte Keys – u. a. <code>color_theme = "Default"</code>,
+            <code>vim_keys = false</code>, <code>update_ms = 2000</code>). btop
+            schreibt bei Bedarf selbst alle Keys; fehlende Werte werden als
+            Default gelesen.
+          </p>
+          <p class="rec">
+            <b>Empfehlung (entfernen):</b> Auf die <em>bewusst</em> abweichenden
+            Keys eindampfen (z. B. <code>presets</code>,
+            <code>proc_sorting</code>, ggf. <code>update_ms</code>). Ergebnis:
+            kleine, lesbare Datei, in der jede Zeile eine Absicht ist. Vor dem
+            Kürzen einmal die aktuellen Werte gegen die btop-Defaults abgleichen.
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">CFG-LY-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"><code>config/ly/etc/ly/config.ini</code></span>
+          </div>
+          <p>
+            <b>ly-Config ist ein vollständiger Default-Dump</b> (87 gesetzte
+            Keys, inkl. cmatrix-/doom-fire-/colormix-Spielereien, die bei
+            <code>animation = none</code> ungenutzt sind). ly liest fehlende Keys
+            aus dem eingebauten Default.
+          </p>
+          <p class="rec">
+            <b>Empfehlung (entfernen):</b> Auf die tatsächlich abweichenden Keys
+            reduzieren (vermutlich nur wenige, z. B. <code>animation</code>,
+            evtl. Brightness-Keys/-Kommandos, <code>bigclock</code>). Das
+            überlebt ly-Updates besser (neue Default-Keys müssen nicht
+            nachgezogen werden). Alternativ als <em>bewusst gepinnte</em>
+            Vollkopie dokumentieren – dann als Entscheidung festhalten.
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">CFG-QT-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"
+              ><code>config/qt5ct/.config/qt5ct/qt5ct.conf</code> ·
+              <code>[SettingsWindow] geometry</code></span
+            >
+          </div>
+          <p>
+            <b>Reiner UI-State im Repo.</b> Der Schlüssel
+            <code>[SettingsWindow] geometry=@ByteArray(...)</code> ist nur die
+            zuletzt gemerkte Fenstergröße des qt5ct-Dialogs – kein Konfig-Wert,
+            der versioniert gehört, und er wird bei jeder Dialog-Nutzung neu
+            geschrieben (Diff-Rauschen).
+          </p>
+          <p class="rec">
+            <b>Empfehlung (entfernen):</b> Die
+            <code>[SettingsWindow]</code>-Sektion entfernen; Fonts/Style/Palette
+            behalten. (Da nur die Datei selbst gestowt ist, bleibt der reale
+            Rest des Verzeichnisses unberührt.)
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">CFG-BASH-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"><code>config/bash/.bash_profile</code></span>
+          </div>
+          <p>
+            <b>Nix-Profil doppelt eingebunden.</b> <code>.bash_profile</code>
+            sourced zuerst <code>.bashrc</code> (die <code>nix.sh</code> bereits
+            bedingt lädt) und danach nochmals die vom Nix-Installer angehängte
+            Zeile <code>. …/nix.sh</code>. Das ist redundant.
+          </p>
+          <p class="rec">
+            <b>Empfehlung (entfernen):</b> Die vom Installer angehängte
+            Nix-Zeile in <code>.bash_profile</code> streichen – das bedingte
+            Laden in <code>.bashrc</code> genügt. Nebenbei prüfen, ob
+            <code>QT_QPA_PLATFORMTHEME</code> in <code>.bash_profile</code>
+            überhaupt nötig ist (siehe CFG-QT-2).
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">CFG-MIME-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"
+              ><code>config/mimeapps/.config/mimeapps.list</code></span
+            >
+          </div>
+          <p>
+            <b>Redundante <code>[Added Associations]</code>.</b> Die http/https/
+            html-Zuordnungen zu <code>zen.desktop</code> stehen doppelt: einmal
+            unter <code>[Default Applications]</code> (maßgeblich) und nochmals
+            unter <code>[Added Associations]</code>. Letztere Sektion ist bei
+            gesetzten Defaults meist überflüssig.
+          </p>
+          <p class="rec">
+            <b>Empfehlung (ändern/entfernen):</b> Prüfen, ob
+            <code>[Added Associations]</code> ohne Verhaltensänderung entfallen
+            kann (Defaults reichen i. d. R.). Falls doch nötig (zusätzliche
+            Kandidaten im „Öffnen mit"-Menü), als Kommentar begründen.
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">CFG-PW-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"
+              ><code
+                >config/pipewire/.config/pipewire/pipewire-pulse.conf.d/99-custom.conf</code
+              ></span
+            >
+          </div>
+          <p>
+            <b><code>min-quantum = 32</code> ist sehr niedrig.</b> Bei
+            <code>rate = 48000</code> entspricht 32 Frames ~0,67 ms Puffer – nur
+            sinnvoll für ausgereizte Low-Latency-Szenarien und begünstigt sonst
+            Xruns/Knackser. <code>quantum = 1024</code> und
+            <code>resample.quality = 10</code> sind hingegen unkritisch/bewusst.
+          </p>
+          <p class="rec">
+            <b>Empfehlung (ändern/begründen):</b> Ohne konkreten Low-Latency-
+            Bedarf <code>min-quantum</code> auf einen konservativeren Wert
+            (z. B. 64/128) anheben – oder den niedrigen Wert mit dem konkreten
+            Use-Case im File kommentieren.
           </p>
         </div>
       </section>
@@ -334,9 +498,32 @@
 
         <div class="card good">
           <div class="card-head">
+            <span class="badge good">behalten</span>
+            <span class="loc">P12 – schlanke, bewusste Configs</span>
+          </div>
+          <p>
+            Ohne Änderungsbedarf (jede Option trägt): <b>alacritty</b> (Font,
+            Farben, <code>Shift+Return</code>-Binding für TUI-Apps),
+            <b>mako</b> (Urgency-Regeln, konsistentes Farbschema), <b>rofi</b>
+            (Theme + <code>drun</code>/<code>filebrowser</code>-Modi, keine
+            ungenutzten Modi), <b>git</b> (Signing + knappe
+            <code>ignore</code>), <b>mpv</b> (bewusste Cache-/Screenshot-Profile,
+            fremde Lua-Scripts unangetastet), <b>typst</b> (lokales Paket
+            <code>school-theme</code> + <code>TYPST_PACKAGE_PATH</code>),
+            <b>systemd</b> (battery-check-Timer, dotfiles-sync mit
+            passendem <code>GIT_CONFIG_GLOBAL</code>), <b>pacman</b>-Hook
+            (minimaler Trigger). <b>keepassxc</b>: nur Config, DB ist
+            gitignored (nicht im Detail geprüft, per <code>.claudeignore</code>
+            ausgeschlossen). <b>nvim</b> wird in dessen eigenem Health-Report
+            vertieft.
+          </p>
+        </div>
+
+        <div class="card good">
+          <div class="card-head">
             <span class="badge good">stark</span>
             <span class="loc"
-              ><code>scripts/.config/scripts/lib_hypr.sh</code> ·
+              ><code>config/usrbin/.local/bin/lib_hypr.sh</code> ·
               <code>workspace_slf</code></span
             >
           </div>
@@ -355,14 +542,17 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"><code>install.sh</code></span>
+            <span class="loc"><code>scripts/install.sh</code></span>
           </div>
           <p>
             Doppelte Bestätigungs-Prompts vor destruktiven Aktionen, saubere
             Trennung von Root- und User-Paketen, Nutzung von
-            <code>stow -R</code> (Restow) und automatische Paketerkennung über
-            die Verzeichnisstruktur inkl. <code>IGNORE_PKGS</code> für
-            <code>prompts/</code>.
+            <code>stow --dir=config -R</code> (Restow) und automatische
+            Paketerkennung über <code>config/*</code>. Seit dem P11-Umbau räumt
+            das Skript vor dem Neu-Verlinken zudem verwaiste Symlinks aus einem
+            früheren Layout auf (nur kaputte Links ins Repo; systemd-Enablement-
+            Links unter <code>*.wants</code>/<code>*.requires</code> bleiben
+            verschont).
           </p>
         </div>
 
@@ -383,7 +573,7 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"><code>git/.config/git/.gitconfig</code></span>
+            <span class="loc"><code>config/git/.config/git/.gitconfig</code></span>
           </div>
           <p>
             SSH-basiertes Commit-Signing (<code>gpg.format = ssh</code>,
@@ -396,7 +586,7 @@
           <div class="card-head">
             <span class="badge good">stark</span>
             <span class="loc"
-              ><code>scripts/.config/scripts/rofi_keepassxc</code></span
+              ><code>config/usrbin/.local/bin/rofi_keepassxc</code></span
             >
           </div>
           <p>
@@ -417,7 +607,8 @@
           <div class="card-head">
             <span class="badge info">bewusst</span>
             <span class="loc"
-              ><code>.bashrc:41</code> · <code>workspace_slf:75</code></span
+              ><code>config/bash/.bashrc</code> ·
+              <code>config/usrbin/.local/bin/workspace_slf</code></span
             >
           </div>
           <p>
@@ -433,13 +624,17 @@
           <div class="card-head">
             <span class="badge info">bewusst</span>
             <span class="loc"
-              ><code>hyprland.conf:90</code> · <code>options.lua:3</code></span
+              ><code>config/hypr/.config/hypr/looknfeel.lua</code> ·
+              <code>config/nvim/.config/nvim/lua/config/options.lua</code></span
             >
           </div>
           <p>
-            Animationen in Hyprland deaktiviert (<code>enabled = false</code>)
-            und Maus in nvim (<code>mouse = ""</code>) ausgeschaltet – bewusst
-            minimalistischer, tastaturzentrierter Workflow.
+            Animationen in Hyprland deaktiviert (<code>animations.enabled = false</code>
+            in <code>looknfeel.lua</code>) und Maus in nvim
+            (<code>mouse = ""</code>) ausgeschaltet – bewusst minimalistischer,
+            tastaturzentrierter Workflow. Die Animations-Kurven/-Leaves bleiben
+            in <code>animations.lua</code> definiert, damit ein Aktivieren nur
+            das Umschalten des Flags erfordert (P12: <b>behalten</b>).
           </p>
         </div>
 
@@ -458,7 +653,9 @@
         <div class="card info">
           <div class="card-head">
             <span class="badge info">bewusst</span>
-            <span class="loc"><code>scripts/restic-backup:4</code></span>
+            <span class="loc"
+              ><code>config/usrbin/.local/bin/restic-backup:4</code></span
+            >
           </div>
           <p>
             Restic-Repo als SFTP zu einer LAN-IP mit Windows-Pfad
@@ -466,6 +663,24 @@
             <code>RESTIC_PASSWORD</code> bewusst nicht im Skript – wird
             interaktiv abgefragt. In Ordnung, solange das Skript nicht
             non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">bewusst</span>
+            <span class="loc"
+              ><code>config/hypr/.config/hypr/env.lua</code> ·
+              <code>monitors.lua</code></span
+            >
+          </div>
+          <p>
+            Gerätespezifische Hardcodes: <code>WLR_DRM_DEVICES</code> auf einen
+            festen PCI-Pfad (<code>pci-0000:34:00.0-card</code>) sowie feste
+            Monitor-Outputs (<code>eDP-1</code> @1.6, <code>HDMI-A-1</code>).
+            P12: <b>behalten</b> – es ist ein persönliches Single-Machine-Setup.
+            Nur als Portabilitäts-Hinweis notiert: bei Hardware-Wechsel müssen
+            diese Werte angepasst werden.
           </p>
         </div>
       </section>
