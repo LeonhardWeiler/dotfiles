@@ -38,4 +38,8 @@ alias arst='sudo shutdown now'
 export NIX_CONFIG="experimental-features = nix-command flakes"
 # Nur einbinden, wenn Nix installiert ist (sonst Fehler in jeder Shell ohne Nix).
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
-export PATH="$HOME/.local/bin:$PATH"
+# Go: GOPATH nach XDG (~/.local/share/go) statt ~/go, damit das Home schlank bleibt.
+export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
+# npm-Cache nach XDG (~/.cache/npm) statt ~/.npm.
+export npm_config_cache="${XDG_CACHE_HOME:-$HOME/.cache}/npm"
+export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"
