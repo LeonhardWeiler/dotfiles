@@ -1,0 +1,29 @@
+# dotbot — Root-/etc-Konfiguration.
+# Ausfuehren mit: sudo ./install root.install.conf.yaml
+# Bewusst DATEIWEISE (keine Verzeichnis-Symlinks), damit /etc/systemd/system und
+# /etc/pacman.d/hooks NICHT die vorhandenen System-Dateien verdecken.
+
+- defaults:
+    link:
+      create: true
+      relink: true
+      force: false
+
+- link:
+    /etc/ly/config.ini: config/ly/config.ini
+    /etc/mkinitcpio.conf: config/mkinitcpio/mkinitcpio.conf
+    /etc/systemd/system/legion-conservation.service: config/systemd-system/legion-conservation.service
+    /etc/pacman.d/hooks/dotfiles-programs-list.hook: config/pacman/dotfiles-programs-list.hook
+
+- shell:
+    # System-Units (re)aktivieren — reenable ist selbstheilend (repariert
+    # verwaiste Enablement-Links nach einem Layout-Umzug). Ohne --now, damit die
+    # laufende Session (ly@tty2, libvirtd, ...) nicht gestoert wird. Fehlende
+    # Pakete werden toleriert.
+    - command: >
+        for u in zram.service NetworkManager.service ly@tty2.service
+        pipewire.service wireplumber.service dnsmasq.service sshd.service
+        swtpm.service libvirtd.service legion-conservation.service; do
+        systemctl reenable "$u" 2>/dev/null || echo "WARN: $u nicht (re)aktiviert"; done
+      description: System-Units (re)aktivieren
+      stderr: true

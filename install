@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# dotbot-Wrapper. Nutzung:
+#   ./install                       -> User-Config (install.conf.yaml)
+#   sudo ./install root.install.conf.yaml   -> Root-/etc-Config
+# Prerequisite: python3 + PyYAML (Paket 'python-yaml').
+set -e
+
+CONFIG="${1:-install.conf.yaml}"
+BASEDIR="$(cd "$(dirname "$0")" && pwd)"
+DOTBOT_DIR="dotbot"
+DOTBOT_BIN="bin/dotbot"
+
+cd "$BASEDIR"
+git -C "$DOTBOT_DIR" submodule sync --quiet --recursive 2>/dev/null || true
+git submodule update --init --recursive "$DOTBOT_DIR"
+
+exec "$BASEDIR/$DOTBOT_DIR/$DOTBOT_BIN" -d "$BASEDIR" -c "$CONFIG"

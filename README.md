@@ -5,58 +5,57 @@ This repository contains my personal dotfiles for configuring my development env
 ## Requirements
 
 - **Linux-based operating system**
-- **Bash shell (`bash`)** – required for installation and shell configuration
-- **Git (`git`)** – for cloning the repository
-- **GNU Stow (`stow`)** – for managing symlinks
-- **Sudo privileges** – for system-wide configuration
+- **Git (`git`)** – for cloning the repository (with submodules)
+- **Python 3 + PyYAML** – required by [dotbot](https://github.com/anishathalye/dotbot)
+  (on Arch: package `python-yaml`)
+- **Sudo privileges** – for the system-wide (`/etc`) configuration
 
-> Please back up your existing dotfiles before running the installation script.
+> Please back up your existing dotfiles before installing.
 
 ## Installation
 
-Clone the repository:
+Symlinks are managed with **dotbot** (bundled as a git submodule). The mapping
+lives in `install.conf.yaml` (user targets) and `root.install.conf.yaml`
+(`/etc` targets).
+
+Clone the repository **with submodules**:
 
 ```bash
-git clone https://github.com/leonhardweiler/dotfiles.git ~/dotfiles
+git clone --recurse-submodules https://github.com/leonhardweiler/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-Make the installation script executable and run it:
+Link the user configuration (creates all `~/…` symlinks and enables the user
+systemd units):
 
 ```bash
-chmod +x scripts/install.sh
-# Run as your normal user — the script requests sudo itself for system packages
-./scripts/install.sh
+./install
 ```
 
-> **Repo layout:** all Stow packages live under `config/` (Stow is invoked with
-> `--dir=config`), while `scripts/` holds the repository tooling
-> (`install.sh`, `install-programs.sh`, `update-package-list.sh`,
-> `programs.txt`). The former `scripts` package that links executables into
-> `~/.local/bin` is now `config/usrbin`. On first run after this layout change,
-> `install.sh` removes orphaned symlinks that still point at the old paths
-> before re-linking (systemd enablement links under `*.wants`/`*.requires` are
-> left untouched).
-
-After installation, restart your shell or run the following to apply the Bash configuration:
+Link the system (`/etc`) configuration separately, as root:
 
 ```bash
-source ~/.bashrc
+sudo ./install root.install.conf.yaml
 ```
 
-After applying the changes, the script asks whether to refresh `programs.txt`
-from your currently installed packages. This prompt defaults to **yes** (just
-press Enter); answer `n` to keep the existing list.
+> **Repo layout:** every config lives directly under `config/<name>/` (flat
+> source paths — e.g. `config/btop/btop.conf`), and `install.conf.yaml` maps
+> each source to its target. `dotbot`'s `clean` step removes orphaned symlinks
+> that point into this repo. `scripts/` holds the remaining repo tooling
+> (`install-programs.sh`, `update-package-list.sh`, `programs.txt`). Executables
+> are linked from `config/usrbin` into `~/.local/bin`.
 
-All symlinks will be created in the directories defined in the repository.
+After installation, restart your shell or `source ~/.bashrc` to apply the Bash
+configuration.
 
 ## Systemd Services
 
 ### System Services
 
-The following system services should be enabled. `install.sh` can do this for
-you (it prompts near the end and runs `systemctl enable` — without `--now`, so
-the running session is not disturbed; start them manually or reboot to activate):
+The system services below are (re)activated automatically by the `shell` step in
+`root.install.conf.yaml` when you run `sudo ./install root.install.conf.yaml`
+(via `systemctl reenable`, without `--now`, so the running session is not
+disturbed — start them manually or reboot to activate). To do it by hand:
 
 ```bash
 sudo systemctl enable --now zram.service
@@ -78,6 +77,11 @@ sudo systemctl status <name>.service
 ```
 
 ### User Services
+
+`./install` reactivates the user units via the `shell` step in
+`install.conf.yaml` (`systemctl --user reenable battery-check.timer
+dotfiles-sync.service`). PipeWire/WirePlumber/figma-agent are enabled by their
+own package presets and are **not** managed here. To do it by hand:
 
 ```bash
 systemctl --user enable --now battery-check.timer
@@ -139,8 +143,9 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 
 ### New Initramfs
 
-`mkinitcpio.conf` is tracked as a root Stow package (`config/mkinitcpio`, linked
-to `/etc/mkinitcpio.conf`). After modifying it, regenerate the initramfs with:
+`mkinitcpio.conf` is tracked and linked to `/etc/mkinitcpio.conf` by
+`root.install.conf.yaml` (source `config/mkinitcpio/mkinitcpio.conf`). After
+modifying it, regenerate the initramfs with:
 
 ```bash
 sudo mkinitcpio -P

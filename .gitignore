@@ -5,4 +5,6 @@
 *.bak
 
 # Von Hyprland bei Lua-Nutzung autogenerierter Stub (echte Config: hyprland.lua)
-config/hypr/.config/hypr/hyprland.conf
+config/hypr/hyprland.conf
+
+# dotbot-Submodul-Interna nicht relevant fuer Ignorierung; nichts weiter noetig.

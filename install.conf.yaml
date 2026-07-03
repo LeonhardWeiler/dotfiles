@@ -1,0 +1,61 @@
+# dotbot — User-Konfiguration (als normaler User ausfuehren: ./install)
+# Root-/etc-Ziele stehen separat in root.install.conf.yaml.
+# Prerequisite: python + PyYAML (Paket python-yaml).
+
+- defaults:
+    link:
+      create: true # fehlende Zielverzeichnisse anlegen
+      relink: true # eigene, bereits vorhandene Links ersetzen
+      force: false # niemals reale Dateien/Verzeichnisse ueberschreiben
+
+# Verwaiste, ins Repo zeigende Links entfernen (ersetzt den Stale-Cleanup aus
+# der alten install.sh). Enfernt ausschliesslich TOTE Symlinks in diese Basis.
+- clean:
+    "~":
+      force: false
+    "~/.config":
+      recursive: true
+    "~/.local/bin": {}
+    "~/.claude": {}
+
+- link:
+    # --- ganze, uns allein gehoerende Config-Verzeichnisse (Dir-Symlink) ---
+    ~/.config/alacritty: config/alacritty
+    ~/.config/hypr: config/hypr
+    ~/.config/nvim: config/nvim
+    ~/.config/rofi: config/rofi
+    ~/.config/mako: config/mako
+    ~/.config/mpv: config/mpv
+    ~/.config/git: config/git
+    ~/.config/typst: config/typst
+    ~/.config/keepassxc: config/keepassxc
+
+    # --- Skripte nach ~/.local/bin ---
+    ~/.local/bin: config/usrbin
+
+    # --- Home-Dotfiles ---
+    ~/.bashrc: config/bash/.bashrc
+    ~/.bash_profile: config/bash/.bash_profile
+
+    # --- nur einzelne Dateien (Eltern-Verzeichnis bleibt real, damit die App
+    #     dort Runtime-Dateien anlegt bzw. Fremd-Inhalte nicht verdeckt werden) ---
+    ~/.config/btop/btop.conf: config/btop/btop.conf
+    ~/.config/qt5ct/qt5ct.conf: config/qt5ct/qt5ct.conf
+    ~/.config/mimeapps.list: config/mimeapps/mimeapps.list
+    ~/.config/pipewire/pipewire-pulse.conf.d/99-custom.conf: config/pipewire/99-custom.conf
+    ~/.claude/skills: config/claude/skills
+    ~/.claude/settings.json: config/claude/settings.json
+
+    # --- systemd-User-Units: einzelne Unit-Dateien (Verzeichnis bleibt real,
+    #     damit systemctl --user dort seine *.wants-Links anlegen kann) ---
+    ~/.config/systemd/user/battery-check.service: config/systemd-user/battery-check.service
+    ~/.config/systemd/user/battery-check.timer: config/systemd-user/battery-check.timer
+    ~/.config/systemd/user/dotfiles-sync.service: config/systemd-user/dotfiles-sync.service
+
+- shell:
+    # User-Units deklarativ aktivieren (ersetzt die frueher getrackten
+    # *.wants-Links). pipewire/wireplumber/figma-agent werden von ihren
+    # Paket-Presets aktiviert und daher hier bewusst NICHT verwaltet.
+    - command: systemctl --user reenable battery-check.timer dotfiles-sync.service
+      description: systemd-User-Units (re)aktivieren
+      stderr: true

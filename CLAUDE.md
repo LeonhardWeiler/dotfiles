@@ -5,23 +5,24 @@ Hinweise für die Arbeit an diesem Dotfiles-Repo. Kommentar-/Doku-Sprache: **Deu
 ## Überblick
 
 Persönliche Dotfiles für Arch Linux mit Hyprland (Wayland), verwaltet über
-**GNU Stow**. Der Repo-Root trennt **`config/`** (alle Stow-Pakete) von
-**`scripts/`** (Repo-Werkzeuge, keine Stow-Pakete). Jedes Verzeichnis unter
-`config/` ist ein Stow-Paket, dessen innere Struktur das Zielverzeichnis
-spiegelt — meist `$HOME` (z. B. `config/alacritty/.config/alacritty/…` →
-`~/.config/alacritty/…`), bei Root-Paketen `/` (z. B. `config/ly/etc/ly/…` →
-`/etc/ly/…`). Stow wird mit `--dir=config` aufgerufen. Details zu Inhalten/
-Pfaden: `README.md`.
+**dotbot** (als Git-Submodul unter `dotbot/`). Der Repo-Root trennt **`config/`**
+(die Config-Quellen, **flach**: `config/<name>/…`) von **`scripts/`**
+(Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit in
+**`install.conf.yaml`** (User-Ziele) und **`root.install.conf.yaml`** (`/etc`).
+Beispiele: `config/btop/btop.conf` → `~/.config/btop/btop.conf`,
+`config/ly/config.ini` → `/etc/ly/config.ini`. Details zu Inhalten/Pfaden:
+`README.md`. Prerequisite: Python 3 + PyYAML (`python-yaml`).
 
 ## Installation & Befehle
 
-- **Verlinken**: `./scripts/install.sh` — fragt vor dem Anwenden, führt
-  `stow --dir=config -R` je Paket aus. User-Pakete relativ zu `$HOME`,
-  Root-Pakete (`ROOT_PKGS`) via `sudo stow --dir=config --target=/`. Vor dem
-  Neu-Verlinken werden **verwaiste Symlinks** aus einem früheren Layout entfernt
-  (nur kaputte Links, die ins Repo zeigen; systemd-Enablement-Links unter
-  `*.wants`/`*.requires` bleiben verschont). Danach optional `programs.txt`
-  aktualisieren.
+- **Verlinken (User)**: `./install` — Wrapper um dotbot, nutzt
+  `install.conf.yaml`. Erzeugt alle `~/…`-Links, entfernt verwaiste Links via
+  `clean` und aktiviert die User-Units per `systemctl --user reenable`.
+- **Verlinken (Root/`/etc`)**: `sudo ./install root.install.conf.yaml` —
+  dateiweise `/etc`-Links (nie ganze `/etc`-Verzeichnisse) + `reenable` der
+  System-Units.
+- **Submodul**: `git clone --recurse-submodules …` bzw.
+  `git submodule update --init` (dotbot liegt unter `dotbot/`).
 - **Paketliste aktualisieren** (ohne Neu-Verlinken): `./scripts/update-package-list.sh`.
 - **Pakete aus `programs.txt` installieren**: `./scripts/install-programs.sh` (nutzt `yay`).
 - **Shell-Skripte prüfen** (kein Test-Framework): `bash -n <skript>`; wo vorhanden
@@ -29,46 +30,47 @@ Pfaden: `README.md`.
 
 ## Struktur
 
-- **`config/`** = alle Stow-Pakete. Konfig-Pakete: `alacritty`, `bash`, `btop`,
-  `claude`, `git`, `hypr`, `keepassxc`, `mako`, `mimeapps`, `mpv`, `pipewire`,
-  `qt5ct`, `rofi`, `usrbin`, `typst`, `systemd-user`. Bei `btop`/`qt5ct`/
-  `pipewire`/`mimeapps`/`claude` wird bewusst nur die jeweilige Config-Datei
-  (bzw. bei `claude` `skills/` + `settings.json`) verlinkt (Eltern-Verzeichnis
-  bleibt real, damit die Programme dort Runtime-Dateien anlegen). `claude`
+- **`config/`** = flache Config-Quellen: `alacritty`, `bash`, `btop`, `claude`,
+  `git`, `hypr`, `keepassxc`, `ly`, `mako`, `mimeapps`, `mkinitcpio`, `mpv`,
+  `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`, `systemd-system`,
+  `systemd-user`, `typst`, `usrbin`. Ganze Verzeichnisse werden als Dir-Symlink
+  verlinkt (alacritty, hypr, nvim, rofi, mako, mpv, git, typst, keepassxc); bei
+  `btop`/`qt5ct`/`pipewire`/`mimeapps`/`claude` und `systemd-user`/`/etc`-Zielen
+  wird bewusst **nur die einzelne Datei** verlinkt (Eltern-Verzeichnis bleibt
+  real — App-Runtime bzw. keine Verdeckung von System-Inhalten). `claude`
   trackt **nicht** `.claude.json`/sessions/history/cache (Auth/State/Secrets).
-- **`scripts/`** = Repo-Werkzeuge, **kein** Stow-Paket: `install.sh`,
-  `install-programs.sh`, `update-package-list.sh`, `programs.txt`.
-- **Root-Pakete** (`ROOT_PKGS` in `scripts/install.sh`, Ziel `/`): `ly`,
-  `systemd-system`, `pacman`, `mkinitcpio` (`/etc/mkinitcpio.conf`).
-- **System-Dienste**: `install.sh` bietet optional an, die Units aus
-  `SYSTEM_UNITS` per `systemctl enable` (ohne `--now`) zu aktivieren; User-Units
-  sind bereits über die gestowten `*.wants`-Links im Paket `systemd-user` aktiv.
-- **Nicht gestowt**: `AGENT/` bleibt im Repo-Root (reine Arbeits-/Workflow-
-  Dateien: `TODO.md`, `project-health-report.html`) und wird **nicht** verlinkt.
-  Da unter `config/` nur Stow-Pakete liegen, entfällt die frühere
-  `IGNORE_PKGS`-Liste.
-- Eigene Skripte: Paket **`config/usrbin`** → `~/.local/bin` (XDG-Standardort für
-  User-Executables, via `.bashrc` im `PATH`; interne Struktur `.local/bin/…`).
+- **`scripts/`** = Repo-Werkzeuge: `install-programs.sh`,
+  `update-package-list.sh`, `programs.txt` (das alte `install.sh` ist durch
+  `./install`/dotbot ersetzt).
+- **`/etc`-Ziele** (in `root.install.conf.yaml`, dateiweise): `ly/config.ini`,
+  `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
+  `pacman/dotfiles-programs-list.hook`.
+- **System-/User-Dienste**: werden über die `shell`-Direktiven der beiden
+  Configs per `systemctl reenable` (System) bzw. `systemctl --user reenable`
+  (User: `battery-check.timer`, `dotfiles-sync.service`) (re)aktiviert.
+  PipeWire/WirePlumber/figma-agent kommen aus ihren Paket-Presets und werden
+  **nicht** getrackt (früher als `*.wants`-Links im Repo — jetzt entfernt).
+- **Nicht verlinkt**: `AGENT/` (Arbeits-/Workflow-Dateien) und `dotbot/`
+  (Submodul) bleiben im Repo-Root.
+- Eigene Skripte: **`config/usrbin`** → `~/.local/bin` (via `.bashrc` im `PATH`).
   `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
-  für die Hyprland-Workspace-Automatisierung (`workspace_slf`,
-  `rofi_workspace_manager`). `dotfiles_sync` versioniert `scripts/programs.txt`;
-  `update_programs_list` schreibt nach `scripts/programs.txt`.
-- **`nvim/`** hat eine **eigene `CLAUDE.md`** (`config/nvim/.config/nvim/CLAUDE.md`)
-  mit den nvim-spezifischen Verifikations-Befehlen — für nvim-Änderungen dort
-  nachsehen.
+  (`workspace_slf`, `rofi_workspace_manager`). `dotfiles_sync` versioniert
+  `scripts/programs.txt`; `update_programs_list` schreibt dorthin.
+- **`nvim/`** hat eine **eigene `CLAUDE.md`** (`config/nvim/CLAUDE.md`) mit den
+  nvim-spezifischen Verifikations-Befehlen — für nvim-Änderungen dort nachsehen.
 
 ## Konventionen & Fallstricke
 
-- Neue Stow-Pakete: Ordner mit gespiegelter Zielstruktur **unter `config/`**
-  anlegen; muss das Paket nach `/`, in `ROOT_PKGS` (in `scripts/install.sh`)
-  eintragen.
-- **`AGENT/` bleibt im Root** und außerhalb der Stow-Logik — bewusst so.
+- Neue Config: Datei **flach unter `config/<name>/`** ablegen und einen
+  `link:`-Eintrag in `install.conf.yaml` (bzw. `root.install.conf.yaml` für
+  `/etc`) hinzufügen. `/etc`-Ziele **immer dateiweise**, nie ganze Verzeichnisse.
+- **`AGENT/` und `dotbot/` bleiben im Root** und außerhalb der Link-Logik.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
-  ausschließlich in `config/hypr/.config/hypr/hyprland.conf` gesetzt, **nicht** in der
+  ausschließlich in `config/hypr/hyprland.conf` gesetzt, **nicht** in der
   `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
 - Hyprland-Config: Seit 0.55 ist **hyprlang (`.conf`) deprecated** zugunsten der
   **Lua-Config** (API-Global `hl`, geladen aus `~/.config/hypr/hyprland.lua`,
-  Quelle unter `config/hypr/.config/hypr/`).
+  Quelle unter `config/hypr/`).
   `hyprland.lua` ist nur noch der **Einstiegspunkt** und lädt per `require()` die
   thematischen Module (`env`, `monitors`, `animations`, `devices`, `keybinds`,
   `looknfeel`, `autostart`) sowie die zentrale `programs.lua` (Programm-Namen).
@@ -80,7 +82,7 @@ Pfaden: `README.md`.
   als `hyprland.conf.bak`. Konvertierung erfolgte mit `hyprlang2lua`.
 - **KeePassXC-DB** (`*.kdbx`) ist per `.gitignore` ausgeschlossen und der
   `config/keepassxc/`-Ordner per `.claudeignore`.
-- Commits werden SSH-signiert (`config/git/.config/git/.gitconfig`).
+- Commits werden SSH-signiert (`config/git/.gitconfig`).
 - Zwei Health-/Workflow-Skills schreiben in `AGENT/`:
   `review-and-update-report` (Health-Report) und `implement-todo` (`TODO.md`
   abarbeiten, ein Commit pro Punkt).
