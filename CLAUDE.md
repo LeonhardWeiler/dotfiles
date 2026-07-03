@@ -28,8 +28,9 @@ Struktur das Zielverzeichnis spiegelt — meist `$HOME` (z. B.
 - **Nicht gestowt** (`IGNORE_PKGS` in `install.sh`): `prompts/` — reine
   Arbeits-/Workflow-Dateien (`TODO.md`, `project-health-report.html`,
   `project-setup.md`), werden **nicht** verlinkt.
-- Eigene Skripte: `scripts/.config/scripts/` (→ `~/.config/scripts`, liegt via
-  `.bashrc` im `PATH`). `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
+- Eigene Skripte: `scripts/.local/bin/` (→ `~/.local/bin`, XDG-Standardort für
+  User-Executables, via `.bashrc` im `PATH`). `lib_hypr.sh` ist eine per `source`
+  eingebundene Helfer-Lib
   für die Hyprland-Workspace-Automatisierung (`workspace_slf`,
   `rofi_workspace_manager`).
 - **`nvim/`** hat eine **eigene `CLAUDE.md`** (`nvim/.config/nvim/CLAUDE.md`) mit

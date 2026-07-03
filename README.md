@@ -78,7 +78,7 @@ systemctl --user enable --now dotfiles-sync.service
 > ohne Interaktion nutzbaren SSH-Key voraus (passphrase-los oder per `ssh-agent`
 > beim Login bereitgestellt); sonst schlägt nur der Push fehl (best effort, der
 > Login wird nicht blockiert). Erweiterbar über `GENERATORS`/`PATHS` in
-> `~/.config/scripts/dotfiles_sync`.
+> `~/.local/bin/dotfiles_sync`.
 
 Check status:
 
@@ -101,7 +101,7 @@ systemctl --user status <name>.service
 | Neovim         | `~/.config/nvim`       |
 | Pacman hooks   | `/etc/pacman.d/hooks`  |
 | Rofi           | `~/.config/rofi`       |
-| Scripts        | `~/.config/scripts`    |
+| Scripts        | `~/.local/bin`         |
 | Systemd User   | `~/.config/systemd/`   |
 | Systemd System | `/etc/systemd/system/` |
 | Typst          | `~/.config/typst`      |
