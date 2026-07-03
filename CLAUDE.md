@@ -5,51 +5,65 @@ Hinweise für die Arbeit an diesem Dotfiles-Repo. Kommentar-/Doku-Sprache: **Deu
 ## Überblick
 
 Persönliche Dotfiles für Arch Linux mit Hyprland (Wayland), verwaltet über
-**GNU Stow**. Jedes Top-Level-Verzeichnis ist ein Stow-Paket, dessen innere
-Struktur das Zielverzeichnis spiegelt — meist `$HOME` (z. B.
-`alacritty/.config/alacritty/…` → `~/.config/alacritty/…`), bei Root-Paketen `/`
-(z. B. `ly/etc/ly/…` → `/etc/ly/…`). Details zu Inhalten/Pfaden: `README.md`.
+**GNU Stow**. Der Repo-Root trennt **`config/`** (alle Stow-Pakete) von
+**`scripts/`** (Repo-Werkzeuge, keine Stow-Pakete). Jedes Verzeichnis unter
+`config/` ist ein Stow-Paket, dessen innere Struktur das Zielverzeichnis
+spiegelt — meist `$HOME` (z. B. `config/alacritty/.config/alacritty/…` →
+`~/.config/alacritty/…`), bei Root-Paketen `/` (z. B. `config/ly/etc/ly/…` →
+`/etc/ly/…`). Stow wird mit `--dir=config` aufgerufen. Details zu Inhalten/
+Pfaden: `README.md`.
 
 ## Installation & Befehle
 
-- **Verlinken**: `./install.sh` — fragt vor dem Anwenden, führt `stow -R` je Paket
-  aus. User-Pakete relativ zu `$HOME`, Root-Pakete (`ROOT_PKGS`) via
-  `sudo stow --target=/`. Danach optional `programs.txt` aktualisieren.
-- **Paketliste aktualisieren** (ohne Neu-Verlinken): `./update-package-list.sh`.
-- **Pakete aus `programs.txt` installieren**: `./install-programs.sh` (nutzt `yay`).
+- **Verlinken**: `./scripts/install.sh` — fragt vor dem Anwenden, führt
+  `stow --dir=config -R` je Paket aus. User-Pakete relativ zu `$HOME`,
+  Root-Pakete (`ROOT_PKGS`) via `sudo stow --dir=config --target=/`. Vor dem
+  Neu-Verlinken werden **verwaiste Symlinks** aus einem früheren Layout entfernt
+  (nur kaputte Links, die ins Repo zeigen; systemd-Enablement-Links unter
+  `*.wants`/`*.requires` bleiben verschont). Danach optional `programs.txt`
+  aktualisieren.
+- **Paketliste aktualisieren** (ohne Neu-Verlinken): `./scripts/update-package-list.sh`.
+- **Pakete aus `programs.txt` installieren**: `./scripts/install-programs.sh` (nutzt `yay`).
 - **Shell-Skripte prüfen** (kein Test-Framework): `bash -n <skript>`; wo vorhanden
   `shellcheck <skript>`.
 
 ## Struktur
 
-- Ein Verzeichnis = ein Stow-Paket. Konfig-Pakete: `alacritty`, `bash`, `btop`,
+- **`config/`** = alle Stow-Pakete. Konfig-Pakete: `alacritty`, `bash`, `btop`,
   `git`, `hypr`, `keepassxc`, `mako`, `mimeapps`, `mpv`, `pipewire`, `qt5ct`,
-  `rofi`, `scripts`, `typst`, `systemd-user`. Bei `btop`/`qt5ct`/`pipewire`/
+  `rofi`, `usrbin`, `typst`, `systemd-user`. Bei `btop`/`qt5ct`/`pipewire`/
   `mimeapps` wird bewusst nur die jeweilige Config-Datei verlinkt (Eltern-
   Verzeichnis bleibt real, damit die Programme dort Runtime-Dateien anlegen).
-- **Root-Pakete** (`ROOT_PKGS` in `install.sh`, Ziel `/`): `ly`, `systemd-system`.
-- **Nicht gestowt** (`IGNORE_PKGS` in `install.sh`): `prompts/` — reine
-  Arbeits-/Workflow-Dateien (`TODO.md`, `project-health-report.html`,
-  `project-setup.md`), werden **nicht** verlinkt.
-- Eigene Skripte: `scripts/.local/bin/` (→ `~/.local/bin`, XDG-Standardort für
-  User-Executables, via `.bashrc` im `PATH`). `lib_hypr.sh` ist eine per `source`
-  eingebundene Helfer-Lib
+- **`scripts/`** = Repo-Werkzeuge, **kein** Stow-Paket: `install.sh`,
+  `install-programs.sh`, `update-package-list.sh`, `programs.txt`.
+- **Root-Pakete** (`ROOT_PKGS` in `scripts/install.sh`, Ziel `/`): `ly`,
+  `systemd-system`, `pacman`.
+- **Nicht gestowt**: `prompts/` bleibt im Repo-Root (reine Arbeits-/Workflow-
+  Dateien: `TODO.md`, `project-health-report.html`) und wird **nicht** verlinkt.
+  Da unter `config/` nur Stow-Pakete liegen, entfällt die frühere
+  `IGNORE_PKGS`-Liste.
+- Eigene Skripte: Paket **`config/usrbin`** → `~/.local/bin` (XDG-Standardort für
+  User-Executables, via `.bashrc` im `PATH`; interne Struktur `.local/bin/…`).
+  `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
   für die Hyprland-Workspace-Automatisierung (`workspace_slf`,
-  `rofi_workspace_manager`).
-- **`nvim/`** hat eine **eigene `CLAUDE.md`** (`nvim/.config/nvim/CLAUDE.md`) mit
-  den nvim-spezifischen Verifikations-Befehlen — für nvim-Änderungen dort nachsehen.
+  `rofi_workspace_manager`). `dotfiles_sync` versioniert `scripts/programs.txt`;
+  `update_programs_list` schreibt nach `scripts/programs.txt`.
+- **`nvim/`** hat eine **eigene `CLAUDE.md`** (`config/nvim/.config/nvim/CLAUDE.md`)
+  mit den nvim-spezifischen Verifikations-Befehlen — für nvim-Änderungen dort
+  nachsehen.
 
 ## Konventionen & Fallstricke
 
-- Neue Stow-Pakete: Ordner mit gespiegelter Zielstruktur anlegen; muss das Paket
-  nach `/`, in `ROOT_PKGS` eintragen; soll es gar nicht verlinkt werden, in
-  `IGNORE_PKGS`.
-- **`prompts/` nicht in Stow-Logik aufnehmen** — bewusst ausgeschlossen.
+- Neue Stow-Pakete: Ordner mit gespiegelter Zielstruktur **unter `config/`**
+  anlegen; muss das Paket nach `/`, in `ROOT_PKGS` (in `scripts/install.sh`)
+  eintragen.
+- **`prompts/` bleibt im Root** und außerhalb der Stow-Logik — bewusst so.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
-  ausschließlich in `hypr/.config/hypr/hyprland.conf` gesetzt, **nicht** in der
+  ausschließlich in `config/hypr/.config/hypr/hyprland.conf` gesetzt, **nicht** in der
   `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
 - Hyprland-Config: Seit 0.55 ist **hyprlang (`.conf`) deprecated** zugunsten der
-  **Lua-Config** (API-Global `hl`, geladen aus `~/.config/hypr/hyprland.lua`).
+  **Lua-Config** (API-Global `hl`, geladen aus `~/.config/hypr/hyprland.lua`,
+  Quelle unter `config/hypr/.config/hypr/`).
   `hyprland.lua` ist nur noch der **Einstiegspunkt** und lädt per `require()` die
   thematischen Module (`env`, `monitors`, `animations`, `devices`, `keybinds`,
   `looknfeel`, `autostart`) sowie die zentrale `programs.lua` (Programm-Namen).
@@ -60,8 +74,8 @@ Struktur das Zielverzeichnis spiegelt — meist `$HOME` (z. B.
   bearbeiten. Die alte hyprlang-Config liegt noch in der Git-History bzw. lokal
   als `hyprland.conf.bak`. Konvertierung erfolgte mit `hyprlang2lua`.
 - **KeePassXC-DB** (`*.kdbx`) ist per `.gitignore` ausgeschlossen und der
-  `keepassxc/`-Ordner per `.claudeignore`.
-- Commits werden SSH-signiert (`git/.config/git/.gitconfig`).
+  `config/keepassxc/`-Ordner per `.claudeignore`.
+- Commits werden SSH-signiert (`config/git/.config/git/.gitconfig`).
 - Zwei Health-/Workflow-Skills schreiben in `prompts/`:
   `review-and-update-report` (Health-Report) und `implement-todo` (`TODO.md`
   abarbeiten, ein Commit pro Punkt).
