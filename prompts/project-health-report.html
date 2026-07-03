@@ -288,11 +288,14 @@
         Alacritty, Mako, Rofi, Ly, mpv, Typst, git-config, programs.txt und
         README. KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und
         fremde mpv-Lua-Scripts nur oberflächlich.<br />
-        <strong>P12 – kritische Config-Bewertung:</strong> jede Config auf
-        <em>behalten / ändern / entfernen</em> geprüft. Das Repo ist insgesamt
-        sehr sauber; die offenen Findings sind durchweg Aufräum-/Konsistenz-
-        Punkte (keine Funktionsfehler). Fixes bewusst noch offen (erst nach
-        Bewertung).
+        Frischer Voll-Scan nach dem P11-Umbau (Repo-Struktur
+        <code>config/</code> + <code>scripts/</code>) und der P12-Config-
+        Bewertung. Neu mitgeprüft: die Stow-Migrationslogik in
+        <code>scripts/install.sh</code>. Das Repo ist insgesamt sehr sauber; die
+        offenen Findings sind ein latenter Migrations-Gap (SH-1) plus
+        Aufräum-/Konsistenz-Punkte (<code>CFG-*</code>) – keine akuten
+        Funktionsfehler. Config-Fixes bewusst noch offen (Umsetzung als P13 in
+        <code>TODO.md</code>).
       </div>
 
       <div class="summary">
@@ -306,7 +309,7 @@
           <span class="n">1</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">6</span><span class="l">Niedrig</span>
+          <span class="n">7</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -321,7 +324,7 @@
 
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
-        <h2>1 · Offene Findings (P12 – Config-Bewertung)</h2>
+        <h2>1 · Offene Findings</h2>
 
         <div class="card mittel">
           <div class="card-head">
@@ -349,6 +352,38 @@
             <code>qt6ct</code> übernehmen); das <code>qt5ct</code> in
             <code>.bash_profile</code> entsprechend angleichen. Andernfalls
             konsequent bei <code>qt5ct</code> bleiben und env.lua korrigieren.
+          </p>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="id">SH-1</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="loc"
+              ><code>scripts/install.sh</code> · <code>remove_stale_links()</code></span
+            >
+          </div>
+          <p>
+            <b>Migration repariert keine systemd-Enablement-Links.</b> Der
+            Aufräum-Schritt entfernt verwaiste Repo-Symlinks, klammert
+            <code>*.wants</code>/<code>*.requires</code> aber bewusst aus (damit
+            kein Dienst deaktiviert wird). Kehrseite: Wurde eine Unit per
+            <em>In-Repo-Pfad</em> aktiviert (Enablement-Link zeigt direkt ins
+            Repo, z. B. <code>legion-conservation</code>), dann zeigt dieser Link
+            nach einem Layout-Umzug ins Leere und wird von
+            <code>install.sh</code> <em>nicht</em> repariert – der Dienst ist
+            still „enabled, aber Unit not-found" und startet nicht mehr
+            automatisch. (Im aktuellen System bereits manuell via
+            <code>reenable</code> behoben; ein frischer Klon ist nicht betroffen.)
+          </p>
+          <p class="rec">
+            <b>Empfehlung:</b> Nach einem Layout-Umzug betroffene Units einmal
+            <code>systemctl reenable &lt;unit&gt;</code> (bzw.
+            <code>--user</code>) – oder diesen Schritt in <code>install.sh</code>
+            für bekannte Units automatisieren bzw. im README als Migrations-
+            Hinweis dokumentieren. Robuster wäre, Units generell über
+            <code>/etc/systemd/system/&lt;unit&gt;</code> statt per Repo-Pfad zu
+            aktivieren.
           </p>
         </div>
 
