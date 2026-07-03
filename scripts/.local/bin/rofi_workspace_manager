@@ -4,7 +4,7 @@
 
 m() { rofi -dmenu -i -p "Workspace" "$@" ;}
 
-SCRIPTS="$HOME/.config/scripts"
+SCRIPTS="$HOME/.local/bin"
 
 choice="$(printf '%s\n' \
   "slf-workspace" \

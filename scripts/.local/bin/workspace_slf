@@ -15,7 +15,7 @@
 set -o pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=/home/leo/.config/scripts/lib_hypr.sh
+# shellcheck source=/home/leo/.local/bin/lib_hypr.sh
 . "$DIR/lib_hypr.sh"
 
 SLF="$HOME/files/projects/slf"

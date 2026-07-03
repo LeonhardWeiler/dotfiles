@@ -11,5 +11,5 @@ Target = *
 [Action]
 Description = Dotfiles: programs.txt aktualisieren...
 When = PostTransaction
-Exec = /home/leo/.config/scripts/update_programs_list
+Exec = /home/leo/.local/bin/update_programs_list
 Depends = awk

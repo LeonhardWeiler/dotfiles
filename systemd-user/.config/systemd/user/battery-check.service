@@ -3,7 +3,7 @@ Description=Battery level check
 
 [Service]
 Type=oneshot
-ExecStart=%h/.config/scripts/bat_check
+ExecStart=%h/.local/bin/bat_check
 
 [Install]
 WantedBy=default.target

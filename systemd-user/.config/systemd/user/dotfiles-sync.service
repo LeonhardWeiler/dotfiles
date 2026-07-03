@@ -8,7 +8,7 @@ Wants=network-online.target
 Type=oneshot
 # Gleiche Git-Config wie in der interaktiven Shell (SSH-Signing etc.).
 Environment=GIT_CONFIG_GLOBAL=%h/.config/git/.gitconfig
-ExecStart=%h/.config/scripts/dotfiles_sync
+ExecStart=%h/.local/bin/dotfiles_sync
 
 [Install]
 WantedBy=default.target

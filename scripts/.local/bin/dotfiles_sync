@@ -10,7 +10,7 @@
 set -uo pipefail
 
 DOTFILES="${DOTFILES_DIR:-$HOME/dotfiles}"
-SCRIPTS="${SCRIPTS_DIR:-$HOME/.config/scripts}"
+SCRIPTS="${SCRIPTS_DIR:-$HOME/.local/bin}"
 cd "$DOTFILES" || exit 0
 
 # --- Generatoren: erzeugen/aktualisieren versionierte Artefakte --------------

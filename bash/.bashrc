@@ -18,7 +18,6 @@ PROMPT_COMMAND=update_battery
 
 PS1='${battery}\w \$ '
 
-export PATH="$HOME/.config/scripts:$PATH"
 export EDITOR="nvim"
 
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
