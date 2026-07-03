@@ -92,14 +92,18 @@ systemctl --user status <name>.service
 | -------------- | ---------------------- |
 | Alacritty      | `~/.config/alacritty`  |
 | Bash           | `~/.bashrc`            |
+| btop           | `~/.config/btop`       |
 | Git            | `~/.config/git`        |
 | Hyprland       | `~/.config/hypr`       |
 | KeePassXC      | `~/.config/keepassxc`  |
 | Ly             | `/etc/ly`              |
 | Mako           | `~/.config/mako`       |
+| MIME defaults  | `~/.config/mimeapps.list` |
 | MPV            | `~/.config/mpv`        |
 | Neovim         | `~/.config/nvim`       |
 | Pacman hooks   | `/etc/pacman.d/hooks`  |
+| PipeWire       | `~/.config/pipewire`   |
+| qt5ct          | `~/.config/qt5ct`      |
 | Rofi           | `~/.config/rofi`       |
 | Scripts        | `~/.local/bin`         |
 | Systemd User   | `~/.config/systemd/`   |

@@ -22,8 +22,11 @@ Struktur das Zielverzeichnis spiegelt — meist `$HOME` (z. B.
 
 ## Struktur
 
-- Ein Verzeichnis = ein Stow-Paket. Konfig-Pakete: `alacritty`, `bash`, `git`,
-  `hypr`, `keepassxc`, `mako`, `mpv`, `rofi`, `scripts`, `typst`, `systemd-user`.
+- Ein Verzeichnis = ein Stow-Paket. Konfig-Pakete: `alacritty`, `bash`, `btop`,
+  `git`, `hypr`, `keepassxc`, `mako`, `mimeapps`, `mpv`, `pipewire`, `qt5ct`,
+  `rofi`, `scripts`, `typst`, `systemd-user`. Bei `btop`/`qt5ct`/`pipewire`/
+  `mimeapps` wird bewusst nur die jeweilige Config-Datei verlinkt (Eltern-
+  Verzeichnis bleibt real, damit die Programme dort Runtime-Dateien anlegen).
 - **Root-Pakete** (`ROOT_PKGS` in `install.sh`, Ziel `/`): `ly`, `systemd-system`.
 - **Nicht gestowt** (`IGNORE_PKGS` in `install.sh`): `prompts/` — reine
   Arbeits-/Workflow-Dateien (`TODO.md`, `project-health-report.html`,
