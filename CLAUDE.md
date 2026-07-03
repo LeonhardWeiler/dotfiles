@@ -30,10 +30,12 @@ Pfaden: `README.md`.
 ## Struktur
 
 - **`config/`** = alle Stow-Pakete. Konfig-Pakete: `alacritty`, `bash`, `btop`,
-  `git`, `hypr`, `keepassxc`, `mako`, `mimeapps`, `mpv`, `pipewire`, `qt5ct`,
-  `rofi`, `usrbin`, `typst`, `systemd-user`. Bei `btop`/`qt5ct`/`pipewire`/
-  `mimeapps` wird bewusst nur die jeweilige Config-Datei verlinkt (Eltern-
-  Verzeichnis bleibt real, damit die Programme dort Runtime-Dateien anlegen).
+  `claude`, `git`, `hypr`, `keepassxc`, `mako`, `mimeapps`, `mpv`, `pipewire`,
+  `qt5ct`, `rofi`, `usrbin`, `typst`, `systemd-user`. Bei `btop`/`qt5ct`/
+  `pipewire`/`mimeapps`/`claude` wird bewusst nur die jeweilige Config-Datei
+  (bzw. bei `claude` `skills/` + `settings.json`) verlinkt (Eltern-Verzeichnis
+  bleibt real, damit die Programme dort Runtime-Dateien anlegen). `claude`
+  trackt **nicht** `.claude.json`/sessions/history/cache (Auth/State/Secrets).
 - **`scripts/`** = Repo-Werkzeuge, **kein** Stow-Paket: `install.sh`,
   `install-programs.sh`, `update-package-list.sh`, `programs.txt`.
 - **Root-Pakete** (`ROOT_PKGS` in `scripts/install.sh`, Ziel `/`): `ly`,

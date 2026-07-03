@@ -104,6 +104,7 @@ systemctl --user status <name>.service
 | Alacritty      | `~/.config/alacritty`     |
 | Bash           | `~/.bashrc`               |
 | btop           | `~/.config/btop`          |
+| Claude Code    | `~/.claude/{skills,settings.json}` |
 | Git            | `~/.config/git`           |
 | Hyprland       | `~/.config/hypr`          |
 | KeePassXC      | `~/.config/keepassxc`     |
