@@ -12,7 +12,7 @@
 # der alten install.sh). Enfernt ausschliesslich TOTE Symlinks in diese Basis.
 - clean:
     "~":
-      force: false
+      force: true
     "~/.config":
       recursive: true
     "~/.local/bin": {}
@@ -56,6 +56,12 @@
     # User-Units deklarativ aktivieren (ersetzt die frueher getrackten
     # *.wants-Links). pipewire/wireplumber/figma-agent werden von ihren
     # Paket-Presets aktiviert und daher hier bewusst NICHT verwaltet.
-    - command: systemctl --user reenable battery-check.timer dotfiles-sync.service
+    - command: systemctl --user daemon-reload
+      description: systemd-User-Units (re)aktivieren
+      stderr: true
+    - command: systemctl --user enable battery-check.timer
+      description: systemd-User-Units (re)aktivieren
+      stderr: true
+    - command: systemctl --user enable dotfiles-sync.service
       description: systemd-User-Units (re)aktivieren
       stderr: true
