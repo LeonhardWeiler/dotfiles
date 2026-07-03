@@ -24,10 +24,19 @@ cd ~/dotfiles
 Make the installation script executable and run it:
 
 ```bash
-chmod +x install.sh
+chmod +x scripts/install.sh
 # Run as your normal user — the script requests sudo itself for system packages
-./install.sh
+./scripts/install.sh
 ```
+
+> **Repo layout:** all Stow packages live under `config/` (Stow is invoked with
+> `--dir=config`), while `scripts/` holds the repository tooling
+> (`install.sh`, `install-programs.sh`, `update-package-list.sh`,
+> `programs.txt`). The former `scripts` package that links executables into
+> `~/.local/bin` is now `config/usrbin`. On first run after this layout change,
+> `install.sh` removes orphaned symlinks that still point at the old paths
+> before re-linking (systemd enablement links under `*.wants`/`*.requires` are
+> left untouched).
 
 After installation, restart your shell or run the following to apply the Bash configuration:
 
@@ -121,8 +130,8 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 * Some applications may require additional dependencies not covered by this repository.
 * Adjust paths and configurations to your personal environment.
 * Backing up existing configurations is strongly recommended.
-* To update the program list without relinking, run `./update-package-list.sh`.
-* To install all packages from `programs.txt`, run  `./install-programs.sh`
+* To update the program list without relinking, run `./scripts/update-package-list.sh`.
+* To install all packages from `programs.txt`, run  `./scripts/install-programs.sh`
 
 ### New Initramfs
 
