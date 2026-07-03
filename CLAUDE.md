@@ -38,7 +38,7 @@ Pfaden: `README.md`.
   `install-programs.sh`, `update-package-list.sh`, `programs.txt`.
 - **Root-Pakete** (`ROOT_PKGS` in `scripts/install.sh`, Ziel `/`): `ly`,
   `systemd-system`, `pacman`.
-- **Nicht gestowt**: `prompts/` bleibt im Repo-Root (reine Arbeits-/Workflow-
+- **Nicht gestowt**: `AGENT/` bleibt im Repo-Root (reine Arbeits-/Workflow-
   Dateien: `TODO.md`, `project-health-report.html`) und wird **nicht** verlinkt.
   Da unter `config/` nur Stow-Pakete liegen, entfällt die frühere
   `IGNORE_PKGS`-Liste.
@@ -57,7 +57,7 @@ Pfaden: `README.md`.
 - Neue Stow-Pakete: Ordner mit gespiegelter Zielstruktur **unter `config/`**
   anlegen; muss das Paket nach `/`, in `ROOT_PKGS` (in `scripts/install.sh`)
   eintragen.
-- **`prompts/` bleibt im Root** und außerhalb der Stow-Logik — bewusst so.
+- **`AGENT/` bleibt im Root** und außerhalb der Stow-Logik — bewusst so.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
   ausschließlich in `config/hypr/.config/hypr/hyprland.conf` gesetzt, **nicht** in der
   `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
@@ -76,6 +76,6 @@ Pfaden: `README.md`.
 - **KeePassXC-DB** (`*.kdbx`) ist per `.gitignore` ausgeschlossen und der
   `config/keepassxc/`-Ordner per `.claudeignore`.
 - Commits werden SSH-signiert (`config/git/.config/git/.gitconfig`).
-- Zwei Health-/Workflow-Skills schreiben in `prompts/`:
+- Zwei Health-/Workflow-Skills schreiben in `AGENT/`:
   `review-and-update-report` (Health-Report) und `implement-todo` (`TODO.md`
   abarbeiten, ein Commit pro Punkt).

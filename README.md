@@ -4,11 +4,11 @@ This repository contains my personal dotfiles for configuring my development env
 
 ## Requirements
 
-* **Linux-based operating system**
-* **Bash shell (`bash`)** – required for installation and shell configuration
-* **Git (`git`)** – for cloning the repository
-* **GNU Stow (`stow`)** – for managing symlinks
-* **Sudo privileges** – for system-wide configuration
+- **Linux-based operating system**
+- **Bash shell (`bash`)** – required for installation and shell configuration
+- **Git (`git`)** – for cloning the repository
+- **GNU Stow (`stow`)** – for managing symlinks
+- **Sudo privileges** – for system-wide configuration
 
 > Please back up your existing dotfiles before running the installation script.
 
@@ -97,27 +97,27 @@ systemctl --user status <name>.service
 
 ## Contents
 
-| Component      | Path                   |
-| -------------- | ---------------------- |
-| Alacritty      | `~/.config/alacritty`  |
-| Bash           | `~/.bashrc`            |
-| btop           | `~/.config/btop`       |
-| Git            | `~/.config/git`        |
-| Hyprland       | `~/.config/hypr`       |
-| KeePassXC      | `~/.config/keepassxc`  |
-| Ly             | `/etc/ly`              |
-| Mako           | `~/.config/mako`       |
+| Component      | Path                      |
+| -------------- | ------------------------- |
+| Alacritty      | `~/.config/alacritty`     |
+| Bash           | `~/.bashrc`               |
+| btop           | `~/.config/btop`          |
+| Git            | `~/.config/git`           |
+| Hyprland       | `~/.config/hypr`          |
+| KeePassXC      | `~/.config/keepassxc`     |
+| Ly             | `/etc/ly`                 |
+| Mako           | `~/.config/mako`          |
 | MIME defaults  | `~/.config/mimeapps.list` |
-| MPV            | `~/.config/mpv`        |
-| Neovim         | `~/.config/nvim`       |
-| Pacman hooks   | `/etc/pacman.d/hooks`  |
-| PipeWire       | `~/.config/pipewire`   |
-| qt5ct          | `~/.config/qt5ct`      |
-| Rofi           | `~/.config/rofi`       |
-| Scripts        | `~/.local/bin`         |
-| Systemd User   | `~/.config/systemd/`   |
-| Systemd System | `/etc/systemd/system/` |
-| Typst          | `~/.config/typst`      |
+| MPV            | `~/.config/mpv`           |
+| Neovim         | `~/.config/nvim`          |
+| Pacman hooks   | `/etc/pacman.d/hooks`     |
+| PipeWire       | `~/.config/pipewire`      |
+| qt5ct          | `~/.config/qt5ct`         |
+| Rofi           | `~/.config/rofi`          |
+| Scripts        | `~/.local/bin`            |
+| Systemd User   | `~/.config/systemd/`      |
+| Systemd System | `/etc/systemd/system/`    |
+| Typst          | `~/.config/typst`         |
 
 ## My Setup
 
@@ -127,11 +127,11 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 
 ## Notes
 
-* Some applications may require additional dependencies not covered by this repository.
-* Adjust paths and configurations to your personal environment.
-* Backing up existing configurations is strongly recommended.
-* To update the program list without relinking, run `./scripts/update-package-list.sh`.
-* To install all packages from `programs.txt`, run  `./scripts/install-programs.sh`
+- Some applications may require additional dependencies not covered by this repository.
+- Adjust paths and configurations to your personal environment.
+- Backing up existing configurations is strongly recommended.
+- To update the program list without relinking, run `./scripts/update-package-list.sh`.
+- To install all packages from `programs.txt`, run `./scripts/install-programs.sh`
 
 ### New Initramfs
 
