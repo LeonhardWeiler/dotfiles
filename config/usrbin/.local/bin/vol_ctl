@@ -1,6 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 STEP=5
+
+# Benoetigte Kommandos pruefen (still degradieren statt kryptisch scheitern).
+for cmd in pactl notify-send; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "vol_ctl: '$cmd' nicht gefunden" >&2
+    exit 1
+  }
+done
 
 SINK=$(pactl info | grep "Default Sink" | awk '{print $3}')
 if [ -z "$SINK" ]; then

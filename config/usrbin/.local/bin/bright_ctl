@@ -1,6 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 STEP=5
+
+# Benoetigte Kommandos pruefen (still degradieren statt kryptisch scheitern).
+for cmd in brightnessctl notify-send; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "bright_ctl: '$cmd' nicht gefunden" >&2
+    exit 1
+  }
+done
 
 case "$1" in
   up)
