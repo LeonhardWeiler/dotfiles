@@ -103,29 +103,29 @@ systemctl --user status <name>.service
 
 ## Contents
 
-| Component      | Path                      |
-| -------------- | ------------------------- |
-| Alacritty      | `~/.config/alacritty`     |
-| Bash           | `~/.bashrc`               |
-| btop           | `~/.config/btop`          |
+| Component      | Path                               |
+| -------------- | ---------------------------------- |
+| Alacritty      | `~/.config/alacritty`              |
+| Bash           | `~/.bashrc`                        |
+| btop           | `~/.config/btop`                   |
 | Claude Code    | `~/.claude/{skills,settings.json}` |
-| Git            | `~/.config/git`           |
-| Hyprland       | `~/.config/hypr`          |
-| KeePassXC      | `~/.config/keepassxc`     |
-| Ly             | `/etc/ly`                 |
-| Mako           | `~/.config/mako`          |
-| MIME defaults  | `~/.config/mimeapps.list` |
-| mkinitcpio     | `/etc/mkinitcpio.conf`    |
-| MPV            | `~/.config/mpv`           |
-| Neovim         | `~/.config/nvim`          |
-| Pacman hooks   | `/etc/pacman.d/hooks`     |
-| PipeWire       | `~/.config/pipewire`      |
-| qt5ct          | `~/.config/qt5ct`         |
-| Rofi           | `~/.config/rofi`          |
-| Scripts        | `~/.local/bin`            |
-| Systemd User   | `~/.config/systemd/`      |
-| Systemd System | `/etc/systemd/system/`    |
-| Typst          | `~/.config/typst`         |
+| Git            | `~/.config/git`                    |
+| Hyprland       | `~/.config/hypr`                   |
+| KeePassXC      | `~/.config/keepassxc`              |
+| Ly             | `/etc/ly`                          |
+| Mako           | `~/.config/mako`                   |
+| MIME defaults  | `~/.config/mimeapps.list`          |
+| mkinitcpio     | `/etc/mkinitcpio.conf`             |
+| MPV            | `~/.config/mpv`                    |
+| Neovim         | `~/.config/nvim`                   |
+| Pacman hooks   | `/etc/pacman.d/hooks`              |
+| PipeWire       | `~/.config/pipewire`               |
+| qt5ct          | `~/.config/qt5ct`                  |
+| Rofi           | `~/.config/rofi`                   |
+| Scripts        | `~/.local/bin`                     |
+| Systemd User   | `~/.config/systemd/`               |
+| Systemd System | `/etc/systemd/system/`             |
+| Typst          | `~/.config/typst`                  |
 
 ## My Setup
 

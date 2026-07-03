@@ -2,7 +2,6 @@
 # dotbot-Wrapper. Nutzung:
 #   ./install                       -> User-Config (install.conf.yaml)
 #   sudo ./install root.install.conf.yaml   -> Root-/etc-Config
-# Prerequisite: python3 + PyYAML (Paket 'python-yaml').
 set -e
 
 CONFIG="${1:-install.conf.yaml}"
