@@ -13,7 +13,7 @@ set -euo pipefail
 
 DOTFILES="${DOTFILES_DIR:-/home/leo/dotfiles}"
 OWNER="${DOTFILES_OWNER:-leo}"
-OUT="$DOTFILES/programs.txt"
+OUT="$DOTFILES/scripts/programs.txt"
 
 # -Q liest nur die lokale DB (keine Lock-Kollision) -> im Hook sicher.
 pacman -Qe | awk 'NR==FNR{skip[$1];next} !($1 in skip)' <(pacman -Qq base) - > "$OUT"

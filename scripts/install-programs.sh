@@ -12,6 +12,9 @@ then
     rm -rf /tmp/yay
 fi
 
+# programs.txt liegt neben diesem Skript im scripts/-Ordner.
+PROGRAMS_TXT="$(cd "$(dirname "$0")" && pwd)/programs.txt"
+
 echo "Installing packages from programs.txt..."
 
 while IFS= read -r line
@@ -28,7 +31,7 @@ do
         echo "$package not installed, installing with yay..."
         yay -S --noconfirm "$package"
     fi
-done < programs.txt
+done < "$PROGRAMS_TXT"
 
 echo "All packages from programs.txt have been processed."
 
