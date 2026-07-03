@@ -10,7 +10,14 @@ return {
     "echasnovski/mini.icons",
     version = false,
     lazy = true,
-    opts = {},
+    opts = {
+      -- Eigenes Icon fuer AGENT-Ordner (KI-/Workflow-Dateien): Roboter-Glyph
+      -- (nf-md-robot) in Lila. Greift ueberall, wo mini.icons Directory-Icons
+      -- liefert (u. a. oil.nvim).
+      directory = {
+        AGENT = { glyph = "󰚩", hl = "MiniIconsPurple" },
+      },
+    },
     init = function()
       package.preload["nvim-web-devicons"] = function()
         require("mini.icons").mock_nvim_web_devicons()
