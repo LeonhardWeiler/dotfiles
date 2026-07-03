@@ -294,9 +294,8 @@
         <code>scripts/install.sh</code>. Das Repo ist insgesamt sehr sauber. Die
         <code>CFG-*</code>-Config-Fixes (P13) sind inzwischen alle umgesetzt und
         entfernt; ebenso der Migrations-Gap (SH-1: <code>install.sh</code> nutzt
-        jetzt <code>reenable</code>). Offen bleibt nur ein beim LY-Fix
-        entdeckter, ausstehender <code>.pacnew</code>-Abgleich (LY-2) – keine
-        akuten Funktionsfehler.
+        jetzt <code>reenable</code>) und der <code>.pacnew</code>-Abgleich (LY-2:
+        gesichtet und entfernt). Aktuell <strong>keine offenen Findings</strong>.
       </div>
 
       <div class="summary">
@@ -310,7 +309,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">1</span><span class="l">Niedrig</span>
+          <span class="n">0</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -327,28 +326,11 @@
       <section id="offen">
         <h2>1 · Offene Findings</h2>
 
-        <div class="card niedrig">
-          <div class="card-head">
-            <span class="id">LY-2</span>
-            <span class="badge niedrig">niedrig</span>
-            <span class="loc"><code>/etc/ly/config.ini.pacnew</code></span>
-          </div>
-          <p>
-            <b>Ausstehender ly-Config-Abgleich.</b> Beim Umsetzen von CFG-LY-1
-            fiel auf, dass eine <code>/etc/ly/config.ini.pacnew</code> vorliegt:
-            das ly-Paket wurde aktualisiert und bringt neue Config-Keys mit
-            (u. a. <code>show_password_key</code>, <code>show_tty</code>,
-            <code>shell</code>, <code>x_vt</code>). Die (nun reduzierte)
-            getrackte Config nutzt für diese automatisch die neuen Defaults –
-            akut ist nichts kaputt.
-          </p>
-          <p class="rec">
-            <b>Empfehlung:</b> Die <code>.pacnew</code> einmal gegen die
-            reduzierte Config sichten (welche neuen Optionen sind interessant?),
-            gewünschte Keys übernehmen und die <code>.pacnew</code> anschließend
-            entfernen (<code>pacdiff</code>).
-          </p>
-        </div>
+        <p class="muted">
+          Aktuell keine offenen Findings. Die <code>.pacnew</code> (LY-2) wurde
+          gesichtet — die neuen ly-Keys sind reine Defaults, nichts zu
+          übernehmen — und entfernt.
+        </p>
       </section>
 
       <!-- ================= WAS STARK IST ================= -->

@@ -27,8 +27,9 @@ eigener Commit; behobene Findings aus dem Report entfernt.
 - [x] **CFG-MIME-1 fix** – redundante `[Added Associations]` entfernt.
 - [x] **CFG-PW-1 fix** – `min-quantum` 32 → 128, begründet kommentiert.
 
-### Offen (neu entdeckt)
+### Erledigt (nachgezogen)
 
-- [ ] **LY-2** (niedrig) – `/etc/ly/config.ini.pacnew` gegen die reduzierte
-      Config sichten (neue ly-Keys), Gewünschtes übernehmen, `.pacnew` via
-      `pacdiff` entfernen.
+- [x] **SH-1 fix** – `install.sh` (re)aktiviert Units per `systemctl reenable`
+      (System + User) → repariert verwaiste Enablement-Links nach Layout-Umzug.
+- [x] **LY-2** – `/etc/ly/config.ini.pacnew` gesichtet (neue Keys sind reine
+      Defaults, nichts zu übernehmen) und entfernt.
