@@ -31,6 +31,14 @@ SYSTEM_UNITS=(
     "legion-conservation.service"
 )
 
+# User-Units, deren Enablement (*.wants-Links) mitgetrackt wird. Nach einem
+# Layout-Umzug koennen deren Enablement-Links ins Leere zeigen -> reenable
+# baut sie sauber auf die aktuelle Unit-Position neu auf (Selbstheilung).
+USER_UNITS=(
+    "battery-check.timer"
+    "dotfiles-sync.service"
+)
+
 chmod +x "$DOTFILES_DIR/scripts/update-package-list.sh"
 chmod +x "$DOTFILES_DIR/scripts/install-programs.sh"
 
@@ -98,17 +106,24 @@ if [[ "$confirm" == "y" || "$confirm" == "yes" ]]; then
         sudo stow --dir="$CONFIG_DIR" --target=/ -R -v "$pkg"
     done
 
-    # User-Dienste sind bereits ueber die gestowten *.wants-Links aktiviert
-    # (Paket systemd-user); daher nur die System-Dienste anbieten.
-    read -p "System-Dienste aus SYSTEM_UNITS aktivieren (systemctl enable)? [y/N]: " confirm
+    # Dienste (re)aktivieren. 'reenable' statt 'enable' macht den Schritt
+    # selbstheilend: nach einem Layout-Umzug werden verwaiste Enablement-Links
+    # (*.wants) sauber auf die aktuelle Unit-Position neu aufgebaut, statt dass
+    # ein Dienst "enabled, aber Unit not-found" haengen bleibt. Ohne --now, damit
+    # die laufende Session (ly@tty2, libvirtd, ...) nicht gestoert wird.
+    read -p "System- und User-Dienste (re)aktivieren (systemctl reenable)? [y/N]: " confirm
     confirm=${confirm,,}
     if [[ "$confirm" == "y" || "$confirm" == "yes" ]]; then
         for unit in "${SYSTEM_UNITS[@]}"; do
-            echo "  enable $unit"
-            sudo systemctl enable "$unit" || echo "  WARN: $unit konnte nicht aktiviert werden (Paket installiert?)"
+            echo "  reenable $unit"
+            sudo systemctl reenable "$unit" || echo "  WARN: $unit nicht (re)aktiviert (Paket installiert?)"
         done
-        echo "Hinweis: 'enable' wirkt ab dem naechsten Boot. Fuer sofortiges"
-        echo "Starten je Dienst 'sudo systemctl start <unit>' bzw. 'enable --now'."
+        for unit in "${USER_UNITS[@]}"; do
+            echo "  reenable --user $unit"
+            systemctl --user reenable "$unit" || echo "  WARN: --user $unit nicht (re)aktiviert"
+        done
+        echo "Hinweis: 'reenable' wirkt ab dem naechsten Boot/Login. Fuer"
+        echo "sofortiges Starten je Dienst 'systemctl start <unit>'."
     fi
 
     read -p "Möchtest du das programs.txt file aktualisieren [Y/n]: " confirm

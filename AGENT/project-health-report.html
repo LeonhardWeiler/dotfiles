@@ -293,9 +293,10 @@
         Bewertung. Neu mitgeprüft: die Stow-Migrationslogik in
         <code>scripts/install.sh</code>. Das Repo ist insgesamt sehr sauber. Die
         <code>CFG-*</code>-Config-Fixes (P13) sind inzwischen alle umgesetzt und
-        entfernt; offen bleibt ein latenter Migrations-Gap (SH-1) sowie ein beim
-        LY-Fix entdeckter, ausstehender <code>.pacnew</code>-Abgleich (LY-2) –
-        keine akuten Funktionsfehler.
+        entfernt; ebenso der Migrations-Gap (SH-1: <code>install.sh</code> nutzt
+        jetzt <code>reenable</code>). Offen bleibt nur ein beim LY-Fix
+        entdeckter, ausstehender <code>.pacnew</code>-Abgleich (LY-2) – keine
+        akuten Funktionsfehler.
       </div>
 
       <div class="summary">
@@ -309,7 +310,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">2</span><span class="l">Niedrig</span>
+          <span class="n">1</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -325,41 +326,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card niedrig">
-          <div class="card-head">
-            <span class="id">SH-1</span>
-            <span class="badge niedrig">niedrig</span>
-            <span class="loc"
-              ><code>scripts/install.sh</code> ·
-              <code>remove_stale_links()</code></span
-            >
-          </div>
-          <p>
-            <b>Migration repariert keine systemd-Enablement-Links.</b> Der
-            Aufräum-Schritt entfernt verwaiste Repo-Symlinks, klammert
-            <code>*.wants</code>/<code>*.requires</code> aber bewusst aus (damit
-            kein Dienst deaktiviert wird). Kehrseite: Wurde eine Unit per
-            <em>In-Repo-Pfad</em> aktiviert (Enablement-Link zeigt direkt ins
-            Repo, z. B. <code>legion-conservation</code>), dann zeigt dieser
-            Link nach einem Layout-Umzug ins Leere und wird von
-            <code>install.sh</code> <em>nicht</em> repariert – der Dienst ist
-            still „enabled, aber Unit not-found" und startet nicht mehr
-            automatisch. (Im aktuellen System bereits manuell via
-            <code>reenable</code> behoben; ein frischer Klon ist nicht
-            betroffen.)
-          </p>
-          <p class="rec">
-            <b>Empfehlung:</b> Nach einem Layout-Umzug betroffene Units einmal
-            <code>systemctl reenable &lt;unit&gt;</code> (bzw.
-            <code>--user</code>) – oder diesen Schritt in
-            <code>install.sh</code>
-            für bekannte Units automatisieren bzw. im README als Migrations-
-            Hinweis dokumentieren. Robuster wäre, Units generell über
-            <code>/etc/systemd/system/&lt;unit&gt;</code> statt per Repo-Pfad zu
-            aktivieren.
-          </p>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">
