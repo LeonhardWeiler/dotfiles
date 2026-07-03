@@ -15,6 +15,22 @@ fi
 ROOT_PKGS=("ly" "systemd-system" "pacman" "mkinitcpio")
 USER_PKGS=()
 
+# System-Dienste, die zum Setup gehoeren (frueher nur README-Merkliste).
+# enable (ohne --now): wirkt ab dem naechsten Boot; ein sofortiges --now waehrend
+# der Installation koennte die laufende Session stoeren (z. B. ly@tty2).
+SYSTEM_UNITS=(
+    "zram.service"
+    "NetworkManager.service"
+    "ly@tty2.service"
+    "pipewire.service"
+    "wireplumber.service"
+    "dnsmasq.service"
+    "sshd.service"
+    "swtpm.service"
+    "libvirtd.service"
+    "legion-conservation.service"
+)
+
 chmod +x "$DOTFILES_DIR/scripts/update-package-list.sh"
 chmod +x "$DOTFILES_DIR/scripts/install-programs.sh"
 
@@ -81,6 +97,19 @@ if [[ "$confirm" == "y" || "$confirm" == "yes" ]]; then
     for pkg in "${ROOT_PKGS[@]}"; do
         sudo stow --dir="$CONFIG_DIR" --target=/ -R -v "$pkg"
     done
+
+    # User-Dienste sind bereits ueber die gestowten *.wants-Links aktiviert
+    # (Paket systemd-user); daher nur die System-Dienste anbieten.
+    read -p "System-Dienste aus SYSTEM_UNITS aktivieren (systemctl enable)? [y/N]: " confirm
+    confirm=${confirm,,}
+    if [[ "$confirm" == "y" || "$confirm" == "yes" ]]; then
+        for unit in "${SYSTEM_UNITS[@]}"; do
+            echo "  enable $unit"
+            sudo systemctl enable "$unit" || echo "  WARN: $unit konnte nicht aktiviert werden (Paket installiert?)"
+        done
+        echo "Hinweis: 'enable' wirkt ab dem naechsten Boot. Fuer sofortiges"
+        echo "Starten je Dienst 'sudo systemctl start <unit>' bzw. 'enable --now'."
+    fi
 
     read -p "Möchtest du das programs.txt file aktualisieren [Y/n]: " confirm
     confirm=${confirm,,}
