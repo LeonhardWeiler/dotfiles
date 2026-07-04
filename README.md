@@ -38,13 +38,16 @@ Useful variants:
 ./install status          # show state of every entry (ok / foreign link / real file / missing)
 ./install --user-only     # only ~ targets, never touch /etc, no sudo
 ./install -n              # dry run: print what would happen, change nothing
+./install --force         # back up real files/dirs at the target to .bak, then link
 ./install unlink          # remove the symlinks this repo manages
 ```
 
 > **Repo layout:** every config lives directly under `config/<name>/` (flat
 > source paths — e.g. `config/btop/btop.conf`), and `links.conf` maps each source
-> to its target. `./install` never overwrites a real file (only symlinks are
-> replaced), and `unlink` only removes symlinks that point back into this repo.
+> to its target. Existing symlinks are always replaced; by default `./install`
+> never overwrites a **real** file/dir (only symlinks are replaced) — use
+> `--force` to back those up to `.bak` and replace them. `unlink` only removes
+> symlinks that point back into this repo.
 > `scripts/` holds the remaining repo tooling (`install-programs.sh`,
 > `update-package-list.sh`, `programs.txt`). Executables are linked from
 > `config/usrbin` into `~/.local/bin`.

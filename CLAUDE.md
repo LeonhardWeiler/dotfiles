@@ -20,7 +20,9 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   `links.conf` an/frischt sie auf und reaktiviert danach die systemd-Units
   (self-healing). `~/…`-Ziele ohne, `/etc/…`-Ziele per sudo (fragt bei Bedarf
   nach dem Passwort). Optionen: `--user-only` (nur `~`, kein sudo), `--no-units`
-  (systemd überspringen), `-n/--dry-run` (nur anzeigen).
+  (systemd überspringen), `-n/--dry-run` (nur anzeigen), `--force` (reale
+  Datei/Verzeichnis am Ziel nach `.bak` sichern und ersetzen — sonst bleiben
+  reale Ziele geschützt; existierende Symlinks werden ohnehin ersetzt).
 - **Entfernen**: `./install unlink` — entfernt die von uns verwalteten Symlinks
   (nur echte Symlinks auf unsere Quellen; reale Dateien/fremde Links bleiben).
 - **Status**: `./install status` — zeigt pro Eintrag ok / fremder Link / echte
