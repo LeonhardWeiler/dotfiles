@@ -76,9 +76,9 @@ sudo systemctl enable --now libvirtd.service
 sudo systemctl enable --now legion-conservation.service
 ```
 
-> Note: `zram` (via zram-generator), `swtpm` (socket-activated) and
-> PipeWire/WirePlumber (user-scope, enabled per-user by package presets) have no
-> enable-able system `*.service` and are therefore **not** in the list.
+> Note: `swtpm` (socket-activated) and PipeWire/WirePlumber (user-scope, enabled
+> per-user by package presets) have no enable-able system `*.service` and are
+> therefore **not** in the list.
 
 Check status:
 
