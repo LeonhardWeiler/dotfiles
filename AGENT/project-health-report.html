@@ -232,6 +232,19 @@
         border-radius: 3px;
         color: var(--fg);
       }
+      ul.tracklist {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+      ul.tracklist li {
+        margin-bottom: 5px;
+      }
+      ul.tracklist code {
+        color: var(--accent);
+        background: var(--bg-alt);
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
 
       .legend {
         display: flex;
@@ -282,21 +295,24 @@
     <div class="wrap">
       <h1>Dotfiles – Health Report</h1>
       <div class="meta">
-        Momentaufnahme · Stand <strong>2026-07-03</strong> · Branch
-        <code>main</code> · GNU-Stow-Dotfiles (Arch Linux / Hyprland)<br />
-        Geprüft: install-Skripte, Bash, Hyprland, nvim, Scripts, systemd,
-        Alacritty, Mako, Rofi, Ly, mpv, Typst, git-config, programs.txt und
-        README. KeePassXC-DB (per <code>.claudeignore</code> ausgeschlossen) und
-        fremde mpv-Lua-Scripts nur oberflächlich.<br />
-        Frischer Voll-Scan nach dem P11-Umbau (Repo-Struktur
-        <code>config/</code> + <code>scripts/</code>) und der P12-Config-
-        Bewertung. Neu mitgeprüft: die Stow-Migrationslogik in
-        <code>scripts/install.sh</code>. Das Repo ist insgesamt sehr sauber. Die
-        <code>CFG-*</code>-Config-Fixes (P13) sind inzwischen alle umgesetzt und
-        entfernt; ebenso der Migrations-Gap (SH-1: <code>install.sh</code> nutzt
-        jetzt <code>reenable</code>) und der <code>.pacnew</code>-Abgleich
-        (LY-2: gesichtet und entfernt). Aktuell
-        <strong>keine offenen Findings</strong>.
+        Momentaufnahme · Stand <strong>2026-07-05</strong> · Branch
+        <code>main</code> · Arch Linux / Hyprland, verwaltet über einen
+        <strong>eigenen, abhängigkeitsfreien Symlink-Manager</strong>
+        (<code>./install</code> + <code>links.conf</code>, reines Bash).<br />
+        Geprüft: <code>install</code>-Skript &amp; <code>links.conf</code>, Bash,
+        Hyprland-Lua (9 Module), nvim (lädt headless), <code>config/usrbin</code>-
+        Skripte (10, alle <code>bash -n</code> ok), systemd-Units, Alacritty,
+        Mako, Rofi, Ly, mpv, Typst, git-config, <code>programs.txt</code>, README
+        und CLAUDE.md sowie die Live-Verlinkung (34/34 <code>ok</code>).
+        KeePassXC-<code>.kdbx</code> (per <code>.gitignore</code>/
+        <code>.claudeignore</code> ausgeschlossen) und fremde mpv-Lua-Scripts nur
+        oberflächlich.<br />
+        Frischer Voll-Scan nach der Migration von dotbot/Stow auf den eigenen
+        Symlink-Manager (flaches <code>config/&lt;name&gt;/…</code>-Layout,
+        <code>./install</code> mit <code>link</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>).
+        Das Repo ist insgesamt sehr sauber. Schwerpunkt dieses Reviews:
+        <strong>noch nicht getrackte, aber sinnvoll trackbare Configs</strong>
+        (siehe TRACK-1/TRACK-2).
       </div>
 
       <div class="summary">
@@ -307,10 +323,10 @@
           <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">0</span><span class="l">Mittel</span>
+          <span class="n">1</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">0</span><span class="l">Niedrig</span>
+          <span class="n">3</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -327,11 +343,131 @@
       <section id="offen">
         <h2>1 · Offene Findings</h2>
 
-        <p class="muted">
-          Aktuell keine offenen Findings. Die <code>.pacnew</code> (LY-2) wurde
-          gesichtet — die neuen ly-Keys sind reine Defaults, nichts zu
-          übernehmen — und entfernt.
-        </p>
+        <div class="card mittel">
+          <div class="card-head">
+            <span class="badge mittel">mittel</span>
+            <span class="id">TRACK-1</span>
+            <span class="loc">nicht getrackte System-Configs (<code>/etc</code>)</span>
+          </div>
+          <p>
+            Mehrere bewusst angepasste System-Dateien liegen <b>nicht</b> im Repo
+            und müssten bei einer Neuinstallation von Hand nachgebaut werden. Am
+            wichtigsten das Tastatur-Layout:
+          </p>
+          <ul class="tracklist">
+            <li>
+              <code>/etc/vconsole.conf</code> — <b>eigenes Konsolen-Keymap</b>
+              <code>KEYMAP=mod-dh-iso-uk</code> (Colemak Mod-DH). Klar
+              personalisiert, ohne Backup leicht vergessen.
+            </li>
+            <li>
+              <code>/etc/pacman.conf</code> — <code>ParallelDownloads = 5</code>
+              und aktiviertes <code>[multilib]</code>-Repo.
+            </li>
+            <li><code>/etc/locale.conf</code> — <code>LANG=en_US.UTF-8</code>.</li>
+            <li>
+              <code>/etc/systemd/logind.conf</code> —
+              <code>HandleLidSwitch=suspend</code> (bewusst gesetzt).
+            </li>
+          </ul>
+          <div class="rec">
+            <b>Empfehlung:</b> die Dateien nach <code>config/&lt;name&gt;/</code>
+            legen und je eine Zeile in <code>links.conf</code> mit vollem
+            <code>/etc/…</code>-Zielpfad ergänzen (dateiweise, nie ganze
+            <code>/etc</code>-Verzeichnisse — konsistent mit den bestehenden
+            <code>/etc</code>-Einträgen wie <code>ly/config.ini</code>).
+            <code>/etc/hostname</code> und <code>/etc/fstab</code> sind
+            maschinenspezifisch (Hostname bzw. UUIDs) — nur mit Bedacht tracken.
+          </div>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="badge niedrig">niedrig</span>
+            <span class="id">TRACK-2</span>
+            <span class="loc">nicht getrackte User-Config · Secrets-Abgrenzung</span>
+          </div>
+          <p>
+            Unter <code>~/.config</code> ist eine bewusste, aber ungetrackte
+            User-Anpassung:
+            <code>~/.config/autostart/org.keepassxc.KeePassXC.desktop</code>
+            (KeePassXC-Autostart). Klein und portabel — Kandidat fürs Repo.
+          </p>
+          <p>
+            <b>Ausdrücklich NICHT tracken</b> (enthalten Secrets/Runtime-State,
+            gehören nicht ins Repo): <code>~/.config/Signal/</code>,
+            <code>~/.config/ssh/</code>, <code>~/.config/pulse/</code> sowie
+            App-Caches/State wie <code>go/</code>, <code>figma-linux/</code>,
+            <code>dconf/</code>, <code>gthumb/</code>.
+          </p>
+          <div class="rec">
+            <b>Empfehlung:</b> die Autostart-<code>.desktop</code> aufnehmen,
+            falls gewünscht; die Secret-Verzeichnisse weiter außen vor lassen
+            (ggf. defensiv per <code>.gitignore</code>/<code>.claudeignore</code>
+            absichern, analog zu <code>keepassxc/</code>).
+          </div>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="badge niedrig">niedrig</span>
+            <span class="id">DOC-1</span>
+            <span class="loc"><code>CLAUDE.md</code> · Abschnitt „Konventionen &amp; Fallstricke"</span>
+          </div>
+          <p>
+            <code>CLAUDE.md</code> schreibt, Skalierungs-/Cursor-Env
+            (<code>QT_SCALE_FACTOR</code>, <code>GDK_SCALE</code>,
+            <code>XCURSOR_SIZE</code>) würden „ausschließlich in
+            <code>config/hypr/hyprland.conf</code>" gesetzt. Tatsächlich stehen sie
+            in <code>config/hypr/env.lua</code> (<code>hl.env(...)</code>);
+            <code>hyprland.conf</code> ist nur der gitignorierte, autogenerierte
+            Stub.
+          </p>
+          <div class="rec">
+            <b>Empfehlung:</b> die Fallstrick-Zeile auf <code>env.lua</code>
+            korrigieren (die Aussage selbst — Env nur an einer Stelle, nicht in
+            <code>.bashrc</code> — bleibt richtig).
+          </div>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="badge niedrig">niedrig</span>
+            <span class="id">SH-1</span>
+            <span class="loc"><code>install</code> · <code>link_one()</code></span>
+          </div>
+          <p>
+            Unter <code>set -euo pipefail</code> bricht ein
+            <code>./install</code>-Lauf <b>komplett ab</b>, wenn der Eltern-Pfad
+            eines Ziels ein unerwarteter Nicht-Ordner ist (z.&nbsp;B. ein kaputter
+            Symlink aus einem alten Setup): <code>mkdir -p</code> scheitert mit
+            „File exists" und beendet das Skript, statt nur diesen Eintrag zu
+            überspringen. Auf einem frischen System tritt das nicht auf, bei einer
+            Migration schon.
+          </p>
+          <div class="rec">
+            <b>Empfehlung (optional):</b> in <code>link_one()</code> einen
+            Eltern-Pfad, der ein <em>kaputter</em> Symlink ist, vor
+            <code>mkdir -p</code> entfernen (ein toter Symlink hat keinen Inhalt),
+            bzw. den Fehler pro Eintrag abfangen statt den ganzen Lauf zu beenden.
+          </div>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">info</span>
+            <span class="id">GI-1</span>
+            <span class="loc"><code>.gitignore</code></span>
+          </div>
+          <p>
+            <code>.gitignore</code> enthält noch einen veralteten Kommentar zum
+            <code>dotbot</code>-Submodul („dotbot-Submodul-Interna nicht
+            relevant…") — dotbot ist entfernt.
+          </p>
+          <div class="rec">
+            <b>Empfehlung:</b> die Kommentarzeile streichen (rein kosmetisch).
+          </div>
+        </div>
       </section>
 
       <!-- ================= WAS STARK IST ================= -->
@@ -340,24 +476,23 @@
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">behalten</span>
-            <span class="loc">P12 – schlanke, bewusste Configs</span>
+            <span class="badge good">stark</span>
+            <span class="loc"><code>install</code> · <code>links.conf</code></span>
           </div>
           <p>
-            Ohne Änderungsbedarf (jede Option trägt): <b>alacritty</b> (Font,
-            Farben, <code>Shift+Return</code>-Binding für TUI-Apps),
-            <b>mako</b> (Urgency-Regeln, konsistentes Farbschema),
-            <b>rofi</b> (Theme +
-            <code>drun</code>/<code>filebrowser</code>-Modi, keine ungenutzten
-            Modi), <b>git</b> (Signing + knappe <code>ignore</code>),
-            <b>mpv</b> (bewusste Cache-/Screenshot-Profile, fremde Lua-Scripts
-            unangetastet), <b>typst</b> (lokales Paket
-            <code>school-theme</code> + <code>TYPST_PACKAGE_PATH</code>),
-            <b>systemd</b> (battery-check-Timer, dotfiles-sync mit passendem
-            <code>GIT_CONFIG_GLOBAL</code>), <b>pacman</b>-Hook (minimaler
-            Trigger). <b>keepassxc</b>: nur Config, DB ist gitignored (nicht im
-            Detail geprüft, per <code>.claudeignore</code> ausgeschlossen).
-            <b>nvim</b> wird in dessen eigenem Health-Report vertieft.
+            Der eigene Symlink-Manager ist schlank und sicher: <b>eine</b>
+            Mapping-Datei (<code>links.conf</code>, zwei Spalten) plus reines Bash
+            <b>ohne Abhängigkeiten</b> (kein Python/dotbot/Stow). Kommandos
+            <code>link</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
+            dazu <code>-n/--dry-run</code>, <code>--user-only</code> und
+            <code>--force</code> (sichert reale Ziele nach <code>.bak</code>).
+            Reale Dateien werden nie ungefragt überschrieben, <code>unlink</code>
+            entfernt nur Symlinks auf eigene Quellen, <code>/etc</code>-Ziele
+            laufen dateiweise per <code>sudo</code>, Glob-Quellen
+            (<code>config/usrbin/*</code>) verlinken dateiweise, damit
+            Fremd-Einträge in <code>~/.local/bin</code> (z.&nbsp;B.
+            <code>claude</code>) erhalten bleiben. Live verifiziert: 34/34
+            Einträge <code>ok</code>.
           </p>
         </div>
 
@@ -365,36 +500,18 @@
           <div class="card-head">
             <span class="badge good">stark</span>
             <span class="loc"
-              ><code>config/usrbin/.local/bin/lib_hypr.sh</code> ·
+              ><code>config/usrbin/lib_hypr.sh</code> ·
               <code>workspace_slf</code></span
             >
           </div>
           <p>
             Die Workspace-Automatisierung ist bemerkenswert robust: Fenster
-            werden über ihre stabile
-            <em>Adresse</em> statt über fragile Titel angesprochen, neue Fenster
-            via Adress-Diff erkannt, es gibt Timeout/Poll-Logik
-            (<code>wait_for_new_window</code>), einen <code>SELF_GUARD</code>
-            gegen das Schließen des eigenen Terminals, idempotentes Verhalten
-            und Fehlermeldungen als Rofi-Popup. Sauber dokumentiert und modular
-            (Lib + Runner).
-          </p>
-        </div>
-
-        <div class="card good">
-          <div class="card-head">
-            <span class="badge good">stark</span>
-            <span class="loc"><code>scripts/install.sh</code></span>
-          </div>
-          <p>
-            Doppelte Bestätigungs-Prompts vor destruktiven Aktionen, saubere
-            Trennung von Root- und User-Paketen, Nutzung von
-            <code>stow --dir=config -R</code> (Restow) und automatische
-            Paketerkennung über <code>config/*</code>. Seit dem P11-Umbau räumt
-            das Skript vor dem Neu-Verlinken zudem verwaiste Symlinks aus einem
-            früheren Layout auf (nur kaputte Links ins Repo; systemd-Enablement-
-            Links unter <code>*.wants</code>/<code>*.requires</code> bleiben
-            verschont).
+            werden über ihre stabile <em>Adresse</em> statt über fragile Titel
+            angesprochen, neue Fenster via Adress-Diff erkannt, es gibt
+            Timeout/Poll-Logik (<code>wait_for_new_window</code>), einen
+            <code>SELF_GUARD</code> gegen das Schließen des eigenen Terminals,
+            idempotentes Verhalten und Fehlermeldungen als Rofi-Popup. Sauber
+            dokumentiert und modular (Lib + Runner).
           </p>
         </div>
 
@@ -402,26 +519,27 @@
           <div class="card-head">
             <span class="badge good">stark</span>
             <span class="loc"
-              >alacritty · mako · rofi · hyprlock · hyprland</span
+              ><code>config/usrbin/rofi_keepassxc</code></span
             >
           </div>
           <p>
-            Durchgängig konsistentes, dunkles Farbschema (<code>#141414</code> /
-            <code>#dddddd</code> / Akzent <code>#768e84</code>) über alle
-            UI-Komponenten hinweg – wirkt wie aus einem Guss.
+            Das entschlüsselte Eintrags-Listing wird über einen
+            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> zuverlässig entfernt —
+            auch bei jedem frühen Abbruch (Escape, falsches Passwort). So bleiben
+            keine Klartext-Metadaten der Passwort-DB liegen. Sauberer Umgang mit
+            sensiblen Zwischendaten.
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"
-              ><code>config/git/.config/git/.gitconfig</code></span
-            >
+            <span class="loc"><code>config/git/.gitconfig</code></span>
           </div>
           <p>
             SSH-basiertes Commit-Signing (<code>gpg.format = ssh</code>,
-            <code>commit.gpgsign = true</code>) ist eingerichtet – gute
+            <code>commit.gpgsign = true</code>, <code>signingkey</code> als
+            <code>id_ed25519.pub</code>) ist eingerichtet — gute
             Sicherheitshygiene für die Commit-Authentizität.
           </p>
         </div>
@@ -429,16 +547,30 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"
-              ><code>config/usrbin/.local/bin/rofi_keepassxc</code></span
-            >
+            <span class="loc">alacritty · mako · rofi · hyprland.lua</span>
           </div>
           <p>
-            Das entschlüsselte Eintrags-Listing wird über einen
-            <code>trap … EXIT</code>
-            zuverlässig aus dem Cache entfernt – auch bei jedem frühen Abbruch
-            (Escape, falsches Passwort). So bleiben keine Klartext-Metadaten der
-            Passwort-DB liegen. Sauberer Umgang mit sensiblen Zwischendaten.
+            Durchgängig konsistentes, dunkles Farbschema (<code>#141414</code> /
+            <code>#dddddd</code> / Akzent <code>#768e84</code>) über alle
+            UI-Komponenten hinweg — wirkt wie aus einem Guss. Auch der
+            Health-Report selbst nutzt dasselbe Schema.
+          </p>
+        </div>
+
+        <div class="card good">
+          <div class="card-head">
+            <span class="badge good">behalten</span>
+            <span class="loc">schlanke, bewusste Configs</span>
+          </div>
+          <p>
+            Ohne Änderungsbedarf (jede Option trägt): <b>alacritty</b>,
+            <b>mako</b>, <b>rofi</b>, <b>mpv</b> (bewusste Cache-/Screenshot-
+            Profile, fremde Lua-Scripts unangetastet), <b>typst</b> (lokales
+            Paket <code>school-theme</code>), <b>systemd</b> (battery-check-Timer,
+            dotfiles-sync), <b>pacman</b>-Hook (minimaler Trigger). <b>keepassxc</b>:
+            nur Config getrackt, die <code>.kdbx</code> ist gitignored (lokal
+            vorhanden). <b>nvim</b> hat eine eigene <code>CLAUDE.md</code> und wird
+            dort vertieft.
           </p>
         </div>
       </section>
@@ -450,17 +582,14 @@
         <div class="card info">
           <div class="card-head">
             <span class="badge info">bewusst</span>
-            <span class="loc"
-              ><code>config/bash/.bashrc</code> ·
-              <code>config/usrbin/.local/bin/workspace_slf</code></span
-            >
+            <span class="loc"><code>config/usrbin/workspace_slf:75</code></span>
           </div>
           <p>
-            Alias
-            <code>c='claude --dangerously-skip-permissions'</code>
-            (Bypass-All-Modus). Bewusste Workflow-Entscheidung für schnelles
-            Arbeiten. Zur Kenntnis: läuft ohne Permission-Prompts – nur in
-            vertrauenswürdigen Projektverzeichnissen sinnvoll.
+            <code>workspace_slf</code> startet Claude mit
+            <code>--dangerously-skip-permissions</code> (Bypass-All-Modus) —
+            bewusste Workflow-Entscheidung für schnelles Arbeiten. Zur Kenntnis:
+            läuft ohne Permission-Prompts, nur in vertrauenswürdigen
+            Projektverzeichnissen sinnvoll.
           </p>
         </div>
 
@@ -468,47 +597,42 @@
           <div class="card-head">
             <span class="badge info">bewusst</span>
             <span class="loc"
-              ><code>config/hypr/.config/hypr/looknfeel.lua</code> ·
-              <code>config/nvim/.config/nvim/lua/config/options.lua</code></span
+              ><code>config/hypr/looknfeel.lua:31</code> ·
+              <code>config/nvim/lua/config/options.lua:3</code></span
             >
           </div>
           <p>
-            Animationen in Hyprland deaktiviert (<code
-              >animations.enabled = false</code
-            >
-            in <code>looknfeel.lua</code>) und Maus in nvim (<code
-              >mouse = ""</code
-            >) ausgeschaltet – bewusst minimalistischer, tastaturzentrierter
-            Workflow. Die Animations-Kurven/-Leaves bleiben in
-            <code>animations.lua</code> definiert, damit ein Aktivieren nur das
-            Umschalten des Flags erfordert (P12: <b>behalten</b>).
+            Animationen in Hyprland deaktiviert (<code>enabled = false</code> in
+            <code>looknfeel.lua</code>) und Maus in nvim ausgeschaltet
+            (<code>vim.opt.mouse = ""</code>) — bewusst minimalistischer,
+            tastaturzentrierter Workflow. Die Animations-Kurven bleiben in
+            <code>animations.lua</code> definiert, sodass ein Aktivieren nur das
+            Umschalten des Flags erfordert.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
             <span class="badge info">bewusst</span>
-            <span class="loc"><code>mpv.conf:49-55</code></span>
+            <span class="loc"><code>config/mpv/mpv.conf</code></span>
           </div>
           <p>
-            Sehr große Demuxer-Caches (4000M, 300&nbsp;s Readahead) – laut
-            Kommentar bewusst, „viel RAM vorhanden". Legitim; nur der Kommentar
-            „~4 GiB" ist minimal ungenau (4000&nbsp;MiB ≈ 3,9 GiB).
+            Sehr große Demuxer-Caches (mehrere GB Readahead) — laut Kommentar
+            bewusst, „viel RAM vorhanden". Legitim für ein Desktop-Setup mit
+            reichlich Speicher.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
             <span class="badge info">bewusst</span>
-            <span class="loc"
-              ><code>config/usrbin/.local/bin/restic-backup:4</code></span
-            >
+            <span class="loc"><code>config/usrbin/restic-backup:10</code></span>
           </div>
           <p>
             Restic-Repo als SFTP zu einer LAN-IP mit Windows-Pfad
-            (<code>D:\ResticBackup</code>). Interne IP ist kein Geheimnis;
-            <code>RESTIC_PASSWORD</code> bewusst nicht im Skript – wird
-            interaktiv abgefragt. In Ordnung, solange das Skript nicht
+            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). Interne IP ist
+            kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im Skript —
+            wird interaktiv abgefragt. In Ordnung, solange das Skript nicht
             non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
           </p>
         </div>
@@ -517,17 +641,17 @@
           <div class="card-head">
             <span class="badge info">bewusst</span>
             <span class="loc"
-              ><code>config/hypr/.config/hypr/env.lua</code> ·
-              <code>monitors.lua</code></span
+              ><code>config/hypr/env.lua:7</code> ·
+              <code>config/hypr/monitors.lua</code></span
             >
           </div>
           <p>
             Gerätespezifische Hardcodes: <code>WLR_DRM_DEVICES</code> auf einen
             festen PCI-Pfad (<code>pci-0000:34:00.0-card</code>) sowie feste
-            Monitor-Outputs (<code>eDP-1</code> @1.6, <code>HDMI-A-1</code>).
-            P12: <b>behalten</b> – es ist ein persönliches Single-Machine-Setup.
-            Nur als Portabilitäts-Hinweis notiert: bei Hardware-Wechsel müssen
-            diese Werte angepasst werden.
+            Monitor-Outputs (<code>eDP-1</code>, <code>HDMI-A-1</code>). Für ein
+            persönliches Single-Machine-Setup in Ordnung — nur als
+            Portabilitäts-Hinweis: bei Hardware-Wechsel müssen diese Werte
+            angepasst werden.
           </p>
         </div>
       </section>
