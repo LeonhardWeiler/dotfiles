@@ -47,10 +47,12 @@ Useful variants:
 > to its target. Existing symlinks are always replaced; by default `./install`
 > never overwrites a **real** file/dir (only symlinks are replaced) — use
 > `--force` to back those up to `.bak` and replace them. `unlink` only removes
-> symlinks that point back into this repo.
+> symlinks that point back into this repo. If a source path ends in `/*`, each
+> entry inside it is linked individually into the target directory, which stays
+> real — used for `config/usrbin/*` → `~/.local/bin`, so foreign entries there
+> (e.g. `claude`) are left untouched.
 > `scripts/` holds the remaining repo tooling (`install-programs.sh`,
-> `update-package-list.sh`, `programs.txt`). Executables are linked from
-> `config/usrbin` into `~/.local/bin`.
+> `update-package-list.sh`, `programs.txt`).
 
 After installation, restart your shell or `source ~/.bashrc` to apply the Bash
 configuration.

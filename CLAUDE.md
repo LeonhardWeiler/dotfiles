@@ -41,7 +41,10 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   verlinkt (alacritty, hypr, nvim, rofi, mako, mpv, git, typst, keepassxc); bei
   `btop`/`qt5ct`/`pipewire`/`mimeapps`/`claude` und `systemd-user`/`/etc`-Zielen
   wird bewusst **nur die einzelne Datei** verlinkt (Eltern-Verzeichnis bleibt
-  real — App-Runtime bzw. keine Verdeckung von System-Inhalten). `claude`
+  real — App-Runtime bzw. keine Verdeckung von System-Inhalten). `usrbin` wird
+  **datei­weise per Glob** (`config/usrbin/*`) nach `~/.local/bin` verlinkt, damit
+  das Verzeichnis real bleibt und Fremd-Einträge (z. B. `claude`) erhalten
+  bleiben. `claude`
   trackt **nicht** `.claude.json`/sessions/history/cache (Auth/State/Secrets).
 - **`scripts/`** = Repo-Werkzeuge: `install-programs.sh`,
   `update-package-list.sh`, `programs.txt` (das alte `install.sh`/`migrate.sh`
@@ -56,7 +59,8 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   PipeWire/WirePlumber/figma-agent kommen aus ihren Paket-Presets und werden
   **nicht** getrackt (früher als `*.wants`-Links im Repo — jetzt entfernt).
 - **Nicht verlinkt**: `AGENT/` (Arbeits-/Workflow-Dateien) bleibt im Repo-Root.
-- Eigene Skripte: **`config/usrbin`** → `~/.local/bin` (via `.bashrc` im `PATH`).
+- Eigene Skripte: **`config/usrbin/*`** → `~/.local/bin` (dateiweise, via `.bashrc`
+  im `PATH`).
   `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
   (`workspace_slf`, `rofi_workspace_manager`). `dotfiles_sync` versioniert
   `scripts/programs.txt`; `update_programs_list` schreibt dorthin.
@@ -67,7 +71,10 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
 
 - Neue Config: Datei **flach unter `config/<name>/`** ablegen und eine Zeile
   `<quelle-im-repo>  <ziel>` in `links.conf` hinzufügen. `/etc`-Ziele **immer
-  dateiweise** (voller `/etc/…`-Zielpfad), nie ganze Verzeichnisse.
+  dateiweise** (voller `/etc/…`-Zielpfad), nie ganze Verzeichnisse. Soll ein
+  Ziel-Verzeichnis real bleiben und nur einzelne Dateien darin verlinkt werden,
+  die Quelle auf `/*` enden lassen (Glob; verlinkt jeden Eintrag nach
+  `<ziel>/<name>`) — siehe `config/usrbin/*`.
 - **`AGENT/` bleibt im Root** und außerhalb der Link-Logik.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
   ausschließlich in `config/hypr/hyprland.conf` gesetzt, **nicht** in der
