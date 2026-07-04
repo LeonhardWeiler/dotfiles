@@ -56,9 +56,13 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`.
 - **System-/User-Dienste**: werden vom `install`-Skript nach dem Verlinken per
-  `systemctl reenable` (System) bzw. `systemctl --user reenable` (User:
-  `battery-check.timer`, `dotfiles-sync.service`) (re)aktiviert — die Unit-Listen
-  stehen oben im Skript (`USER_UNITS` / `SYSTEM_UNITS`).
+  `systemctl enable` (System) bzw. `systemctl --user enable` (User:
+  `battery-check.timer`, `dotfiles-sync.service`) aktiviert — die Unit-Listen
+  stehen oben im Skript (`USER_UNITS` / `SYSTEM_UNITS`). Bewusst `enable`, **nicht**
+  `reenable`: unsere Unit-Dateien sind Symlinks (linked units), und `reenable`
+  würde beim internen `disable` genau diesen Unit-Symlink löschen. `SYSTEM_UNITS`
+  enthält nur real existierende System-Units — pipewire/wireplumber (User-Scope),
+  zram (zram-generator) und swtpm (socket-aktiviert) gehören **nicht** dazu.
   PipeWire/WirePlumber/figma-agent kommen aus ihren Paket-Presets und werden
   **nicht** getrackt (früher als `*.wants`-Links im Repo — jetzt entfernt).
 - **Nicht verlinkt**: `AGENT/` (Arbeits-/Workflow-Dateien) bleibt im Repo-Root.

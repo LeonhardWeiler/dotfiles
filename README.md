@@ -62,23 +62,23 @@ configuration.
 
 ### System Services
 
-The system services below are (re)activated automatically by `./install` (the
-`SYSTEM_UNITS` list at the top of the script, via `systemctl reenable` — without
+The system services below are enabled automatically by `./install` (the
+`SYSTEM_UNITS` list at the top of the script, via `systemctl enable` — without
 `--now`, so the running session is not disturbed; start them manually or reboot
 to activate). To do it by hand:
 
 ```bash
-sudo systemctl enable --now zram.service
 sudo systemctl enable --now NetworkManager.service
 sudo systemctl enable --now ly@tty2.service
-sudo systemctl enable --now pipewire.service
-sudo systemctl enable --now wireplumber.service
 sudo systemctl enable --now dnsmasq.service
 sudo systemctl enable --now sshd.service
-sudo systemctl enable --now swtpm.service
 sudo systemctl enable --now libvirtd.service
 sudo systemctl enable --now legion-conservation.service
 ```
+
+> Note: `zram` (via zram-generator), `swtpm` (socket-activated) and
+> PipeWire/WirePlumber (user-scope, enabled per-user by package presets) have no
+> enable-able system `*.service` and are therefore **not** in the list.
 
 Check status:
 
@@ -89,7 +89,7 @@ sudo systemctl status <name>.service
 ### User Services
 
 `./install` reactivates the user units (the `USER_UNITS` list in the script:
-`systemctl --user reenable battery-check.timer dotfiles-sync.service`).
+`systemctl --user enable battery-check.timer dotfiles-sync.service`).
 PipeWire/WirePlumber/figma-agent are enabled by their own package presets and are
 **not** managed here. To do it by hand:
 
