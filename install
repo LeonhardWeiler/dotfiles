@@ -29,9 +29,11 @@ FORCE=0
 
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
-SYSTEM_UNITS=(zram.service NetworkManager.service ly@tty2.service pipewire.service
-  wireplumber.service dnsmasq.service sshd.service swtpm.service libvirtd.service
-  legion-conservation.service)
+# Nur real existierende System-Units. pipewire/wireplumber sind User-Dienste
+# (Paket-Presets, nicht getrackt); zram läuft über zram-generator (Template),
+# swtpm ist socket-aktiviert — die haben keine enable-bare <name>.service.
+SYSTEM_UNITS=(NetworkManager.service ly@tty2.service dnsmasq.service sshd.service
+  libvirtd.service legion-conservation.service)
 
 # ── Ausgabe-Helfer ───────────────────────────────────────────────────────────
 if [ -t 1 ]; then C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_INFO=$'\e[36m'; C_RST=$'\e[0m'
@@ -143,17 +145,22 @@ clean_one() {
 
 reactivate_units() {
   [ "$NO_UNITS" = 1 ] && return 0
-  info "systemd User-Units (re)aktivieren"
+  # Bewusst `enable`, nicht `reenable`: unsere Unit-Dateien sind Symlinks
+  # (linked units); `reenable` würde beim internen `disable` genau diesen
+  # Unit-Symlink löschen. `enable` ist idempotent und legt nur den fehlenden
+  # Enablement-Link (…​.wants/) an — überlebt auch den Repo-Umzug, weil der
+  # Unit-Symlink am Standardpfad liegt.
+  info "systemd User-Units aktivieren"
   run 0 systemctl --user daemon-reload || warn "daemon-reload fehlgeschlagen"
   for u in "${USER_UNITS[@]}"; do
-    if [ "$DRYRUN" = 1 ]; then run 0 systemctl --user reenable "$u"
-    else run 0 systemctl --user reenable "$u" >/dev/null 2>&1 || warn "User-Unit nicht (re)aktiviert: $u"; fi
+    if [ "$DRYRUN" = 1 ]; then run 0 systemctl --user enable "$u"
+    else run 0 systemctl --user enable "$u" >/dev/null 2>&1 || warn "User-Unit nicht aktiviert: $u"; fi
   done
   [ "$USER_ONLY" = 1 ] && return 0
-  info "systemd System-Units (re)aktivieren (sudo)"
+  info "systemd System-Units aktivieren (sudo)"
   for u in "${SYSTEM_UNITS[@]}"; do
-    if [ "$DRYRUN" = 1 ]; then run 1 systemctl reenable "$u"
-    else run 1 systemctl reenable "$u" >/dev/null 2>&1 || warn "System-Unit nicht (re)aktiviert: $u"; fi
+    if [ "$DRYRUN" = 1 ]; then run 1 systemctl enable "$u"
+    else run 1 systemctl enable "$u" >/dev/null 2>&1 || warn "System-Unit nicht aktiviert: $u"; fi
   done
 }
 
