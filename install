@@ -30,8 +30,8 @@ FORCE=0
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
 # Nur real existierende System-Units. pipewire/wireplumber sind User-Dienste
-# (Paket-Presets, nicht getrackt); zram läuft über zram-generator (Template),
-# swtpm ist socket-aktiviert — die haben keine enable-bare <name>.service.
+# (Paket-Presets, nicht getrackt) und swtpm ist socket-aktiviert — die haben
+# keine enable-bare <name>.service.
 SYSTEM_UNITS=(NetworkManager.service ly@tty2.service dnsmasq.service sshd.service
   libvirtd.service legion-conservation.service)
 
