@@ -18,7 +18,7 @@ eigener Commit; behobene Findings aus dem Report entfernt.
 - [x] **CFG-QT-2 fix** (mittel) – `QT_QPA_PLATFORMTHEME` konsistent auf `qt5ct`
       (env.lua + .bash_profile). keepassxc ist Qt5, qt6ct war nicht installiert.
 - [x] **CFG-BTOP-1 fix** – auf 3 abweichende Keys reduziert + `save_config_on_exit
-      = false` (sonst bläht btop die Datei bei Exit wieder auf).
+    = false` (sonst bläht btop die Datei bei Exit wieder auf).
 - [x] **CFG-LY-1 fix** – auf 10 abweichende Keys reduziert + dokumentiert
       (verhaltensgleich; ly fällt bei fehlenden Keys auf Defaults zurück).
 - [x] **CFG-QT-1 fix** – `[SettingsWindow] geometry` aus `qt5ct.conf` entfernt.
