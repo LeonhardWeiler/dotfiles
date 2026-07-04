@@ -151,6 +151,19 @@ while IFS= read -r line || [ -n "$line" ]; do
   read -r s t _ <<<"$line" || true   # erste zwei Felder (trimmt/kollabiert Leerraum)
   [ -z "${s:-}" ] && continue
   if [ -z "${t:-}" ]; then warn "ungültige Zeile (kein Ziel): $line"; continue; fi
+  # Glob in der Quelle (z. B. `config/usrbin/*`): jeden Treffer einzeln in das
+  # Ziel-Verzeichnis verlinken (Ziel/<basename>). So bleibt das Ziel-Verzeichnis
+  # real und fremde Einträge darin bleiben unangetastet.
+  if [[ "$s" == *"*"* ]]; then
+    matched=0
+    shopt -s nullglob
+    for m in "$BASEDIR"/$s; do
+      SRCS+=("${m#"$BASEDIR"/}"); TGTS+=("${t%/}/${m##*/}"); matched=1
+    done
+    shopt -u nullglob
+    [ "$matched" = 0 ] && warn "Glob ohne Treffer: $s"
+    continue
+  fi
   SRCS+=("$s"); TGTS+=("$t")
 done < "$BASEDIR/$CONFIG"
 
