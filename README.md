@@ -5,45 +5,49 @@ This repository contains my personal dotfiles for configuring my development env
 ## Requirements
 
 - **Linux-based operating system**
-- **Git (`git`)** – for cloning the repository (with submodules)
-- **Python 3 + PyYAML** – required by [dotbot](https://github.com/anishathalye/dotbot)
-  (on Arch: package `python-yaml`)
+- **Git (`git`)** – for cloning the repository
+- **Bash** – the `./install` script is plain Bash, no other dependencies
 - **Sudo privileges** – for the system-wide (`/etc`) configuration
 
 > Please back up your existing dotfiles before installing.
 
 ## Installation
 
-Symlinks are managed with **dotbot** (bundled as a git submodule). The mapping
-lives in `install.conf.yaml` (user targets) and `root.install.conf.yaml`
-(`/etc` targets).
+Symlinks are managed by a small, dependency-free Bash script (`./install`). The
+whole mapping lives in a single file, `links.conf` — one line per link, two
+columns: `<source-in-repo>  <target>`. Targets under `~` are user configs;
+`/etc/…` targets are system configs and are linked via `sudo`.
 
-Clone the repository **with submodules**:
+Clone the repository:
 
 ```bash
-git clone --recurse-submodules https://github.com/leonhardweiler/dotfiles.git ~/dotfiles
+git clone https://github.com/leonhardweiler/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
-Link the user configuration (creates all `~/…` symlinks and enables the user
-systemd units):
+Create all symlinks from `links.conf` (user and, via `sudo`, `/etc` targets) and
+(re)activate the systemd units:
 
 ```bash
-./install
+./install                 # = ./install link
 ```
 
-Link the system (`/etc`) configuration separately, as root:
+Useful variants:
 
 ```bash
-sudo ./install root.install.conf.yaml
+./install status          # show state of every entry (ok / foreign link / real file / missing)
+./install --user-only     # only ~ targets, never touch /etc, no sudo
+./install -n              # dry run: print what would happen, change nothing
+./install unlink          # remove the symlinks this repo manages
 ```
 
 > **Repo layout:** every config lives directly under `config/<name>/` (flat
-> source paths — e.g. `config/btop/btop.conf`), and `install.conf.yaml` maps
-> each source to its target. `dotbot`'s `clean` step removes orphaned symlinks
-> that point into this repo. `scripts/` holds the remaining repo tooling
-> (`install-programs.sh`, `update-package-list.sh`, `programs.txt`). Executables
-> are linked from `config/usrbin` into `~/.local/bin`.
+> source paths — e.g. `config/btop/btop.conf`), and `links.conf` maps each source
+> to its target. `./install` never overwrites a real file (only symlinks are
+> replaced), and `unlink` only removes symlinks that point back into this repo.
+> `scripts/` holds the remaining repo tooling (`install-programs.sh`,
+> `update-package-list.sh`, `programs.txt`). Executables are linked from
+> `config/usrbin` into `~/.local/bin`.
 
 After installation, restart your shell or `source ~/.bashrc` to apply the Bash
 configuration.
@@ -52,10 +56,10 @@ configuration.
 
 ### System Services
 
-The system services below are (re)activated automatically by the `shell` step in
-`root.install.conf.yaml` when you run `sudo ./install root.install.conf.yaml`
-(via `systemctl reenable`, without `--now`, so the running session is not
-disturbed — start them manually or reboot to activate). To do it by hand:
+The system services below are (re)activated automatically by `./install` (the
+`SYSTEM_UNITS` list at the top of the script, via `systemctl reenable` — without
+`--now`, so the running session is not disturbed; start them manually or reboot
+to activate). To do it by hand:
 
 ```bash
 sudo systemctl enable --now zram.service
@@ -78,10 +82,10 @@ sudo systemctl status <name>.service
 
 ### User Services
 
-`./install` reactivates the user units via the `shell` step in
-`install.conf.yaml` (`systemctl --user reenable battery-check.timer
-dotfiles-sync.service`). PipeWire/WirePlumber/figma-agent are enabled by their
-own package presets and are **not** managed here. To do it by hand:
+`./install` reactivates the user units (the `USER_UNITS` list in the script:
+`systemctl --user reenable battery-check.timer dotfiles-sync.service`).
+PipeWire/WirePlumber/figma-agent are enabled by their own package presets and are
+**not** managed here. To do it by hand:
 
 ```bash
 systemctl --user enable --now battery-check.timer
@@ -143,9 +147,9 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 
 ### New Initramfs
 
-`mkinitcpio.conf` is tracked and linked to `/etc/mkinitcpio.conf` by
-`root.install.conf.yaml` (source `config/mkinitcpio/mkinitcpio.conf`). After
-modifying it, regenerate the initramfs with:
+`mkinitcpio.conf` is tracked and linked to `/etc/mkinitcpio.conf` via `links.conf`
+(source `config/mkinitcpio/mkinitcpio.conf`). After modifying it, regenerate the
+initramfs with:
 
 ```bash
 sudo mkinitcpio -P
