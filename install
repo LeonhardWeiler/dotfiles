@@ -1,16 +1,164 @@
 #!/usr/bin/env bash
-# dotbot-Wrapper. Nutzung:
-#   ./install                       -> User-Config (install.conf.yaml)
-#   sudo ./install root.install.conf.yaml   -> Root-/etc-Config
-set -e
+# Symlink-Manager für diese Dotfiles — ohne externe Abhängigkeiten.
+# Liest die Mapping-Datei `links.conf` (Quelle → Ziel) und legt die Symlinks an,
+# entfernt sie wieder oder zeigt ihren Ist-Zustand.
+#
+# Nutzung:
+#   ./install [link]          Symlinks anlegen/auffrischen (Default)
+#   ./install unlink          von uns verwaltete Symlinks entfernen
+#   ./install status          Ist-Zustand aller Einträge zeigen
+#
+# Optionen:
+#   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
+#   -c, --config DATEI        andere Mapping-Datei (Default: links.conf)
+#       --user-only           nur ~-Ziele bearbeiten (keine /etc-Ziele, kein sudo)
+#       --no-units            systemd-Units nicht (re)aktivieren
+#   -h, --help                diese Hilfe
+set -euo pipefail
 
-CONFIG="${1:-install.conf.yaml}"
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
-DOTBOT_DIR="dotbot"
-DOTBOT_BIN="bin/dotbot"
+CONFIG="links.conf"
+CMD="link"
+DRYRUN=0
+USER_ONLY=0
+NO_UNITS=0
 
-cd "$BASEDIR"
-git -C "$DOTBOT_DIR" submodule sync --quiet --recursive 2>/dev/null || true
-git submodule update --init --recursive "$DOTBOT_DIR"
+# systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
+USER_UNITS=(battery-check.timer dotfiles-sync.service)
+SYSTEM_UNITS=(zram.service NetworkManager.service ly@tty2.service pipewire.service
+  wireplumber.service dnsmasq.service sshd.service swtpm.service libvirtd.service
+  legion-conservation.service)
 
-exec "$BASEDIR/$DOTBOT_DIR/$DOTBOT_BIN" -d "$BASEDIR" -c "$CONFIG"
+# ── Ausgabe-Helfer ───────────────────────────────────────────────────────────
+if [ -t 1 ]; then C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_INFO=$'\e[36m'; C_RST=$'\e[0m'
+else C_OK=; C_WARN=; C_INFO=; C_RST=; fi
+ok()   { printf '  %s✓%s %s\n' "$C_OK"   "$C_RST" "$*"; }
+warn() { printf '  %s!%s %s\n' "$C_WARN" "$C_RST" "$*" >&2; }
+info() { printf '%s%s%s\n'     "$C_INFO" "$*" "$C_RST"; }
+
+usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
+
+# ── Argument-Parsing ─────────────────────────────────────────────────────────
+while [ $# -gt 0 ]; do
+  case "$1" in
+    link|unlink|status) CMD="$1" ;;
+    -n|--dry-run)  DRYRUN=1 ;;
+    --user-only)   USER_ONLY=1 ;;
+    --no-units)    NO_UNITS=1 ;;
+    -c|--config)   shift; CONFIG="${1:?--config braucht eine Datei}" ;;
+    -h|--help)     usage 0 ;;
+    *) warn "unbekanntes Argument: $1"; usage 1 ;;
+  esac
+  shift
+done
+
+[ -f "$BASEDIR/$CONFIG" ] || { warn "Mapping-Datei nicht gefunden: $CONFIG"; exit 1; }
+
+# ── Pfad-Helfer ──────────────────────────────────────────────────────────────
+# `~` → Home des Nutzers.
+expand_target() {
+  case "$1" in
+    "~")    printf '%s\n' "$HOME" ;;
+    "~/"*)  printf '%s\n' "$HOME/${1#\~/}" ;;
+    *)      printf '%s\n' "$1" ;;
+  esac
+}
+# Ziel außerhalb von $HOME → braucht root.
+needs_root() { case "$1" in "$HOME"/*|"$HOME") return 1 ;; *) return 0 ;; esac; }
+
+# `run <root?> cmd…` — führt ein Kommando (ggf. per sudo) aus, respektiert Dry-Run.
+run() {
+  local root="$1"; shift
+  if [ "$DRYRUN" = 1 ]; then
+    printf '    [dry] %s%s\n' "$([ "$root" = 1 ] && printf 'sudo ')" "$*"
+    return 0
+  fi
+  if [ "$root" = 1 ]; then sudo "$@"; else "$@"; fi
+}
+
+# ── Aktionen pro Eintrag ─────────────────────────────────────────────────────
+link_one() {
+  local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
+  local root=0; needs_root "$target" && root=1
+  { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
+  if [ ! -e "$src" ]; then warn "Quelle fehlt, übersprungen: $rel"; return 0; fi
+  if [ -e "$target" ] && [ ! -L "$target" ]; then
+    warn "Ziel ist eine echte Datei/Verzeichnis (nicht überschrieben): $target"; return 0
+  fi
+  local parent; parent="$(dirname "$target")"
+  [ -d "$parent" ] || run "$root" mkdir -p "$parent"
+  run "$root" ln -sfn "$src" "$target"
+  ok "$2 → $rel"
+}
+
+unlink_one() {
+  local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
+  local root=0; needs_root "$target" && root=1
+  { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
+  if [ -L "$target" ]; then
+    if [ "$(readlink "$target")" = "$src" ]; then
+      run "$root" rm "$target"; ok "entfernt: $2"
+    else
+      warn "Symlink zeigt woanders hin (behalten): $target"
+    fi
+  elif [ -e "$target" ]; then
+    warn "kein Symlink (behalten): $target"
+  fi
+}
+
+status_one() {
+  local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
+  local state
+  if [ -L "$target" ]; then
+    if [ "$(readlink "$target")" = "$src" ]; then state="${C_OK}ok${C_RST}"
+    else state="${C_WARN}link→$(readlink "$target")${C_RST}"; fi
+  elif [ -e "$target" ]; then state="${C_WARN}echte Datei${C_RST}"
+  else state="fehlt"; fi
+  printf '  %-46s %s\n' "$2" "$state"
+}
+
+reactivate_units() {
+  [ "$NO_UNITS" = 1 ] && return 0
+  info "systemd User-Units (re)aktivieren"
+  run 0 systemctl --user daemon-reload || warn "daemon-reload fehlgeschlagen"
+  for u in "${USER_UNITS[@]}"; do
+    run 0 systemctl --user reenable "$u" >/dev/null 2>&1 || warn "User-Unit nicht (re)aktiviert: $u"
+  done
+  [ "$USER_ONLY" = 1 ] && return 0
+  info "systemd System-Units (re)aktivieren (sudo)"
+  for u in "${SYSTEM_UNITS[@]}"; do
+    run 1 systemctl reenable "$u" >/dev/null 2>&1 || warn "System-Unit nicht (re)aktiviert: $u"
+  done
+}
+
+# ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
+#    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
+SRCS=(); TGTS=()
+while IFS= read -r line || [ -n "$line" ]; do
+  line="${line%%#*}"                 # Kommentar ab # abschneiden
+  read -r s t _ <<<"$line" || true   # erste zwei Felder (trimmt/kollabiert Leerraum)
+  [ -z "${s:-}" ] && continue
+  if [ -z "${t:-}" ]; then warn "ungültige Zeile (kein Ziel): $line"; continue; fi
+  SRCS+=("$s"); TGTS+=("$t")
+done < "$BASEDIR/$CONFIG"
+
+[ "${#SRCS[@]}" -gt 0 ] || { warn "keine Einträge in $CONFIG"; exit 1; }
+
+# ── Ausführung ───────────────────────────────────────────────────────────────
+[ "$DRYRUN" = 1 ] && info "— Dry-Run: es wird nichts verändert —"
+case "$CMD" in
+  link)
+    info "Symlinks anlegen (${#SRCS[@]} Einträge)"
+    for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
+    reactivate_units
+    ;;
+  unlink)
+    info "Symlinks entfernen"
+    for i in "${!SRCS[@]}"; do unlink_one "${SRCS[$i]}" "${TGTS[$i]}"; done
+    warn "Hinweis: systemd-Units werden nicht deaktiviert — bei Bedarf manuell 'systemctl [--user] disable …'."
+    ;;
+  status)
+    info "Status (${#SRCS[@]} Einträge)"
+    for i in "${!SRCS[@]}"; do status_one "${SRCS[$i]}" "${TGTS[$i]}"; done
+    ;;
+esac
