@@ -27,6 +27,9 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   (nur echte Symlinks auf unsere Quellen; reale Dateien/fremde Links bleiben).
 - **Status**: `./install status` — zeigt pro Eintrag ok / fremder Link / echte
   Datei / fehlt.
+- **Backups aufräumen**: `./install clean` — löscht die von `--force` angelegten
+  `.bak`-Sicherungen der verwalteten Ziele (inkl. `*.bak.<zeitstempel>`; fremde
+  `.bak` bleiben unangetastet). Mit `-n` vorher anzeigen.
 - **Paketliste aktualisieren** (ohne Neu-Verlinken): `./scripts/update-package-list.sh`.
 - **Pakete aus `programs.txt` installieren**: `./scripts/install-programs.sh` (nutzt `yay`).
 - **Shell-Skripte prüfen** (kein Test-Framework): `bash -n <skript>`; wo vorhanden
