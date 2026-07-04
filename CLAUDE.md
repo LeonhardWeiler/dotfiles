@@ -4,25 +4,27 @@ Hinweise für die Arbeit an diesem Dotfiles-Repo. Kommentar-/Doku-Sprache: **Deu
 
 ## Überblick
 
-Persönliche Dotfiles für Arch Linux mit Hyprland (Wayland), verwaltet über
-**dotbot** (als Git-Submodul unter `dotbot/`). Der Repo-Root trennt **`config/`**
-(die Config-Quellen, **flach**: `config/<name>/…`) von **`scripts/`**
-(Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit in
-**`install.conf.yaml`** (User-Ziele) und **`root.install.conf.yaml`** (`/etc`).
-Beispiele: `config/btop/btop.conf` → `~/.config/btop/btop.conf`,
+Persönliche Dotfiles für Arch Linux mit Hyprland (Wayland), verwaltet über ein
+**eigenes, abhängigkeitsfreies Symlink-Skript** (`./install`, reines Bash). Der
+Repo-Root trennt **`config/`** (die Config-Quellen, **flach**: `config/<name>/…`)
+von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit in
+**`links.conf`** (eine Zeile pro Link, zwei Spalten: `<quelle-im-repo> <ziel>`;
+`~`-Ziele = User, `/etc/…`-Ziele = System via sudo). Beispiele:
+`config/btop/btop.conf` → `~/.config/btop/btop.conf`,
 `config/ly/config.ini` → `/etc/ly/config.ini`. Details zu Inhalten/Pfaden:
-`README.md`. Prerequisite: Python 3 + PyYAML (`python-yaml`).
+`README.md`. Keine externen Abhängigkeiten (kein Python, kein dotbot).
 
 ## Installation & Befehle
 
-- **Verlinken (User)**: `./install` — Wrapper um dotbot, nutzt
-  `install.conf.yaml`. Erzeugt alle `~/…`-Links, entfernt verwaiste Links via
-  `clean` und aktiviert die User-Units per `systemctl --user reenable`.
-- **Verlinken (Root/`/etc`)**: `sudo ./install root.install.conf.yaml` —
-  dateiweise `/etc`-Links (nie ganze `/etc`-Verzeichnisse) + `reenable` der
-  System-Units.
-- **Submodul**: `git clone --recurse-submodules …` bzw.
-  `git submodule update --init` (dotbot liegt unter `dotbot/`).
+- **Verlinken**: `./install` (= `./install link`) — legt alle Links aus
+  `links.conf` an/frischt sie auf und reaktiviert danach die systemd-Units
+  (self-healing). `~/…`-Ziele ohne, `/etc/…`-Ziele per sudo (fragt bei Bedarf
+  nach dem Passwort). Optionen: `--user-only` (nur `~`, kein sudo), `--no-units`
+  (systemd überspringen), `-n/--dry-run` (nur anzeigen).
+- **Entfernen**: `./install unlink` — entfernt die von uns verwalteten Symlinks
+  (nur echte Symlinks auf unsere Quellen; reale Dateien/fremde Links bleiben).
+- **Status**: `./install status` — zeigt pro Eintrag ok / fremder Link / echte
+  Datei / fehlt.
 - **Paketliste aktualisieren** (ohne Neu-Verlinken): `./scripts/update-package-list.sh`.
 - **Pakete aus `programs.txt` installieren**: `./scripts/install-programs.sh` (nutzt `yay`).
 - **Shell-Skripte prüfen** (kein Test-Framework): `bash -n <skript>`; wo vorhanden
@@ -40,18 +42,18 @@ Beispiele: `config/btop/btop.conf` → `~/.config/btop/btop.conf`,
   real — App-Runtime bzw. keine Verdeckung von System-Inhalten). `claude`
   trackt **nicht** `.claude.json`/sessions/history/cache (Auth/State/Secrets).
 - **`scripts/`** = Repo-Werkzeuge: `install-programs.sh`,
-  `update-package-list.sh`, `programs.txt` (das alte `install.sh` ist durch
-  `./install`/dotbot ersetzt).
-- **`/etc`-Ziele** (in `root.install.conf.yaml`, dateiweise): `ly/config.ini`,
+  `update-package-list.sh`, `programs.txt` (das alte `install.sh`/`migrate.sh`
+  ist durch `./install` + `links.conf` ersetzt).
+- **`/etc`-Ziele** (in `links.conf`, dateiweise, `/etc/…`-Zielpfad): `ly/config.ini`,
   `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`.
-- **System-/User-Dienste**: werden über die `shell`-Direktiven der beiden
-  Configs per `systemctl reenable` (System) bzw. `systemctl --user reenable`
-  (User: `battery-check.timer`, `dotfiles-sync.service`) (re)aktiviert.
+- **System-/User-Dienste**: werden vom `install`-Skript nach dem Verlinken per
+  `systemctl reenable` (System) bzw. `systemctl --user reenable` (User:
+  `battery-check.timer`, `dotfiles-sync.service`) (re)aktiviert — die Unit-Listen
+  stehen oben im Skript (`USER_UNITS` / `SYSTEM_UNITS`).
   PipeWire/WirePlumber/figma-agent kommen aus ihren Paket-Presets und werden
   **nicht** getrackt (früher als `*.wants`-Links im Repo — jetzt entfernt).
-- **Nicht verlinkt**: `AGENT/` (Arbeits-/Workflow-Dateien) und `dotbot/`
-  (Submodul) bleiben im Repo-Root.
+- **Nicht verlinkt**: `AGENT/` (Arbeits-/Workflow-Dateien) bleibt im Repo-Root.
 - Eigene Skripte: **`config/usrbin`** → `~/.local/bin` (via `.bashrc` im `PATH`).
   `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
   (`workspace_slf`, `rofi_workspace_manager`). `dotfiles_sync` versioniert
@@ -61,10 +63,10 @@ Beispiele: `config/btop/btop.conf` → `~/.config/btop/btop.conf`,
 
 ## Konventionen & Fallstricke
 
-- Neue Config: Datei **flach unter `config/<name>/`** ablegen und einen
-  `link:`-Eintrag in `install.conf.yaml` (bzw. `root.install.conf.yaml` für
-  `/etc`) hinzufügen. `/etc`-Ziele **immer dateiweise**, nie ganze Verzeichnisse.
-- **`AGENT/` und `dotbot/` bleiben im Root** und außerhalb der Link-Logik.
+- Neue Config: Datei **flach unter `config/<name>/`** ablegen und eine Zeile
+  `<quelle-im-repo>  <ziel>` in `links.conf` hinzufügen. `/etc`-Ziele **immer
+  dateiweise** (voller `/etc/…`-Zielpfad), nie ganze Verzeichnisse.
+- **`AGENT/` bleibt im Root** und außerhalb der Link-Logik.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
   ausschließlich in `config/hypr/hyprland.conf` gesetzt, **nicht** in der
   `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
