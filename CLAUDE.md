@@ -22,10 +22,14 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   nach dem Passwort). Optionen: `--user-only` (nur `~`, kein sudo), `--no-units`
   (systemd überspringen), `-n/--dry-run` (nur anzeigen), `--force` (reale
   Datei/Verzeichnis am Ziel nach `.bak` sichern und ersetzen — sonst bleiben
-  reale Ziele geschützt; existierende Symlinks werden ohnehin ersetzt),
-  `-p/--programs` (zusätzlich die Pakete aus `scripts/programs.txt` via `yay`
-  installieren — delegiert an `scripts/install-programs.sh` und läuft **vor** dem
-  Verlinken/Unit-Schritt, damit die Units danach existieren).
+  reale Ziele geschützt; existierende Symlinks werden ohnehin ersetzt).
+- **Neue Maschine (Bootstrap, ein Kommando)**: `./install setup` — Pakete aus
+  `scripts/programs.txt` installieren (`yay`, delegiert an
+  `scripts/install-programs.sh`, bootstrappt yay bei Bedarf) → Configs verlinken
+  (impliziert `--force`) → Units aktivieren → `locale-gen` → konkrete manuelle
+  Rest-Checkliste (Gruppen, Zeitzone) ausgeben. `link` bleibt der idempotente
+  Alltags-Refresh; `setup` fasst den Erst-Setup-Flow zusammen (kein separates
+  `--programs`-Flag mehr — in `setup` gefaltet).
 - **Entfernen**: `./install unlink` — entfernt die von uns verwalteten Symlinks
   (nur echte Symlinks auf unsere Quellen; reale Dateien/fremde Links bleiben).
 - **Status**: `./install status` — zeigt pro Eintrag ok / fremder Link / echte

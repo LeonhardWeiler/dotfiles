@@ -29,18 +29,27 @@ Create all symlinks from `links.conf` (user and, via `sudo`, `/etc` targets) and
 (re)activate the systemd units:
 
 ```bash
-./install                 # = ./install link
+./install                 # = ./install link  (everyday: refresh symlinks + units)
 ```
 
-**Recommended order on a fresh machine:** first install the packages
-(`./scripts/install-programs.sh`), then run `./install` — otherwise the
-`systemctl enable` calls (and the pacman hook / sync service) target units and
-scripts that do not exist yet. Existing **real** default files (e.g. a shipped
-`~/.bashrc`) are only *skipped*; re-run with `--force` to back them up to `.bak`
-and replace them. `./install` prints a short "next steps" hint at the end
-(`source ~/.bashrc`, re-login for the `.bash_profile` env). The scripts assume the
-repo lives at `~/dotfiles`; if you clone elsewhere, export `DOTFILES_DIR` (used by
-`dotfiles_sync`/`update_programs_list`) accordingly.
+**Fresh machine — one command:** `./install setup` does the whole bootstrap in
+the right order:
+
+```bash
+./install setup
+```
+
+1. installs the packages from `scripts/programs.txt` (`yay`, bootstrapped from
+   the AUR if missing — needs `git` + `base-devel` present first),
+2. links every config, replacing existing **real** default files (e.g. a shipped
+   `~/.bashrc`) after backing them up to `.bak` (implies `--force`),
+3. (re)activates the systemd units,
+4. generates the locales (`locale-gen`),
+5. prints the remaining **manual** steps that can't be automated safely (user
+   groups, timezone) plus the `source ~/.bashrc` / re-login hint.
+
+The scripts assume the repo lives at `~/dotfiles`; if you clone elsewhere, export
+`DOTFILES_DIR` (used by `dotfiles_sync`/`update_programs_list`) accordingly.
 
 Useful variants:
 
@@ -49,15 +58,13 @@ Useful variants:
 ./install --user-only     # only ~ targets, never touch /etc, no sudo
 ./install -n              # dry run: print what would happen, change nothing
 ./install --force         # back up real files/dirs at the target to .bak, then link
-./install --programs      # also install the packages from scripts/programs.txt (yay), before linking
 ./install clean           # delete the .bak backups that --force created
 ./install unlink          # remove the symlinks this repo manages
 ```
 
-> `--programs` (short `-p`) delegates to `scripts/install-programs.sh` (bootstraps
-> `yay` if missing, skips already-installed packages) and runs **before** the
-> linking/unit step, so the units reactivated afterwards actually exist. It is
-> the one-shot equivalent of running `./scripts/install-programs.sh` by hand.
+> Everyday use is just `./install` (idempotent, never overwrites real files).
+> `setup` is the one-shot fresh-machine bootstrap; to only (re)install packages
+> without touching anything else, run `./scripts/install-programs.sh` directly.
 
 > **Repo layout:** every config lives directly under `config/<name>/` (flat
 > source paths — e.g. `config/btop/btop.conf`), and `links.conf` maps each source
