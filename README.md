@@ -157,6 +157,35 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 
 > Note: This setup has been primarily tested on Arch Linux. Other distributions may require adjustments.
 
+## Manual system state (not symlinked)
+
+Some system state is not a config file this repo can symlink — it has to be set
+up by hand on a fresh machine (the kind of thing a declarative distro like NixOS
+would capture). Checklist:
+
+- **User groups** — add your user to the groups the tracked tools need:
+
+  ```bash
+  sudo usermod -aG wheel,input,kvm,libvirt,uucp,disk,lock <user>
+  # add docker / wireshark only if you actually install those packages
+  ```
+
+  Group changes take effect after re-login. Conversely, drop groups whose program
+  you no longer have installed, e.g. `sudo gpasswd -d <user> docker`.
+- **Timezone**: `sudo ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime`
+- **Locales**: `/etc/locale.conf` and `/etc/locale.gen` are tracked, but the
+  locales still have to be generated once: `sudo locale-gen`.
+- **Bootloader / kernel cmdline**: systemd-boot (ESP at `/efi`); the kernel
+  options `amd_pstate=active usbcore.autosuspend=1 quiet` live in
+  `/efi/loader/entries/arch.conf` (`options` line) — machine-specific
+  (`root=UUID=…`), so set them by hand rather than tracking the file.
+- **Not tracked on purpose** (machine-specific / secrets): `/etc/hostname`,
+  `/etc/fstab` (UUIDs), and NetworkManager Wi-Fi profiles
+  (`/etc/NetworkManager/system-connections/*.nmconnection`, contain PSKs).
+- **sudo**: this setup relies on passwordless sudo for the `wheel` group
+  (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL` in `/etc/sudoers`) — a deliberate
+  convenience choice; adjust to taste.
+
 ## Notes
 
 - Some applications may require additional dependencies not covered by this repository.

@@ -56,7 +56,8 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
 - **`/etc`-Ziele** (in `links.conf`, dateiweise, `/etc/…`-Zielpfad): `ly/config.ini`,
   `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
-  `locale/locale.conf`, `pacman/pacman.conf` (→ `/etc/pacman.conf`),
+  `locale/locale.conf`, `locale/locale.gen` (→ `/etc/locale.gen`),
+  `pacman/pacman.conf` (→ `/etc/pacman.conf`),
   `logind/logind.conf` (→ `/etc/systemd/logind.conf`).
 - **System-/User-Dienste**: werden vom `install`-Skript nach dem Verlinken per
   `systemctl enable` (System) bzw. `systemctl --user enable` (User:
