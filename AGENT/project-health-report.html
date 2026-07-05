@@ -304,7 +304,9 @@
         und der pacman-Hook (<code>update_programs_list</code>, atomares Schreiben),
         alle Shell-Skripte (<code>bash -n</code> grün), Hyprland-Lua (9 Module, alle
         <code>luac -p</code> ok), nvim (lädt headless), systemd-Units, Alacritty,
-        Mako, Rofi, Ly, mpv, Typst, git-config, <code>setup/programs.txt</code>,
+        Mako, Rofi, Ly (<code>session_log</code> jetzt auf
+        <code>.local/state/ly-session.log</code> gepinnt — Home bleibt sauber),
+        mpv, Typst, git-config, <code>setup/programs.txt</code>,
         README und CLAUDE.md sowie die Live-Verlinkung
         (<strong>40/40</strong> <code>ok</code>). Keine versehentlichen Secrets,
         keine <code>TODO/FIXME</code>-Marker; KeePassXC-<code>.kdbx</code> (per
@@ -541,6 +543,28 @@
             kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im Skript —
             wird interaktiv abgefragt. In Ordnung, solange das Skript nicht
             non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">bewusst</span>
+            <span class="loc"
+              ><code>config/mkinitcpio/mkinitcpio.conf:55</code> ·
+              <code>config/vconsole/vconsole.conf</code></span
+            >
+          </div>
+          <p>
+            Die Console-Keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH)
+            wird über den initramfs-<code>keymap</code>-Hook geladen (in
+            <code>HOOKS=(… keyboard keymap consolefont …)</code>), nicht (nur)
+            über <code>systemd-vconsole-setup</code> — Letzteres überspringt beim
+            Boot die erste VT („Configuration of first virtual console was
+            skipped"). Der <code>keymap</code>-Hook backt die Keymap zur
+            initramfs-<strong>Bauzeit</strong> ein. Zur Kenntnis: nach jeder
+            Änderung an <code>vconsole.conf</code> einmal
+            <code>sudo mkinitcpio -P</code> laufen lassen, sonst greift beim ly-/
+            TTY-Login weiter die alte Keymap.
           </p>
         </div>
 
