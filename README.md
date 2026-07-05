@@ -32,6 +32,16 @@ Create all symlinks from `links.conf` (user and, via `sudo`, `/etc` targets) and
 ./install                 # = ./install link
 ```
 
+**Recommended order on a fresh machine:** first install the packages
+(`./scripts/install-programs.sh`), then run `./install` — otherwise the
+`systemctl enable` calls (and the pacman hook / sync service) target units and
+scripts that do not exist yet. Existing **real** default files (e.g. a shipped
+`~/.bashrc`) are only *skipped*; re-run with `--force` to back them up to `.bak`
+and replace them. `./install` prints a short "next steps" hint at the end
+(`source ~/.bashrc`, re-login for the `.bash_profile` env). The scripts assume the
+repo lives at `~/dotfiles`; if you clone elsewhere, export `DOTFILES_DIR` (used by
+`dotfiles_sync`/`update_programs_list`) accordingly.
+
 Useful variants:
 
 ```bash
