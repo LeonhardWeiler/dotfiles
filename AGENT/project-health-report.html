@@ -300,20 +300,20 @@
         <strong>eigenen, abhängigkeitsfreien Symlink-Manager</strong>
         (<code>./install</code> + <code>setup/links.conf</code>, reines Bash).<br />
         Geprüft: <code>install</code>-Skript &amp; <code>setup/links.conf</code>,
-        das neue <code>setup</code>-Bootstrap-Kommando, die
-        <code>setup/</code>-Tooling-Skripte, Bash, Hyprland-Lua (9 Module), nvim
-        (lädt headless), <code>config/usrbin</code>-Skripte (alle
-        <code>bash -n</code> ok), systemd-Units, Alacritty, Mako, Rofi, Ly, mpv,
-        Typst, git-config, <code>setup/programs.txt</code>, README und CLAUDE.md
-        sowie die Live-Verlinkung (<strong>40/40</strong> <code>ok</code>).
-        KeePassXC-<code>.kdbx</code> (per <code>.gitignore</code>/
-        <code>.claudeignore</code> ausgeschlossen) und fremde mpv-Lua-Scripts nur
-        oberflächlich.<br />
-        Das Repo ist insgesamt sehr sauber. Frischer Voll-Scan nach der
-        Umbenennung <code>scripts/</code> → <code>setup/</code> (inkl.
-        <code>links.conf</code> hinein, Skripte ohne <code>.sh</code>) und der
-        Einführung des <code>setup</code>-Kommandos — alle Referenzen und der
-        pacman-Hook-Pfad verifiziert. Aktuell keine offenen Findings.
+        das <code>setup</code>-Bootstrap-Kommando, <code>setup/install-programs</code>
+        und der pacman-Hook (<code>update_programs_list</code>, atomares Schreiben),
+        alle Shell-Skripte (<code>bash -n</code> grün), Hyprland-Lua (9 Module, alle
+        <code>luac -p</code> ok), nvim (lädt headless), systemd-Units, Alacritty,
+        Mako, Rofi, Ly, mpv, Typst, git-config, <code>setup/programs.txt</code>,
+        README und CLAUDE.md sowie die Live-Verlinkung
+        (<strong>40/40</strong> <code>ok</code>). Keine versehentlichen Secrets,
+        keine <code>TODO/FIXME</code>-Marker; KeePassXC-<code>.kdbx</code> (per
+        <code>.gitignore</code>/<code>.claudeignore</code> ausgeschlossen) und
+        fremde mpv-Lua-Scripts nur oberflächlich.<br />
+        Das Repo ist insgesamt sehr sauber und in gutem Zustand — frischer
+        Voll-Scan, <strong>keine offenen Findings</strong>. Die Notizen unten
+        („stark" / „bewusst entschieden") sind gegen den aktuellen Code
+        verifiziert (Pfade und Zeilenreferenzen stimmen).
       </div>
 
       <div class="summary">
@@ -346,16 +346,17 @@
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">erledigt</span>
-            <span class="loc">keine offenen Findings</span>
+            <span class="badge good">keine offenen Findings</span>
+            <span class="loc">nichts zu tun</span>
           </div>
           <p>
-            Alle Findings dieses Reviews (CQ-1, SH-1) sind abgearbeitet: die
-            Paketlisten-Logik liegt nur noch in <code>update_programs_list</code>
-            (atomares Schreiben, Verzeichnis-Guard) und der yay-Bootstrap in
-            <code>setup/install-programs</code> nutzt ein <code>mktemp -d</code>-
-            Verzeichnis mit <code>trap</code>-Cleanup statt eines fixen
-            <code>/tmp/yay</code>.
+            Dieser Voll-Scan hat keine offenen Probleme ergeben — weder
+            Korrektheits-/Robustheits-, Security-, Struktur- noch Doku-Findings.
+            Alle Shell-Skripte sind syntaktisch grün, die Hyprland-Lua-Module
+            parsen, die Live-Verlinkung ist vollständig (40/40) und README wie
+            CLAUDE.md decken sich mit dem Code. Was das Repo besonders solide
+            macht bzw. bewusst so gewählt ist, steht in den beiden Abschnitten
+            unten.
           </p>
         </div>
       </section>
