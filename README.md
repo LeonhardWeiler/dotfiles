@@ -74,6 +74,10 @@ sudo systemctl enable --now dnsmasq.service
 sudo systemctl enable --now sshd.service
 sudo systemctl enable --now libvirtd.service
 sudo systemctl enable --now legion-conservation.service
+sudo systemctl enable --now iptables.service
+sudo systemctl enable --now power-profiles-daemon.service
+sudo systemctl enable --now systemd-timesyncd.service
+sudo systemctl enable --now fstrim.timer
 ```
 
 > Note: `swtpm` (socket-activated) and PipeWire/WirePlumber (user-scope, enabled
