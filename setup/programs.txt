@@ -51,6 +51,7 @@ thunderbird 152.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.0-1
 ufw 0.36.2-7
+unzip 6.0-23
 virt-manager 5.1.0-3
 wayland 1.25.0-1
 wayland-protocols 1.49-1
