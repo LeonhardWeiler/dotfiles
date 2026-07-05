@@ -38,9 +38,10 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
 ## Struktur
 
 - **`config/`** = flache Config-Quellen: `alacritty`, `bash`, `btop`, `claude`,
-  `git`, `hypr`, `keepassxc`, `ly`, `mako`, `mimeapps`, `mkinitcpio`, `mpv`,
-  `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`, `systemd-system`,
-  `systemd-user`, `typst`, `usrbin`. Ganze Verzeichnisse werden als Dir-Symlink
+  `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
+  `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
+  `systemd-system`, `systemd-user`, `typst`, `usrbin`, `vconsole`. Ganze
+  Verzeichnisse werden als Dir-Symlink
   verlinkt (alacritty, hypr, nvim, rofi, mako, mpv, git, typst, keepassxc); bei
   `btop`/`qt5ct`/`pipewire`/`mimeapps`/`claude` und `systemd-user`/`/etc`-Zielen
   wird bewusst **nur die einzelne Datei** verlinkt (Eltern-Verzeichnis bleibt
@@ -54,7 +55,9 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   ist durch `./install` + `links.conf` ersetzt).
 - **`/etc`-Ziele** (in `links.conf`, dateiweise, `/etc/…`-Zielpfad): `ly/config.ini`,
   `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
-  `pacman/dotfiles-programs-list.hook`.
+  `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
+  `locale/locale.conf`, `pacman/pacman.conf` (→ `/etc/pacman.conf`),
+  `logind/logind.conf` (→ `/etc/systemd/logind.conf`).
 - **System-/User-Dienste**: werden vom `install`-Skript nach dem Verlinken per
   `systemctl enable` (System) bzw. `systemctl --user enable` (User:
   `battery-check.timer`, `dotfiles-sync.service`) aktiviert — die Unit-Listen
