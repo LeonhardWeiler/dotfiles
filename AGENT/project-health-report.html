@@ -343,20 +343,21 @@
       <section id="offen">
         <h2>1 · Offene Findings</h2>
 
-        <div class="card info">
+        <div class="card good">
           <div class="card-head">
-            <span class="badge info">info</span>
-            <span class="id">GI-1</span>
-            <span class="loc"><code>.gitignore</code></span>
+            <span class="badge good">erledigt</span>
+            <span class="loc">keine offenen Findings</span>
           </div>
           <p>
-            <code>.gitignore</code> enthält noch einen veralteten Kommentar zum
-            <code>dotbot</code>-Submodul („dotbot-Submodul-Interna nicht
-            relevant…") — dotbot ist entfernt.
+            Alle Findings dieses Reviews (TRACK-1, TRACK-2, DOC-1, SH-1, GI-1)
+            sind abgearbeitet: die <code>/etc</code>-Configs (vconsole, locale,
+            pacman, logind) werden jetzt getrackt, Secret-Verzeichnisse sind
+            defensiv per <code>.gitignore</code>/<code>.claudeignore</code>
+            abgesichert (KeePassXC-Autostart lokal entfernt), die
+            <code>CLAUDE.md</code>-Fallstrick-Zeile zeigt auf <code>env.lua</code>,
+            <code>link_one()</code> übersteht einen toten Symlink am Eltern-Pfad
+            und der veraltete dotbot-Kommentar ist raus.
           </p>
-          <div class="rec">
-            <b>Empfehlung:</b> die Kommentarzeile streichen (rein kosmetisch).
-          </div>
         </div>
       </section>
 

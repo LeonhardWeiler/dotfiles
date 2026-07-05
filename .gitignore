@@ -17,5 +17,3 @@ ssh/
 *.key
 id_ed25519
 id_rsa
-
-# dotbot-Submodul-Interna nicht relevant fuer Ignorierung; nichts weiter noetig.
