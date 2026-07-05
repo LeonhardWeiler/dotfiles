@@ -38,7 +38,8 @@ Skripte). Die Zuordnung Quelle→Ziel steht explizit in
 - **Backups aufräumen**: `./install clean` — löscht die von `--force` angelegten
   `.bak`-Sicherungen der verwalteten Ziele (inkl. `*.bak.<zeitstempel>`; fremde
   `.bak` bleiben unangetastet). Mit `-n` vorher anzeigen.
-- **Paketliste aktualisieren** (ohne Neu-Verlinken): `./setup/update-package-list`.
+- **Paketliste aktualisieren** (ohne Neu-Verlinken): `update_programs_list`
+  (aus `config/usrbin/`, per PATH; dasselbe Skript nutzt der pacman-Hook).
 - **Pakete aus `programs.txt` installieren**: `./setup/install-programs` (nutzt `yay`).
 - **Shell-Skripte prüfen** (kein Test-Framework): `bash -n <skript>`; wo vorhanden
   `shellcheck <skript>`.
@@ -59,9 +60,11 @@ Skripte). Die Zuordnung Quelle→Ziel steht explizit in
   bleiben. `claude`
   trackt **nicht** `.claude.json`/sessions/history/cache (Auth/State/Secrets).
 - **`setup/`** = Deployment-Maschinerie: `links.conf` (Link-Map, Default-Config
-  von `./install`), `programs.txt` (Paket-Manifest), `install-programs` und
-  `update-package-list` (Bootstrap-/Pflege-Skripte, ohne `.sh`-Endung). Das alte
-  `install.sh`/`migrate.sh` ist durch `./install` + `setup/links.conf` ersetzt.
+  von `./install`), `programs.txt` (Paket-Manifest), `install-programs`
+  (Bootstrap-Skript, ohne `.sh`-Endung). Das alte `install.sh`/`migrate.sh` ist
+  durch `./install` + `setup/links.conf` ersetzt. Die Paketliste selbst schreibt
+  `config/usrbin/update_programs_list` (einzige Quelle, auch vom pacman-Hook
+  genutzt).
 - **`/etc`-Ziele** (in `links.conf`, dateiweise, `/etc/…`-Zielpfad): `ly/config.ini`,
   `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
