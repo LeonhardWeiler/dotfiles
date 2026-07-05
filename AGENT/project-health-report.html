@@ -298,23 +298,23 @@
         Momentaufnahme · Stand <strong>2026-07-05</strong> · Branch
         <code>main</code> · Arch Linux / Hyprland, verwaltet über einen
         <strong>eigenen, abhängigkeitsfreien Symlink-Manager</strong>
-        (<code>./install</code> + <code>links.conf</code>, reines Bash).<br />
-        Geprüft: <code>install</code>-Skript &amp; <code>links.conf</code>, Bash,
-        Hyprland-Lua (9 Module), nvim (lädt headless), <code>config/usrbin</code>-
-        Skripte (10, alle <code>bash -n</code> ok), systemd-Units, Alacritty,
-        Mako, Rofi, Ly, mpv, Typst, git-config, <code>programs.txt</code>, README
-        und CLAUDE.md sowie die Live-Verlinkung (<code>ok</code> bis auf die 4
-        neu aufgenommenen <code>/etc</code>-Ziele, die noch als reale Datei
-        vorliegen und per <code>--force</code> verlinkt werden).
+        (<code>./install</code> + <code>setup/links.conf</code>, reines Bash).<br />
+        Geprüft: <code>install</code>-Skript &amp; <code>setup/links.conf</code>,
+        das neue <code>setup</code>-Bootstrap-Kommando, die
+        <code>setup/</code>-Tooling-Skripte, Bash, Hyprland-Lua (9 Module), nvim
+        (lädt headless), <code>config/usrbin</code>-Skripte (alle
+        <code>bash -n</code> ok), systemd-Units, Alacritty, Mako, Rofi, Ly, mpv,
+        Typst, git-config, <code>setup/programs.txt</code>, README und CLAUDE.md
+        sowie die Live-Verlinkung (<strong>40/40</strong> <code>ok</code>).
         KeePassXC-<code>.kdbx</code> (per <code>.gitignore</code>/
         <code>.claudeignore</code> ausgeschlossen) und fremde mpv-Lua-Scripts nur
         oberflächlich.<br />
-        Das Repo ist insgesamt sehr sauber. Schwerpunkt dieses Reviews:
-        <strong>die Neuinstallations-Erfahrung eines fremden Users</strong>
-        (Fehlerquellen im <code>./install</code>-Ablauf, siehe INST-1…3) und der
-        <strong>noch nicht getrackte System-State</strong>, den ein deklaratives
-        System wie NixOS erfassen würde (User/Gruppen, sudo, Bootloader/Kernel-
-        Cmdline, Locale-Gen, Firewall — siehe TRACK-3).
+        Das Repo ist insgesamt sehr sauber. Frischer Voll-Scan nach der
+        Umbenennung <code>scripts/</code> → <code>setup/</code> (inkl.
+        <code>links.conf</code> hinein, Skripte ohne <code>.sh</code>) und der
+        Einführung des <code>setup</code>-Kommandos — alle Referenzen und der
+        pacman-Hook-Pfad verifiziert. Nur zwei kleine Tooling-Findings offen
+        (siehe CQ-1, SH-1).
       </div>
 
       <div class="summary">
@@ -328,7 +328,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">0</span><span class="l">Niedrig</span>
+          <span class="n">2</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -345,21 +345,53 @@
       <section id="offen">
         <h2>1 · Offene Findings</h2>
 
-        <div class="card good">
+        <div class="card niedrig">
           <div class="card-head">
-            <span class="badge good">erledigt</span>
-            <span class="loc">keine offenen Findings</span>
+            <span class="badge niedrig">niedrig</span>
+            <span class="id">CQ-1</span>
+            <span class="loc"
+              ><code>setup/update-package-list</code> ·
+              <code>config/usrbin/update_programs_list</code></span
+            >
           </div>
           <p>
-            Alle Findings dieses Reviews (INST-1…3, TRACK-3, SEC-1) sind
-            abgearbeitet: der pacman-Hook läuft portabel über
-            <code>/usr/local/bin</code>, <code>SYSTEM_UNITS</code> deckt die real
-            aktivierten Dienste ab, <code>./install</code> gibt einen
-            Schluss-/<code>--force</code>-Hinweis, <code>locale.gen</code> wird
-            getrackt und der übrige System-State ist im README dokumentiert. Die
-            <code>NOPASSWD</code>-sudo-Regel ist als bewusste Entscheidung
-            festgehalten (siehe unten).
+            Dieselbe Paketlisten-Pipeline
+            (<code>pacman -Qe | awk … &lt;(pacman -Qq base)</code>) steht
+            <b>doppelt</b> in zwei Skripten: <code>update_programs_list</code>
+            (kanonisch, non-interaktiv, vom pacman-Hook &amp;
+            <code>dotfiles-sync</code> genutzt, portabel via
+            <code>logname</code>/<code>getent</code>) und
+            <code>setup/update-package-list</code> (nur ein interaktiver Wrapper
+            mit <code>read -p</code>). Ändert sich die Awk-Logik, müssen beide
+            angefasst werden — Drift-Gefahr.
           </p>
+          <div class="rec">
+            <b>Empfehlung:</b> <code>update-package-list</code> nur die Abfrage
+            machen und dann <code>update_programs_list</code> aufrufen lassen
+            (eine einzige Quelle der Wahrheit) — oder ganz entfernen, da
+            <code>update_programs_list</code> dasselbe leistet.
+          </div>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="badge niedrig">niedrig</span>
+            <span class="id">SH-1</span>
+            <span class="loc"><code>setup/install-programs</code> · yay-Bootstrap</span>
+          </div>
+          <p>
+            Unter <code>set -e</code> bricht der yay-Bootstrap ab, wenn
+            <code>/tmp/yay</code> von einem früheren, abgebrochenen Lauf noch
+            existiert: <code>git clone … /tmp/yay</code> scheitert dann mit
+            „already exists and is not empty" und beendet das ganze Skript. Genau
+            im Erst-Setup-Pfad einer Neuinstallation (<code>./install setup</code>)
+            unangenehm.
+          </p>
+          <div class="rec">
+            <b>Empfehlung:</b> vor dem Clone <code>rm -rf /tmp/yay</code>
+            (oder ein <code>mktemp -d</code>-Verzeichnis nutzen und am Ende per
+            <code>trap</code> aufräumen).
+          </div>
         </div>
       </section>
 
@@ -370,21 +402,23 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"><code>install</code> · <code>links.conf</code></span>
+            <span class="loc"><code>install</code> · <code>setup/links.conf</code></span>
           </div>
           <p>
             Der eigene Symlink-Manager ist schlank und sicher: <b>eine</b>
-            Mapping-Datei (<code>links.conf</code>, zwei Spalten) plus reines Bash
-            <b>ohne Abhängigkeiten</b> (kein Python/dotbot/Stow). Kommandos
-            <code>link</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
+            Mapping-Datei (<code>setup/links.conf</code>, zwei Spalten) plus reines
+            Bash <b>ohne Abhängigkeiten</b> (kein Python/dotbot/Stow). Kommandos
+            <code>link</code>/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
             dazu <code>-n/--dry-run</code>, <code>--user-only</code> und
-            <code>--force</code> (sichert reale Ziele nach <code>.bak</code>).
+            <code>--force</code> (sichert reale Ziele nach <code>.bak</code>); das
+            <code>setup</code>-Kommando bündelt den Erst-Setup (Pakete → Link →
+            Units → <code>locale-gen</code> → Checkliste).
             Reale Dateien werden nie ungefragt überschrieben, <code>unlink</code>
             entfernt nur Symlinks auf eigene Quellen, <code>/etc</code>-Ziele
             laufen dateiweise per <code>sudo</code>, Glob-Quellen
             (<code>config/usrbin/*</code>) verlinken dateiweise, damit
             Fremd-Einträge in <code>~/.local/bin</code> (z.&nbsp;B.
-            <code>claude</code>) erhalten bleiben. Live verifiziert: 34/34
+            <code>claude</code>) erhalten bleiben. Live verifiziert: 40/40
             Einträge <code>ok</code>.
           </p>
         </div>
