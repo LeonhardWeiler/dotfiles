@@ -49,9 +49,15 @@ Useful variants:
 ./install --user-only     # only ~ targets, never touch /etc, no sudo
 ./install -n              # dry run: print what would happen, change nothing
 ./install --force         # back up real files/dirs at the target to .bak, then link
+./install --programs      # also install the packages from scripts/programs.txt (yay), before linking
 ./install clean           # delete the .bak backups that --force created
 ./install unlink          # remove the symlinks this repo manages
 ```
+
+> `--programs` (short `-p`) delegates to `scripts/install-programs.sh` (bootstraps
+> `yay` if missing, skips already-installed packages) and runs **before** the
+> linking/unit step, so the units reactivated afterwards actually exist. It is
+> the one-shot equivalent of running `./scripts/install-programs.sh` by hand.
 
 > **Repo layout:** every config lives directly under `config/<name>/` (flat
 > source paths — e.g. `config/btop/btop.conf`), and `links.conf` maps each source
