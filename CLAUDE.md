@@ -74,6 +74,10 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
   (`workspace_slf`, `rofi_workspace_manager`). `dotfiles_sync` versioniert
   `scripts/programs.txt`; `update_programs_list` schreibt dorthin.
+  `update_programs_list` wird **zusätzlich** an den festen Systempfad
+  `/usr/local/bin/update_programs_list` verlinkt (eigene `links.conf`-Zeile),
+  weil der pacman-Hook (`/etc/pacman.d/hooks`) keine `$HOME`-Variablen kennt und
+  es von dort aufruft — so bleibt der Hook auch für einen fremden User portabel.
 - **`nvim/`** hat eine **eigene `CLAUDE.md`** (`config/nvim/CLAUDE.md`) mit den
   nvim-spezifischen Verifikations-Befehlen — für nvim-Änderungen dort nachsehen.
 
