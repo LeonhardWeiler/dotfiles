@@ -99,7 +99,16 @@ link_one() {
     fi
   fi
   local parent; parent="$(dirname "$target")"
-  [ -d "$parent" ] || run "$root" mkdir -p "$parent"
+  # Ein toter (kaputter) Symlink als Eltern-Pfad — z. B. Rest aus einem alten
+  # Setup — bringt sonst `mkdir -p` mit „File exists" zu Fall und beendet unter
+  # `set -e` den ganzen Lauf. Ein toter Symlink hat keinen Inhalt → gefahrlos
+  # entfernen (nur echte, ins Leere zeigende Symlinks; reale Dateien/Ordner
+  # bleiben unberührt).
+  if [ -L "$parent" ] && [ ! -e "$parent" ]; then run "$root" rm -f "$parent"; fi
+  if [ ! -d "$parent" ]; then
+    run "$root" mkdir -p "$parent" \
+      || { warn "Eltern-Pfad nicht anlegbar, übersprungen: $parent"; return 0; }
+  fi
   run "$root" ln -sfn "$src" "$target"
   ok "$2 → $rel"
 }
