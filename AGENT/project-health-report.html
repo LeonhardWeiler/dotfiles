@@ -322,7 +322,7 @@
           <span class="n">0</span><span class="l">Kritisch</span>
         </div>
         <div class="stat hoch">
-          <span class="n">1</span><span class="l">Hoch</span>
+          <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
           <span class="n">3</span><span class="l">Mittel</span>
@@ -344,34 +344,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card hoch">
-          <div class="card-head">
-            <span class="badge hoch">hoch</span>
-            <span class="id">INST-1</span>
-            <span class="loc"
-              ><code>config/pacman/dotfiles-programs-list.hook</code></span
-            >
-          </div>
-          <p>
-            Der pacman-Hook ruft mit hartem Pfad
-            <code>Exec = /home/leo/.local/bin/update_programs_list</code> auf.
-            Für einen <b>fremden User</b> (anderer Name/Home) zeigt der Exec-Pfad
-            ins Leere, und pacman meldet <b>nach jeder Transaktion</b> einen
-            fehlgeschlagenen Hook — obwohl das aufgerufene Skript selbst sauber
-            ohne <code>/home/leo</code>-Hardcode arbeitet
-            (<code>logname</code>/<code>getent</code>). Der Hook ist damit das
-            einzige nicht portable Glied der Kette.
-          </p>
-          <div class="rec">
-            <b>Empfehlung:</b> pacman-Hooks kennen keine Variablen — daher das
-            Generator-Skript an einen <b>festen systemweiten</b> Pfad legen
-            (z.&nbsp;B. <code>/usr/local/bin/update_programs_list</code>, per
-            <code>links.conf</code>) und den Hook darauf zeigen lassen; alternativ
-            den Hook beim <code>./install</code> aus einem Template mit dem echten
-            <code>$HOME</code> erzeugen.
-          </div>
-        </div>
 
         <div class="card mittel">
           <div class="card-head">

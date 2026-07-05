@@ -1,6 +1,10 @@
 # Aktualisiert nach jeder Paket-Transaktion die programs.txt im Dotfiles-Repo.
 # Greift auch bei yay (nutzt intern pacman). Laeuft als root -> das Skript gibt
 # die Datei anschliessend dem User zurueck.
+#
+# Exec zeigt bewusst auf den FESTEN Systempfad /usr/local/bin (per links.conf
+# verlinkt), NICHT auf /home/<user>/.local/bin: pacman-Hooks kennen keine
+# Variablen, ein hartes /home/leo waere fuer einen fremden User kaputt.
 [Trigger]
 Operation = Install
 Operation = Remove
@@ -11,5 +15,5 @@ Target = *
 [Action]
 Description = Dotfiles: programs.txt aktualisieren...
 When = PostTransaction
-Exec = /home/leo/.local/bin/update_programs_list
+Exec = /usr/local/bin/update_programs_list
 Depends = awk
