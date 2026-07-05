@@ -326,7 +326,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">3</span><span class="l">Niedrig</span>
+          <span class="n">2</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -342,33 +342,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card niedrig">
-          <div class="card-head">
-            <span class="badge niedrig">niedrig</span>
-            <span class="id">TRACK-2</span>
-            <span class="loc">nicht getrackte User-Config · Secrets-Abgrenzung</span>
-          </div>
-          <p>
-            Unter <code>~/.config</code> ist eine bewusste, aber ungetrackte
-            User-Anpassung:
-            <code>~/.config/autostart/org.keepassxc.KeePassXC.desktop</code>
-            (KeePassXC-Autostart). Klein und portabel — Kandidat fürs Repo.
-          </p>
-          <p>
-            <b>Ausdrücklich NICHT tracken</b> (enthalten Secrets/Runtime-State,
-            gehören nicht ins Repo): <code>~/.config/Signal/</code>,
-            <code>~/.config/ssh/</code>, <code>~/.config/pulse/</code> sowie
-            App-Caches/State wie <code>go/</code>, <code>figma-linux/</code>,
-            <code>dconf/</code>, <code>gthumb/</code>.
-          </p>
-          <div class="rec">
-            <b>Empfehlung:</b> die Autostart-<code>.desktop</code> aufnehmen,
-            falls gewünscht; die Secret-Verzeichnisse weiter außen vor lassen
-            (ggf. defensiv per <code>.gitignore</code>/<code>.claudeignore</code>
-            absichern, analog zu <code>keepassxc/</code>).
-          </div>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">
