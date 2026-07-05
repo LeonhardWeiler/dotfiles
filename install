@@ -26,6 +26,7 @@ DRYRUN=0
 USER_ONLY=0
 NO_UNITS=0
 FORCE=0
+SKIPPED_REAL=0   # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
 
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
@@ -98,7 +99,8 @@ link_one() {
       if [ -e "$bak" ]; then bak="$target.bak.$(date +%s)"; fi
       run "$root" mv "$target" "$bak"; ok "gesichert: $target → $bak"
     else
-      warn "reale Datei/Verzeichnis, übersprungen (mit --force sichern & ersetzen): $target"; return 0
+      warn "reale Datei/Verzeichnis, übersprungen (mit --force sichern & ersetzen): $target"
+      SKIPPED_REAL=$((SKIPPED_REAL + 1)); return 0
     fi
   fi
   local parent; parent="$(dirname "$target")"
@@ -155,6 +157,20 @@ clean_one() {
   shopt -u nullglob
 }
 
+# Schlusshinweis nach dem Verlinken: übersprungene reale Ziele prominent melden
+# und den Nutzer daran erinnern, die frisch verlinkte Shell-Config anzuwenden.
+# (Ein Skript kann die interaktive Eltern-Shell nicht selbst neu laden — daher
+# der explizite Hinweis statt eines wirkungslosen `source` im Skript.)
+next_steps() {
+  if [ "$SKIPPED_REAL" -gt 0 ]; then
+    warn "$SKIPPED_REAL reale(s) Ziel(e) übersprungen — mit './install --force' nach .bak sichern und ersetzen."
+  fi
+  [ "$DRYRUN" = 1 ] && return 0
+  info "Nächste Schritte"
+  printf '  • %ssource ~/.bashrc%s  — Shell-Config sofort anwenden (lädt auch ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
+  printf '  • für die .bash_profile-Env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*) einmal neu einloggen\n'
+}
+
 reactivate_units() {
   [ "$NO_UNITS" = 1 ] && return 0
   # Bewusst `enable`, nicht `reenable`: unsere Unit-Dateien sind Symlinks
@@ -209,6 +225,7 @@ case "$CMD" in
     info "Symlinks anlegen (${#SRCS[@]} Einträge)"
     for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
     reactivate_units
+    next_steps
     ;;
   unlink)
     info "Symlinks entfernen"

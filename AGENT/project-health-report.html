@@ -325,7 +325,7 @@
           <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">2</span><span class="l">Mittel</span>
+          <span class="n">1</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
           <span class="n">1</span><span class="l">Niedrig</span>
@@ -344,47 +344,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card mittel">
-          <div class="card-head">
-            <span class="badge mittel">mittel</span>
-            <span class="id">INST-3</span>
-            <span class="loc">Neuinstallation · Reihenfolge/Abhängigkeiten</span>
-          </div>
-          <p>
-            Der Erst-Ablauf hat stille Reihenfolge-Fallen. <code>./install</code>
-            verlinkt Configs und aktiviert Units, aber:
-          </p>
-          <ul class="tracklist">
-            <li>
-              Läuft <code>./install</code> <b>vor</b>
-              <code>scripts/install-programs.sh</code>, sind die Pakete (ly,
-              dnsmasq, libvirtd, sshd …) noch nicht da — die
-              <code>systemctl enable</code>-Aufrufe scheitern (nur Warnung, ok),
-              aber auch der pacman-Hook und <code>dotfiles-sync.service</code>
-              rufen <code>~/.local/bin</code>-Skripte auf, die erst nach dem
-              Verlinken existieren.
-            </li>
-            <li>
-              Vorhandene <b>reale</b> Default-Dateien (z.&nbsp;B. das mitgelieferte
-              <code>~/.bashrc</code>) werden ohne <code>--force</code> nur
-              „übersprungen" — leicht zu übersehen; der neue User wundert sich,
-              warum seine Bash-Config nicht greift.
-            </li>
-            <li>
-              <code>dotfiles_sync</code>/README nehmen den Klon-Pfad
-              <code>$HOME/dotfiles</code> an; ein Klon an anderer Stelle bricht
-              Hook und Sync (über <code>DOTFILES_DIR</code> überschreibbar, aber
-              undokumentiert an dieser Stelle).
-            </li>
-          </ul>
-          <div class="rec">
-            <b>Empfehlung:</b> im README eine klare Schritt-Reihenfolge festhalten
-            (1. <code>install-programs.sh</code>, 2. <code>./install</code>, ggf.
-            <code>--force</code>) und den <code>--force</code>-Hinweis bei
-            „echte Datei, übersprungen" prominenter machen.
-          </div>
-        </div>
 
         <div class="card mittel">
           <div class="card-head">
