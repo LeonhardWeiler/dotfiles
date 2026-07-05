@@ -303,16 +303,18 @@
         Hyprland-Lua (9 Module), nvim (lädt headless), <code>config/usrbin</code>-
         Skripte (10, alle <code>bash -n</code> ok), systemd-Units, Alacritty,
         Mako, Rofi, Ly, mpv, Typst, git-config, <code>programs.txt</code>, README
-        und CLAUDE.md sowie die Live-Verlinkung (34/34 <code>ok</code>).
+        und CLAUDE.md sowie die Live-Verlinkung (<code>ok</code> bis auf die 4
+        neu aufgenommenen <code>/etc</code>-Ziele, die noch als reale Datei
+        vorliegen und per <code>--force</code> verlinkt werden).
         KeePassXC-<code>.kdbx</code> (per <code>.gitignore</code>/
         <code>.claudeignore</code> ausgeschlossen) und fremde mpv-Lua-Scripts nur
         oberflächlich.<br />
-        Frischer Voll-Scan nach der Migration von dotbot/Stow auf den eigenen
-        Symlink-Manager (flaches <code>config/&lt;name&gt;/…</code>-Layout,
-        <code>./install</code> mit <code>link</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>).
         Das Repo ist insgesamt sehr sauber. Schwerpunkt dieses Reviews:
-        <strong>noch nicht getrackte, aber sinnvoll trackbare Configs</strong>
-        (siehe TRACK-1/TRACK-2).
+        <strong>die Neuinstallations-Erfahrung eines fremden Users</strong>
+        (Fehlerquellen im <code>./install</code>-Ablauf, siehe INST-1…3) und der
+        <strong>noch nicht getrackte System-State</strong>, den ein deklaratives
+        System wie NixOS erfassen würde (User/Gruppen, sudo, Bootloader/Kernel-
+        Cmdline, Locale-Gen, Firewall — siehe TRACK-3).
       </div>
 
       <div class="summary">
@@ -320,13 +322,13 @@
           <span class="n">0</span><span class="l">Kritisch</span>
         </div>
         <div class="stat hoch">
-          <span class="n">0</span><span class="l">Hoch</span>
+          <span class="n">1</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">0</span><span class="l">Mittel</span>
+          <span class="n">3</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">0</span><span class="l">Niedrig</span>
+          <span class="n">1</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -343,21 +345,194 @@
       <section id="offen">
         <h2>1 · Offene Findings</h2>
 
-        <div class="card good">
+        <div class="card hoch">
           <div class="card-head">
-            <span class="badge good">erledigt</span>
-            <span class="loc">keine offenen Findings</span>
+            <span class="badge hoch">hoch</span>
+            <span class="id">INST-1</span>
+            <span class="loc"
+              ><code>config/pacman/dotfiles-programs-list.hook</code></span
+            >
           </div>
           <p>
-            Alle Findings dieses Reviews (TRACK-1, TRACK-2, DOC-1, SH-1, GI-1)
-            sind abgearbeitet: die <code>/etc</code>-Configs (vconsole, locale,
-            pacman, logind) werden jetzt getrackt, Secret-Verzeichnisse sind
-            defensiv per <code>.gitignore</code>/<code>.claudeignore</code>
-            abgesichert (KeePassXC-Autostart lokal entfernt), die
-            <code>CLAUDE.md</code>-Fallstrick-Zeile zeigt auf <code>env.lua</code>,
-            <code>link_one()</code> übersteht einen toten Symlink am Eltern-Pfad
-            und der veraltete dotbot-Kommentar ist raus.
+            Der pacman-Hook ruft mit hartem Pfad
+            <code>Exec = /home/leo/.local/bin/update_programs_list</code> auf.
+            Für einen <b>fremden User</b> (anderer Name/Home) zeigt der Exec-Pfad
+            ins Leere, und pacman meldet <b>nach jeder Transaktion</b> einen
+            fehlgeschlagenen Hook — obwohl das aufgerufene Skript selbst sauber
+            ohne <code>/home/leo</code>-Hardcode arbeitet
+            (<code>logname</code>/<code>getent</code>). Der Hook ist damit das
+            einzige nicht portable Glied der Kette.
           </p>
+          <div class="rec">
+            <b>Empfehlung:</b> pacman-Hooks kennen keine Variablen — daher das
+            Generator-Skript an einen <b>festen systemweiten</b> Pfad legen
+            (z.&nbsp;B. <code>/usr/local/bin/update_programs_list</code>, per
+            <code>links.conf</code>) und den Hook darauf zeigen lassen; alternativ
+            den Hook beim <code>./install</code> aus einem Template mit dem echten
+            <code>$HOME</code> erzeugen.
+          </div>
+        </div>
+
+        <div class="card mittel">
+          <div class="card-head">
+            <span class="badge mittel">mittel</span>
+            <span class="id">INST-2</span>
+            <span class="loc"><code>install</code> · <code>SYSTEM_UNITS</code></span>
+          </div>
+          <p>
+            <code>./install</code> aktiviert nur eine <b>Teilmenge</b> der auf
+            dieser Maschine real aktivierten System-Units. Enabled, aber
+            <b>nicht</b> in <code>SYSTEM_UNITS</code> — würde ein via
+            <code>./install</code> aufgesetzter Rechner also <b>nicht</b>
+            bekommen:
+          </p>
+          <ul class="tracklist">
+            <li>
+              <code>iptables.service</code> — <b>Paketfilter/Firewall</b> (die
+              Regeln in <code>/etc/iptables/</code> sind ebenfalls ungetrackt).
+            </li>
+            <li>
+              <code>power-profiles-daemon.service</code> — Energieprofile (für ein
+              Notebook relevant).
+            </li>
+            <li><code>fstrim.timer</code> — periodisches SSD-TRIM.</li>
+            <li>
+              <code>systemd-timesyncd.service</code> — NTP-Zeitsync (oft Default,
+              aber nicht garantiert).
+            </li>
+          </ul>
+          <div class="rec">
+            <b>Empfehlung:</b> die bewusst gewünschten Dienste in
+            <code>SYSTEM_UNITS</code> ergänzen (Enable ist idempotent und für noch
+            nicht installierte Pakete ohnehin nur eine Warnung), oder im
+            Skript/README notieren, welche absichtlich weggelassen sind.
+          </div>
+        </div>
+
+        <div class="card mittel">
+          <div class="card-head">
+            <span class="badge mittel">mittel</span>
+            <span class="id">INST-3</span>
+            <span class="loc">Neuinstallation · Reihenfolge/Abhängigkeiten</span>
+          </div>
+          <p>
+            Der Erst-Ablauf hat stille Reihenfolge-Fallen. <code>./install</code>
+            verlinkt Configs und aktiviert Units, aber:
+          </p>
+          <ul class="tracklist">
+            <li>
+              Läuft <code>./install</code> <b>vor</b>
+              <code>scripts/install-programs.sh</code>, sind die Pakete (ly,
+              dnsmasq, libvirtd, sshd …) noch nicht da — die
+              <code>systemctl enable</code>-Aufrufe scheitern (nur Warnung, ok),
+              aber auch der pacman-Hook und <code>dotfiles-sync.service</code>
+              rufen <code>~/.local/bin</code>-Skripte auf, die erst nach dem
+              Verlinken existieren.
+            </li>
+            <li>
+              Vorhandene <b>reale</b> Default-Dateien (z.&nbsp;B. das mitgelieferte
+              <code>~/.bashrc</code>) werden ohne <code>--force</code> nur
+              „übersprungen" — leicht zu übersehen; der neue User wundert sich,
+              warum seine Bash-Config nicht greift.
+            </li>
+            <li>
+              <code>dotfiles_sync</code>/README nehmen den Klon-Pfad
+              <code>$HOME/dotfiles</code> an; ein Klon an anderer Stelle bricht
+              Hook und Sync (über <code>DOTFILES_DIR</code> überschreibbar, aber
+              undokumentiert an dieser Stelle).
+            </li>
+          </ul>
+          <div class="rec">
+            <b>Empfehlung:</b> im README eine klare Schritt-Reihenfolge festhalten
+            (1. <code>install-programs.sh</code>, 2. <code>./install</code>, ggf.
+            <code>--force</code>) und den <code>--force</code>-Hinweis bei
+            „echte Datei, übersprungen" prominenter machen.
+          </div>
+        </div>
+
+        <div class="card mittel">
+          <div class="card-head">
+            <span class="badge mittel">mittel</span>
+            <span class="id">TRACK-3</span>
+            <span class="loc">nicht getrackter System-State (NixOS-Vergleich)</span>
+          </div>
+          <p>
+            Über Config-Dateien hinaus gibt es <b>System-Zustand</b>, den ein
+            deklaratives System (NixOS) erfassen würde, dieses Repo aber nicht —
+            bei einer Neuinstallation von Hand nachzubauen. Vollständige Liste
+            (portabel → maschinenspezifisch):
+          </p>
+          <ul class="tracklist">
+            <li>
+              <b>Gruppen-Mitgliedschaften</b> von <code>leo</code>:
+              <code>wheel</code>, <code>lock</code>, <code>disk</code>,
+              <code>input</code>, <code>kvm</code>, <code>uucp</code>,
+              <code>libvirt</code>, <code>libvirt-qemu</code>,
+              <code>wireshark</code>, <code>docker</code>. Ohne sie scheitern
+              docker/libvirt/wireshark-Zugriffe still — ein neuer User muss
+              <code>usermod -aG …</code> von Hand. Login-Shell:
+              <code>/usr/bin/bash</code>.
+            </li>
+            <li>
+              <b>sudo-Regel</b> <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code>
+              (<code>/etc/sudoers</code>) — passwortloses sudo; bewusst, aber Teil
+              des Setups (siehe SEC-1).
+            </li>
+            <li>
+              <b>Bootloader &amp; Kernel-Cmdline</b>: systemd-boot (ESP unter
+              <code>/efi</code>), <code>loader/loader.conf</code> +
+              <code>entries/arch.conf</code> mit getunter Cmdline
+              <code>amd_pstate=active usbcore.autosuspend=1 quiet</code>.
+            </li>
+            <li>
+              <b><code>/etc/locale.gen</code></b> (<code>en_US.UTF-8 UTF-8</code>)
+              — Gegenstück zur bereits getrackten <code>locale.conf</code>; ohne
+              <code>locale-gen</code> gibt es die Locale gar nicht.
+            </li>
+            <li>
+              <b>Zeitzone</b> <code>Europe/Vienna</code>
+              (<code>/etc/localtime</code>-Symlink).
+            </li>
+            <li>
+              <b>Firewall-Regeln</b> <code>/etc/iptables/iptables.rules</code>
+              (zu <code>iptables.service</code> aus INST-2).
+            </li>
+            <li>
+              <b>Maschinenspezifisch</b> (nur mit Bedacht/gar nicht tracken):
+              <code>/etc/hostname</code> (<code>arch</code>),
+              <code>/etc/fstab</code> (UUIDs), sowie die
+              <b>NetworkManager-WLAN-Profile</b>
+              (<code>/etc/NetworkManager/system-connections/*.nmconnection</code>)
+              — enthalten PSKs/Secrets, gehören wie die <code>.kdbx</code>
+              <b>nicht</b> ins Repo.
+            </li>
+          </ul>
+          <div class="rec">
+            <b>Empfehlung:</b> das Portable dokumentieren/tracken — Gruppenliste
+            und sudo-Regel als <code>/etc/sudoers.d/</code>-Datei, Kernel-Cmdline,
+            <code>locale.gen</code>, Zeitzone (mind. als Setup-Checkliste im
+            README) — und Maschinenspezifisches/Secrets bewusst außen vor lassen.
+          </div>
+        </div>
+
+        <div class="card niedrig">
+          <div class="card-head">
+            <span class="badge niedrig">niedrig</span>
+            <span class="id">SEC-1</span>
+            <span class="loc"><code>/etc/sudoers</code> · <code>%wheel</code></span>
+          </div>
+          <p>
+            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> gewährt allen
+            wheel-Nutzern passwortloses root. Bequem und bewusst gewählt, aber ein
+            Sicherheits-Hinweis: jeder Prozess des Users (auch kompromittierte
+            Skripte) wird ohne weitere Hürde root — genau das umgeht auch die
+            sonst schützende sudo-Passwortabfrage.
+          </p>
+          <div class="rec">
+            <b>Empfehlung:</b> falls das Repo mal geteilt/nachgebaut wird, diese
+            Entscheidung explizit dokumentieren (oder auf
+            <code>NOPASSWD</code> nur für gezielte Kommandos einschränken).
+          </div>
         </div>
       </section>
 
