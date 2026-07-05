@@ -87,8 +87,9 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   `<ziel>/<name>`) — siehe `config/usrbin/*`.
 - **`AGENT/` bleibt im Root** und außerhalb der Link-Logik.
 - **Skalierung/Cursor-Env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) werden
-  ausschließlich in `config/hypr/hyprland.conf` gesetzt, **nicht** in der
-  `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg anders).
+  ausschließlich in `config/hypr/env.lua` (via `hl.env(...)`) gesetzt, **nicht** in
+  der `.bashrc` — nicht erneut duplizieren (sonst rendern Apps je nach Startweg
+  anders). (`hyprland.conf` ist nur der gitignorierte, autogenerierte Stub.)
 - Hyprland-Config: Seit 0.55 ist **hyprlang (`.conf`) deprecated** zugunsten der
   **Lua-Config** (API-Global `hl`, geladen aus `~/.config/hypr/hyprland.lua`,
   Quelle unter `config/hypr/`).

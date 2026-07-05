@@ -326,7 +326,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">2</span><span class="l">Niedrig</span>
+          <span class="n">1</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -342,28 +342,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card niedrig">
-          <div class="card-head">
-            <span class="badge niedrig">niedrig</span>
-            <span class="id">DOC-1</span>
-            <span class="loc"><code>CLAUDE.md</code> · Abschnitt „Konventionen &amp; Fallstricke"</span>
-          </div>
-          <p>
-            <code>CLAUDE.md</code> schreibt, Skalierungs-/Cursor-Env
-            (<code>QT_SCALE_FACTOR</code>, <code>GDK_SCALE</code>,
-            <code>XCURSOR_SIZE</code>) würden „ausschließlich in
-            <code>config/hypr/hyprland.conf</code>" gesetzt. Tatsächlich stehen sie
-            in <code>config/hypr/env.lua</code> (<code>hl.env(...)</code>);
-            <code>hyprland.conf</code> ist nur der gitignorierte, autogenerierte
-            Stub.
-          </p>
-          <div class="rec">
-            <b>Empfehlung:</b> die Fallstrick-Zeile auf <code>env.lua</code>
-            korrigieren (die Aussage selbst — Env nur an einer Stelle, nicht in
-            <code>.bashrc</code> — bleibt richtig).
-          </div>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">
