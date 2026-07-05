@@ -325,7 +325,7 @@
           <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">3</span><span class="l">Mittel</span>
+          <span class="n">2</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
           <span class="n">1</span><span class="l">Niedrig</span>
@@ -344,42 +344,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card mittel">
-          <div class="card-head">
-            <span class="badge mittel">mittel</span>
-            <span class="id">INST-2</span>
-            <span class="loc"><code>install</code> · <code>SYSTEM_UNITS</code></span>
-          </div>
-          <p>
-            <code>./install</code> aktiviert nur eine <b>Teilmenge</b> der auf
-            dieser Maschine real aktivierten System-Units. Enabled, aber
-            <b>nicht</b> in <code>SYSTEM_UNITS</code> — würde ein via
-            <code>./install</code> aufgesetzter Rechner also <b>nicht</b>
-            bekommen:
-          </p>
-          <ul class="tracklist">
-            <li>
-              <code>iptables.service</code> — <b>Paketfilter/Firewall</b> (die
-              Regeln in <code>/etc/iptables/</code> sind ebenfalls ungetrackt).
-            </li>
-            <li>
-              <code>power-profiles-daemon.service</code> — Energieprofile (für ein
-              Notebook relevant).
-            </li>
-            <li><code>fstrim.timer</code> — periodisches SSD-TRIM.</li>
-            <li>
-              <code>systemd-timesyncd.service</code> — NTP-Zeitsync (oft Default,
-              aber nicht garantiert).
-            </li>
-          </ul>
-          <div class="rec">
-            <b>Empfehlung:</b> die bewusst gewünschten Dienste in
-            <code>SYSTEM_UNITS</code> ergänzen (Enable ist idempotent und für noch
-            nicht installierte Pakete ohnehin nur eine Warnung), oder im
-            Skript/README notieren, welche absichtlich weggelassen sind.
-          </div>
-        </div>
 
         <div class="card mittel">
           <div class="card-head">

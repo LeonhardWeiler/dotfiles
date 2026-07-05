@@ -31,9 +31,12 @@ FORCE=0
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
 # Nur real existierende System-Units. pipewire/wireplumber sind User-Dienste
 # (Paket-Presets, nicht getrackt) und swtpm ist socket-aktiviert — die haben
-# keine enable-bare <name>.service.
+# keine enable-bare <name>.service. iptables lädt die (Default-)Regeln aus
+# /etc/iptables/; fstrim.timer macht periodisches SSD-TRIM; timesyncd = NTP;
+# power-profiles-daemon = Energieprofile (Notebook).
 SYSTEM_UNITS=(NetworkManager.service ly@tty2.service dnsmasq.service sshd.service
-  libvirtd.service legion-conservation.service)
+  libvirtd.service legion-conservation.service iptables.service
+  power-profiles-daemon.service systemd-timesyncd.service fstrim.timer)
 
 # ── Ausgabe-Helfer ───────────────────────────────────────────────────────────
 if [ -t 1 ]; then C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_INFO=$'\e[36m'; C_RST=$'\e[0m'
