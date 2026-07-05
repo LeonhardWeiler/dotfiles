@@ -328,7 +328,7 @@
           <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
-          <span class="n">2</span><span class="l">Niedrig</span>
+          <span class="n">1</span><span class="l">Niedrig</span>
         </div>
       </div>
 
@@ -344,34 +344,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card niedrig">
-          <div class="card-head">
-            <span class="badge niedrig">niedrig</span>
-            <span class="id">CQ-1</span>
-            <span class="loc"
-              ><code>setup/update-package-list</code> ·
-              <code>config/usrbin/update_programs_list</code></span
-            >
-          </div>
-          <p>
-            Dieselbe Paketlisten-Pipeline
-            (<code>pacman -Qe | awk … &lt;(pacman -Qq base)</code>) steht
-            <b>doppelt</b> in zwei Skripten: <code>update_programs_list</code>
-            (kanonisch, non-interaktiv, vom pacman-Hook &amp;
-            <code>dotfiles-sync</code> genutzt, portabel via
-            <code>logname</code>/<code>getent</code>) und
-            <code>setup/update-package-list</code> (nur ein interaktiver Wrapper
-            mit <code>read -p</code>). Ändert sich die Awk-Logik, müssen beide
-            angefasst werden — Drift-Gefahr.
-          </p>
-          <div class="rec">
-            <b>Empfehlung:</b> <code>update-package-list</code> nur die Abfrage
-            machen und dann <code>update_programs_list</code> aufrufen lassen
-            (eine einzige Quelle der Wahrheit) — oder ganz entfernen, da
-            <code>update_programs_list</code> dasselbe leistet.
-          </div>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">

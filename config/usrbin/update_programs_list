@@ -2,10 +2,15 @@
 # update_programs_list — regeneriert programs.txt im Dotfiles-Repo aus den
 # explizit installierten Paketen (ohne base-Gruppe). Non-interaktiv.
 #
+# Einzige Quelle für die Paketliste (früher zusätzlich als interaktives
+# setup/update-package-list dupliziert — entfernt). Liegt via config/usrbin/*
+# als Symlink in ~/.local/bin (PATH) und zusätzlich unter /usr/local/bin für
+# den pacman-Hook (beides per setup/links.conf).
+#
 # Aufrufer:
 #   - pacman-Hook (PostTransaction, laeuft als root)
 #   - dotfiles_sync (Startup-Sync, laeuft als User)
-#   - manuell
+#   - manuell (`update_programs_list`)
 #
 # Laeuft der Aufruf als root (Hook), wird die Datei anschliessend dem User
 # zurueckgegeben, damit sie im Repo nicht root gehoert.
@@ -19,9 +24,26 @@ OWNER_HOME="$(getent passwd "$OWNER" | cut -d: -f6)"
 DOTFILES="${DOTFILES_DIR:-${OWNER_HOME:-$HOME}/dotfiles}"
 OUT="$DOTFILES/setup/programs.txt"
 
-# -Q liest nur die lokale DB (keine Lock-Kollision) -> im Hook sicher.
-pacman -Qe | awk 'NR==FNR{skip[$1];next} !($1 in skip)' <(pacman -Qq base) - > "$OUT"
-
-if [ "$(id -u)" -eq 0 ]; then
-  chown "$OWNER" "$OUT"
+# Ziel-Verzeichnis muss existieren; sonst nichts tun und mit 0 enden, damit der
+# pacman-Hook die Paket-Transaktion NICHT scheitern laesst (best effort).
+OUT_DIR="$(dirname "$OUT")"
+if [ ! -d "$OUT_DIR" ]; then
+  echo "update_programs_list: $OUT_DIR fehlt — uebersprungen" >&2
+  exit 0
 fi
+
+# Atomar schreiben: erst in eine temporaere Datei im SELBEN Verzeichnis, dann per
+# mv an ihren Platz. So sieht ein gleichzeitig lesender Prozess (bzw. der
+# git-Sync) nie eine halb geschriebene Datei, und schlaegt die Pipeline fehl,
+# bleibt die alte programs.txt unangetastet.
+TMP="$(mktemp "$OUT_DIR/.programs.txt.XXXXXX")"
+trap 'rm -f "$TMP"' EXIT
+
+# -Q liest nur die lokale DB (keine Lock-Kollision) -> im Hook sicher.
+pacman -Qe | awk 'NR==FNR{skip[$1];next} !($1 in skip)' <(pacman -Qq base) - > "$TMP"
+
+chmod 644 "$TMP"                                  # mktemp legt 600 an -> lesbar machen
+[ "$(id -u)" -eq 0 ] && chown "$OWNER" "$TMP"     # als root: Datei dem User geben
+
+mv -f "$TMP" "$OUT"
+trap - EXIT
