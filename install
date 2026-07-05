@@ -4,7 +4,10 @@
 # entfernt sie wieder oder zeigt ihren Ist-Zustand.
 #
 # Nutzung:
-#   ./install [link]          Symlinks anlegen/auffrischen (Default)
+#   ./install [link]          Symlinks anlegen/auffrischen (Default, Alltag)
+#   ./install setup           Neue Maschine, EIN Kommando: Pakete installieren
+#                             (yay) → Configs verlinken (--force) → Units
+#                             aktivieren → locale-gen → manuelle Rest-Checkliste
 #   ./install unlink          von uns verwaltete Symlinks entfernen
 #   ./install status          Ist-Zustand aller Einträge zeigen
 #   ./install clean           von --force angelegte .bak-Sicherungen löschen
@@ -16,8 +19,6 @@
 #       --no-units            systemd-Units nicht (re)aktivieren
 #       --force               reale Dateien/Verzeichnisse am Ziel nach .bak
 #                             sichern und durch den Symlink ersetzen
-#   -p, --programs            zusätzlich die Pakete aus scripts/programs.txt
-#                             installieren (yay) — läuft VOR dem Verlinken
 #   -h, --help                diese Hilfe
 set -euo pipefail
 
@@ -28,8 +29,8 @@ DRYRUN=0
 USER_ONLY=0
 NO_UNITS=0
 FORCE=0
-INSTALL_PROGRAMS=0
-SKIPPED_REAL=0   # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
+INSTALL_PROGRAMS=0   # intern; nur vom `setup`-Kommando gesetzt
+SKIPPED_REAL=0       # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
 
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
@@ -54,12 +55,11 @@ usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "
 # ── Argument-Parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
-    link|unlink|status|clean) CMD="$1" ;;
+    link|setup|unlink|status|clean) CMD="$1" ;;
     -n|--dry-run)  DRYRUN=1 ;;
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
     --force)       FORCE=1 ;;
-    -p|--programs) INSTALL_PROGRAMS=1 ;;
     -c|--config)   shift; CONFIG="${1:?--config braucht eine Datei}" ;;
     -h|--help)     usage 0 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
@@ -161,10 +161,10 @@ clean_one() {
   shopt -u nullglob
 }
 
-# Optional: Pakete aus scripts/programs.txt installieren (nur mit --programs).
-# Delegiert an das bestehende scripts/install-programs.sh (bootstrappt yay,
-# überspringt bereits installierte Pakete). Läuft VOR dem Verlinken, damit die
-# danach reaktivierten Units auch existieren.
+# Optional: Pakete aus scripts/programs.txt installieren (nur beim `setup`).
+# Delegiert an das bestehende scripts/install-programs.sh (bootstrappt yay aus
+# dem AUR, falls nötig; überspringt bereits installierte Pakete). Läuft VOR dem
+# Verlinken, damit die danach reaktivierten Units auch existieren.
 install_programs() {
   [ "$INSTALL_PROGRAMS" = 1 ] || return 0
   local script="$BASEDIR/scripts/install-programs.sh"
@@ -186,6 +186,29 @@ next_steps() {
   info "Nächste Schritte"
   printf '  • %ssource ~/.bashrc%s  — Shell-Config sofort anwenden (lädt auch ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
   printf '  • für die .bash_profile-Env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*) einmal neu einloggen\n'
+}
+
+# Nur beim `setup`: die frisch verlinkten Locales generieren (idempotent) und die
+# nicht sicher automatisierbaren, personen-/maschinenspezifischen Rest-Schritte
+# als konkrete Kommandos ausgeben (Details: README »Manual system state«).
+post_setup() {
+  if [ "$USER_ONLY" = 0 ]; then
+    info "Locales generieren (locale-gen)"
+    run 1 locale-gen || warn "locale-gen fehlgeschlagen"
+  fi
+  info "Manuelle Rest-Schritte (siehe README »Manual system state«)"
+  printf '  • Gruppen:  sudo usermod -aG wheel,input,kvm,libvirt,uucp,disk,lock %s\n' "${USER:-<user>}"
+  printf '             (docker/wireshark nur, wenn du die Pakete nutzt)\n'
+  printf '  • Zeitzone: sudo ln -sf /usr/share/zoneinfo/<Region>/<Stadt> /etc/localtime\n'
+}
+
+# Verlinken-Kern (von `link` und `setup` gemeinsam genutzt): optional Pakete,
+# dann Symlinks, dann Units.
+do_link() {
+  install_programs
+  info "Symlinks anlegen (${#SRCS[@]} Einträge)"
+  for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
+  reactivate_units
 }
 
 reactivate_units() {
@@ -239,10 +262,15 @@ done < "$BASEDIR/$CONFIG"
 [ "$DRYRUN" = 1 ] && info "— Dry-Run: es wird nichts verändert —"
 case "$CMD" in
   link)
-    install_programs
-    info "Symlinks anlegen (${#SRCS[@]} Einträge)"
-    for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
-    reactivate_units
+    do_link
+    next_steps
+    ;;
+  setup)
+    # Ein-Kommando-Bootstrap für eine frische Maschine.
+    FORCE=1; INSTALL_PROGRAMS=1
+    info "Setup: Pakete installieren → verlinken (--force) → Units → locale-gen"
+    do_link
+    post_setup
     next_steps
     ;;
   unlink)
