@@ -11,7 +11,6 @@
 
 require("env") -- Umgebungsvariablen der Session
 require("monitors") -- Monitor-Setup
-require("animations") -- Kurven + Animations-Leaves (aktuell global deaktiviert)
 require("devices") -- Per-Device-Einstellungen
 require("keybinds") -- Tastatur-/Maus-Bindings
 require("looknfeel") -- Look & Feel, Layout, Eingabe

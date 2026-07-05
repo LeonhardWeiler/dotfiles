@@ -4,8 +4,8 @@
 hl.config({
 	general = {
 		gaps_in = 3,
-		gaps_out = 10,
-		border_size = 2,
+		gaps_out = 6,
+		border_size = 0,
 		-- https://wiki.hypr.land/Configuring/Variables/#variable-types fuer Farben
 		col = {
 			active_border = "rgb(dddddd)",
