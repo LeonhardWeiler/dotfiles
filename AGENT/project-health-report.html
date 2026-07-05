@@ -325,7 +325,7 @@
           <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">1</span><span class="l">Mittel</span>
+          <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
           <span class="n">1</span><span class="l">Niedrig</span>
@@ -344,71 +344,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card mittel">
-          <div class="card-head">
-            <span class="badge mittel">mittel</span>
-            <span class="id">TRACK-3</span>
-            <span class="loc">nicht getrackter System-State (NixOS-Vergleich)</span>
-          </div>
-          <p>
-            Über Config-Dateien hinaus gibt es <b>System-Zustand</b>, den ein
-            deklaratives System (NixOS) erfassen würde, dieses Repo aber nicht —
-            bei einer Neuinstallation von Hand nachzubauen. Vollständige Liste
-            (portabel → maschinenspezifisch):
-          </p>
-          <ul class="tracklist">
-            <li>
-              <b>Gruppen-Mitgliedschaften</b> von <code>leo</code>:
-              <code>wheel</code>, <code>lock</code>, <code>disk</code>,
-              <code>input</code>, <code>kvm</code>, <code>uucp</code>,
-              <code>libvirt</code>, <code>libvirt-qemu</code>,
-              <code>wireshark</code>, <code>docker</code>. Ohne sie scheitern
-              docker/libvirt/wireshark-Zugriffe still — ein neuer User muss
-              <code>usermod -aG …</code> von Hand. Login-Shell:
-              <code>/usr/bin/bash</code>.
-            </li>
-            <li>
-              <b>sudo-Regel</b> <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code>
-              (<code>/etc/sudoers</code>) — passwortloses sudo; bewusst, aber Teil
-              des Setups (siehe SEC-1).
-            </li>
-            <li>
-              <b>Bootloader &amp; Kernel-Cmdline</b>: systemd-boot (ESP unter
-              <code>/efi</code>), <code>loader/loader.conf</code> +
-              <code>entries/arch.conf</code> mit getunter Cmdline
-              <code>amd_pstate=active usbcore.autosuspend=1 quiet</code>.
-            </li>
-            <li>
-              <b><code>/etc/locale.gen</code></b> (<code>en_US.UTF-8 UTF-8</code>)
-              — Gegenstück zur bereits getrackten <code>locale.conf</code>; ohne
-              <code>locale-gen</code> gibt es die Locale gar nicht.
-            </li>
-            <li>
-              <b>Zeitzone</b> <code>Europe/Vienna</code>
-              (<code>/etc/localtime</code>-Symlink).
-            </li>
-            <li>
-              <b>Firewall-Regeln</b> <code>/etc/iptables/iptables.rules</code>
-              (zu <code>iptables.service</code> aus INST-2).
-            </li>
-            <li>
-              <b>Maschinenspezifisch</b> (nur mit Bedacht/gar nicht tracken):
-              <code>/etc/hostname</code> (<code>arch</code>),
-              <code>/etc/fstab</code> (UUIDs), sowie die
-              <b>NetworkManager-WLAN-Profile</b>
-              (<code>/etc/NetworkManager/system-connections/*.nmconnection</code>)
-              — enthalten PSKs/Secrets, gehören wie die <code>.kdbx</code>
-              <b>nicht</b> ins Repo.
-            </li>
-          </ul>
-          <div class="rec">
-            <b>Empfehlung:</b> das Portable dokumentieren/tracken — Gruppenliste
-            und sudo-Regel als <code>/etc/sudoers.d/</code>-Datei, Kernel-Cmdline,
-            <code>locale.gen</code>, Zeitzone (mind. als Setup-Checkliste im
-            README) — und Maschinenspezifisches/Secrets bewusst außen vor lassen.
-          </div>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">
