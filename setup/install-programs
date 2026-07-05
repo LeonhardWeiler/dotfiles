@@ -5,11 +5,14 @@ set -e
 if ! command -v yay &> /dev/null
 then
     echo "yay could not be found, installing yay..."
-    git clone https://aur.archlinux.org/yay.git /tmp/yay
-    cd /tmp/yay
-    makepkg -si --noconfirm
-    cd -
-    rm -rf /tmp/yay
+    # Eigenes mktemp-Verzeichnis statt fixem /tmp/yay: kein "already exists"-
+    # Abbruch nach einem frueheren Lauf; trap raeumt auch bei Fehler auf.
+    build_dir="$(mktemp -d)"
+    trap 'rm -rf "$build_dir"' EXIT
+    git clone https://aur.archlinux.org/yay.git "$build_dir/yay"
+    ( cd "$build_dir/yay" && makepkg -si --noconfirm )
+    rm -rf "$build_dir"
+    trap - EXIT
 fi
 
 # programs.txt liegt neben diesem Skript im setup/-Ordner.
