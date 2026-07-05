@@ -14,7 +14,7 @@ This repository contains my personal dotfiles for configuring my development env
 ## Installation
 
 Symlinks are managed by a small, dependency-free Bash script (`./install`). The
-whole mapping lives in a single file, `links.conf` — one line per link, two
+whole mapping lives in a single file, `setup/links.conf` — one line per link, two
 columns: `<source-in-repo>  <target>`. Targets under `~` are user configs;
 `/etc/…` targets are system configs and are linked via `sudo`.
 
@@ -39,7 +39,7 @@ the right order:
 ./install setup
 ```
 
-1. installs the packages from `scripts/programs.txt` (`yay`, bootstrapped from
+1. installs the packages from `setup/programs.txt` (`yay`, bootstrapped from
    the AUR if missing — needs `git` + `base-devel` present first),
 2. links every config, replacing existing **real** default files (e.g. a shipped
    `~/.bashrc`) after backing them up to `.bak` (implies `--force`),
@@ -64,19 +64,20 @@ Useful variants:
 
 > Everyday use is just `./install` (idempotent, never overwrites real files).
 > `setup` is the one-shot fresh-machine bootstrap; to only (re)install packages
-> without touching anything else, run `./scripts/install-programs.sh` directly.
+> without touching anything else, run `./setup/install-programs` directly.
 
 > **Repo layout:** every config lives directly under `config/<name>/` (flat
-> source paths — e.g. `config/btop/btop.conf`), and `links.conf` maps each source
-> to its target. Existing symlinks are always replaced; by default `./install`
-> never overwrites a **real** file/dir (only symlinks are replaced) — use
-> `--force` to back those up to `.bak` and replace them. `unlink` only removes
+> source paths — e.g. `config/btop/btop.conf`), and `setup/links.conf` maps each
+> source to its target. Existing symlinks are always replaced; by default
+> `./install` never overwrites a **real** file/dir (only symlinks are replaced) —
+> use `--force` to back those up to `.bak` and replace them. `unlink` only removes
 > symlinks that point back into this repo. If a source path ends in `/*`, each
 > entry inside it is linked individually into the target directory, which stays
 > real — used for `config/usrbin/*` → `~/.local/bin`, so foreign entries there
 > (e.g. `claude`) are left untouched.
-> `scripts/` holds the remaining repo tooling (`install-programs.sh`,
-> `update-package-list.sh`, `programs.txt`).
+> `setup/` holds the deployment machinery: the link map (`links.conf`), the
+> package manifest (`programs.txt`) and the bootstrap scripts (`install-programs`,
+> `update-package-list`).
 
 After installation, restart your shell or `source ~/.bashrc` to apply the Bash
 configuration.
@@ -204,8 +205,8 @@ would capture). Checklist:
 - Some applications may require additional dependencies not covered by this repository.
 - Adjust paths and configurations to your personal environment.
 - Backing up existing configurations is strongly recommended.
-- To update the program list without relinking, run `./scripts/update-package-list.sh`.
-- To install all packages from `programs.txt`, run `./scripts/install-programs.sh`
+- To update the program list without relinking, run `./setup/update-package-list`.
+- To install all packages from `programs.txt`, run `./setup/install-programs`
 
 ### New Initramfs
 

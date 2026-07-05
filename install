@@ -14,7 +14,7 @@
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
-#   -c, --config DATEI        andere Mapping-Datei (Default: links.conf)
+#   -c, --config DATEI        andere Mapping-Datei (Default: setup/links.conf)
 #       --user-only           nur ~-Ziele bearbeiten (keine /etc-Ziele, kein sudo)
 #       --no-units            systemd-Units nicht (re)aktivieren
 #       --force               reale Dateien/Verzeichnisse am Ziel nach .bak
@@ -23,7 +23,7 @@
 set -euo pipefail
 
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG="links.conf"
+CONFIG="setup/links.conf"
 CMD="link"
 DRYRUN=0
 USER_ONLY=0
@@ -161,15 +161,15 @@ clean_one() {
   shopt -u nullglob
 }
 
-# Optional: Pakete aus scripts/programs.txt installieren (nur beim `setup`).
-# Delegiert an das bestehende scripts/install-programs.sh (bootstrappt yay aus
-# dem AUR, falls nötig; überspringt bereits installierte Pakete). Läuft VOR dem
+# Optional: Pakete aus setup/programs.txt installieren (nur beim `setup`).
+# Delegiert an das bestehende setup/install-programs (bootstrappt yay aus dem
+# AUR, falls nötig; überspringt bereits installierte Pakete). Läuft VOR dem
 # Verlinken, damit die danach reaktivierten Units auch existieren.
 install_programs() {
   [ "$INSTALL_PROGRAMS" = 1 ] || return 0
-  local script="$BASEDIR/scripts/install-programs.sh"
-  [ -x "$script" ] || { warn "install-programs.sh fehlt/nicht ausführbar: $script"; return 0; }
-  info "Pakete aus scripts/programs.txt installieren (yay)"
+  local script="$BASEDIR/setup/install-programs"
+  [ -x "$script" ] || { warn "setup/install-programs fehlt/nicht ausführbar: $script"; return 0; }
+  info "Pakete aus setup/programs.txt installieren (yay)"
   if [ "$DRYRUN" = 1 ]; then printf '    [dry] %s\n' "$script"; return 0; fi
   "$script" || warn "Paket-Installation nicht (vollständig) erfolgreich"
 }

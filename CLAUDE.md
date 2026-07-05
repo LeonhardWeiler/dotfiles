@@ -7,8 +7,9 @@ Hinweise für die Arbeit an diesem Dotfiles-Repo. Kommentar-/Doku-Sprache: **Deu
 Persönliche Dotfiles für Arch Linux mit Hyprland (Wayland), verwaltet über ein
 **eigenes, abhängigkeitsfreies Symlink-Skript** (`./install`, reines Bash). Der
 Repo-Root trennt **`config/`** (die Config-Quellen, **flach**: `config/<name>/…`)
-von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit in
-**`links.conf`** (eine Zeile pro Link, zwei Spalten: `<quelle-im-repo> <ziel>`;
+von **`setup/`** (Deployment-Maschinerie: Link-Map, Paket-Manifest, Bootstrap-
+Skripte). Die Zuordnung Quelle→Ziel steht explizit in
+**`setup/links.conf`** (eine Zeile pro Link, zwei Spalten: `<quelle-im-repo> <ziel>`;
 `~`-Ziele = User, `/etc/…`-Ziele = System via sudo). Beispiele:
 `config/btop/btop.conf` → `~/.config/btop/btop.conf`,
 `config/ly/config.ini` → `/etc/ly/config.ini`. Details zu Inhalten/Pfaden:
@@ -24,8 +25,8 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   Datei/Verzeichnis am Ziel nach `.bak` sichern und ersetzen — sonst bleiben
   reale Ziele geschützt; existierende Symlinks werden ohnehin ersetzt).
 - **Neue Maschine (Bootstrap, ein Kommando)**: `./install setup` — Pakete aus
-  `scripts/programs.txt` installieren (`yay`, delegiert an
-  `scripts/install-programs.sh`, bootstrappt yay bei Bedarf) → Configs verlinken
+  `setup/programs.txt` installieren (`yay`, delegiert an
+  `setup/install-programs`, bootstrappt yay bei Bedarf) → Configs verlinken
   (impliziert `--force`) → Units aktivieren → `locale-gen` → konkrete manuelle
   Rest-Checkliste (Gruppen, Zeitzone) ausgeben. `link` bleibt der idempotente
   Alltags-Refresh; `setup` fasst den Erst-Setup-Flow zusammen (kein separates
@@ -37,8 +38,8 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
 - **Backups aufräumen**: `./install clean` — löscht die von `--force` angelegten
   `.bak`-Sicherungen der verwalteten Ziele (inkl. `*.bak.<zeitstempel>`; fremde
   `.bak` bleiben unangetastet). Mit `-n` vorher anzeigen.
-- **Paketliste aktualisieren** (ohne Neu-Verlinken): `./scripts/update-package-list.sh`.
-- **Pakete aus `programs.txt` installieren**: `./scripts/install-programs.sh` (nutzt `yay`).
+- **Paketliste aktualisieren** (ohne Neu-Verlinken): `./setup/update-package-list`.
+- **Pakete aus `programs.txt` installieren**: `./setup/install-programs` (nutzt `yay`).
 - **Shell-Skripte prüfen** (kein Test-Framework): `bash -n <skript>`; wo vorhanden
   `shellcheck <skript>`.
 
@@ -57,9 +58,10 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   das Verzeichnis real bleibt und Fremd-Einträge (z. B. `claude`) erhalten
   bleiben. `claude`
   trackt **nicht** `.claude.json`/sessions/history/cache (Auth/State/Secrets).
-- **`scripts/`** = Repo-Werkzeuge: `install-programs.sh`,
-  `update-package-list.sh`, `programs.txt` (das alte `install.sh`/`migrate.sh`
-  ist durch `./install` + `links.conf` ersetzt).
+- **`setup/`** = Deployment-Maschinerie: `links.conf` (Link-Map, Default-Config
+  von `./install`), `programs.txt` (Paket-Manifest), `install-programs` und
+  `update-package-list` (Bootstrap-/Pflege-Skripte, ohne `.sh`-Endung). Das alte
+  `install.sh`/`migrate.sh` ist durch `./install` + `setup/links.conf` ersetzt.
 - **`/etc`-Ziele** (in `links.conf`, dateiweise, `/etc/…`-Zielpfad): `ly/config.ini`,
   `mkinitcpio.conf`, `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
@@ -81,7 +83,7 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
   im `PATH`).
   `lib_hypr.sh` ist eine per `source` eingebundene Helfer-Lib
   (`workspace_slf`, `rofi_workspace_manager`). `dotfiles_sync` versioniert
-  `scripts/programs.txt`; `update_programs_list` schreibt dorthin.
+  `setup/programs.txt`; `update_programs_list` schreibt dorthin.
   `update_programs_list` wird **zusätzlich** an den festen Systempfad
   `/usr/local/bin/update_programs_list` verlinkt (eigene `links.conf`-Zeile),
   weil der pacman-Hook (`/etc/pacman.d/hooks`) keine `$HOME`-Variablen kennt und
@@ -92,7 +94,7 @@ von **`scripts/`** (Repo-Werkzeuge). Die Zuordnung Quelle→Ziel steht explizit 
 ## Konventionen & Fallstricke
 
 - Neue Config: Datei **flach unter `config/<name>/`** ablegen und eine Zeile
-  `<quelle-im-repo>  <ziel>` in `links.conf` hinzufügen. `/etc`-Ziele **immer
+  `<quelle-im-repo>  <ziel>` in `setup/links.conf` hinzufügen. `/etc`-Ziele **immer
   dateiweise** (voller `/etc/…`-Zielpfad), nie ganze Verzeichnisse. Soll ein
   Ziel-Verzeichnis real bleiben und nur einzelne Dateien darin verlinkt werden,
   die Quelle auf `/*` enden lassen (Glob; verlinkt jeden Eintrag nach

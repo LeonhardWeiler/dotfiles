@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# programs.txt liegt neben diesem Skript im scripts/-Ordner.
+# programs.txt liegt neben diesem Skript im setup/-Ordner.
 OUT="$(cd "$(dirname "$0")" && pwd)/programs.txt"
 
 read -p "Möchtest du das programs.txt file aktualisieren [Y/n]: " confirm

@@ -20,7 +20,7 @@ GENERATORS=(
 
 # --- Zu versionierende Pfade (relativ zum Repo) ------------------------------
 PATHS=(
-  "scripts/programs.txt"
+  "setup/programs.txt"
 )
 
 for gen in "${GENERATORS[@]}"; do
