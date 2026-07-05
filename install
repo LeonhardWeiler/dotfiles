@@ -16,6 +16,8 @@
 #       --no-units            systemd-Units nicht (re)aktivieren
 #       --force               reale Dateien/Verzeichnisse am Ziel nach .bak
 #                             sichern und durch den Symlink ersetzen
+#   -p, --programs            zusätzlich die Pakete aus scripts/programs.txt
+#                             installieren (yay) — läuft VOR dem Verlinken
 #   -h, --help                diese Hilfe
 set -euo pipefail
 
@@ -26,6 +28,7 @@ DRYRUN=0
 USER_ONLY=0
 NO_UNITS=0
 FORCE=0
+INSTALL_PROGRAMS=0
 SKIPPED_REAL=0   # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
 
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
@@ -56,6 +59,7 @@ while [ $# -gt 0 ]; do
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
     --force)       FORCE=1 ;;
+    -p|--programs) INSTALL_PROGRAMS=1 ;;
     -c|--config)   shift; CONFIG="${1:?--config braucht eine Datei}" ;;
     -h|--help)     usage 0 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
@@ -157,6 +161,19 @@ clean_one() {
   shopt -u nullglob
 }
 
+# Optional: Pakete aus scripts/programs.txt installieren (nur mit --programs).
+# Delegiert an das bestehende scripts/install-programs.sh (bootstrappt yay,
+# überspringt bereits installierte Pakete). Läuft VOR dem Verlinken, damit die
+# danach reaktivierten Units auch existieren.
+install_programs() {
+  [ "$INSTALL_PROGRAMS" = 1 ] || return 0
+  local script="$BASEDIR/scripts/install-programs.sh"
+  [ -x "$script" ] || { warn "install-programs.sh fehlt/nicht ausführbar: $script"; return 0; }
+  info "Pakete aus scripts/programs.txt installieren (yay)"
+  if [ "$DRYRUN" = 1 ]; then printf '    [dry] %s\n' "$script"; return 0; fi
+  "$script" || warn "Paket-Installation nicht (vollständig) erfolgreich"
+}
+
 # Schlusshinweis nach dem Verlinken: übersprungene reale Ziele prominent melden
 # und den Nutzer daran erinnern, die frisch verlinkte Shell-Config anzuwenden.
 # (Ein Skript kann die interaktive Eltern-Shell nicht selbst neu laden — daher
@@ -222,6 +239,7 @@ done < "$BASEDIR/$CONFIG"
 [ "$DRYRUN" = 1 ] && info "— Dry-Run: es wird nichts verändert —"
 case "$CMD" in
   link)
+    install_programs
     info "Symlinks anlegen (${#SRCS[@]} Einträge)"
     for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
     reactivate_units
