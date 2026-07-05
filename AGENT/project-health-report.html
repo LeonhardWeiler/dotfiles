@@ -323,7 +323,7 @@
           <span class="n">0</span><span class="l">Hoch</span>
         </div>
         <div class="stat mittel">
-          <span class="n">1</span><span class="l">Mittel</span>
+          <span class="n">0</span><span class="l">Mittel</span>
         </div>
         <div class="stat niedrig">
           <span class="n">3</span><span class="l">Niedrig</span>
@@ -342,44 +342,6 @@
       <!-- ================= OFFENE FINDINGS ================= -->
       <section id="offen">
         <h2>1 · Offene Findings</h2>
-
-        <div class="card mittel">
-          <div class="card-head">
-            <span class="badge mittel">mittel</span>
-            <span class="id">TRACK-1</span>
-            <span class="loc">nicht getrackte System-Configs (<code>/etc</code>)</span>
-          </div>
-          <p>
-            Mehrere bewusst angepasste System-Dateien liegen <b>nicht</b> im Repo
-            und müssten bei einer Neuinstallation von Hand nachgebaut werden. Am
-            wichtigsten das Tastatur-Layout:
-          </p>
-          <ul class="tracklist">
-            <li>
-              <code>/etc/vconsole.conf</code> — <b>eigenes Konsolen-Keymap</b>
-              <code>KEYMAP=mod-dh-iso-uk</code> (Colemak Mod-DH). Klar
-              personalisiert, ohne Backup leicht vergessen.
-            </li>
-            <li>
-              <code>/etc/pacman.conf</code> — <code>ParallelDownloads = 5</code>
-              und aktiviertes <code>[multilib]</code>-Repo.
-            </li>
-            <li><code>/etc/locale.conf</code> — <code>LANG=en_US.UTF-8</code>.</li>
-            <li>
-              <code>/etc/systemd/logind.conf</code> —
-              <code>HandleLidSwitch=suspend</code> (bewusst gesetzt).
-            </li>
-          </ul>
-          <div class="rec">
-            <b>Empfehlung:</b> die Dateien nach <code>config/&lt;name&gt;/</code>
-            legen und je eine Zeile in <code>links.conf</code> mit vollem
-            <code>/etc/…</code>-Zielpfad ergänzen (dateiweise, nie ganze
-            <code>/etc</code>-Verzeichnisse — konsistent mit den bestehenden
-            <code>/etc</code>-Einträgen wie <code>ly/config.ini</code>).
-            <code>/etc/hostname</code> und <code>/etc/fstab</code> sind
-            maschinenspezifisch (Hostname bzw. UUIDs) — nur mit Bedacht tracken.
-          </div>
-        </div>
 
         <div class="card niedrig">
           <div class="card-head">
