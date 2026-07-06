@@ -24,7 +24,7 @@ ly 1.4.1-1
 mako 1.11.0-1
 mesa 1:26.1.4-1
 mpv 1:0.41.0-3
-neovim 0.12.3-1
+neovim 0.12.4-1
 networkmanager 1.56.1-1
 nodejs-lts-jod 22.23.1-1
 noto-fonts 1:2026.07.01-1
@@ -37,7 +37,7 @@ pipewire-alsa 1:1.6.7-1
 pipewire-pulse 1:1.6.7-1
 power-profiles-daemon 0.30-1
 python-yaml 6.0.3-2
-qemu-desktop 11.0.2-1
+qemu-desktop 11.0.2-2
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
 restic 0.19.0-1

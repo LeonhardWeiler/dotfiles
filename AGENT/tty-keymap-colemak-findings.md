@@ -1,11 +1,47 @@
 # TTY-Keymap (colemak-dh) — Diagnose-Findings
 
-**Datum:** 2026-07-05
+**Datum:** 2026-07-05 · **GELÖST:** 2026-07-06
 **Symptom:** Im ly-Passwortfeld (und generell auf den Text-VTs) ist das
 Tastaturlayout QWERTY statt des gewünschten Colemak-DH, obwohl die vconsole-Config
 scheinbar korrekt ist.
 
-## Kurzfazit
+## Auflösung (2026-07-06)
+
+**Ursache gefunden, Fix umgesetzt.** Der Reboot-Test (siehe unten) fiel klar auf
+**„weiterhin qwerty"** aus: frischer Boot (17:28), niemand hatte `loadkeys`
+ausgeführt, echte VT-Messung `18=e 19=r 20=t` → **us**. Im Boot-Log erste
+**fehlgeschlagene** ly-Auth bei 49 s — das Passwort wurde mit falschem Layout
+getippt.
+
+**Root Cause — KMS/vconsole-setup-Race:** `systemd-vconsole-setup` läuft beim
+Boot bei **28.5 s** (`ExecMainExit` 28515225 µs) und loggt *„Configuration of
+first virtual console was skipped, ignoring remaining ones."* In systemd 261
+kommt diese Meldung aus der Kette *„not in K_XLATE or K_UNICODE"* / *„not in
+KD_TEXT"*: der initramfs-`kms`-Hook macht in diesem Moment gerade den Modeset,
+die VT ist noch nicht in `KD_TEXT`/`K_XLATE`, also **überspringt vconsole-setup
+das Keymap-Setzen komplett** — und der Modeset resettet zusätzlich die im
+initramfs geladene Keymap auf den Kernel-Default `us`. Der *manuelle*
+`restart systemd-vconsole-setup` (Finding unten) funktionierte nur, weil der
+Modeset da längst fertig war. Damit ist die scheinbar widersprüchliche Diagnose
+aufgelöst: vconsole-setup setzt die Keymap **nicht** beim Boot, sondern skippt.
+ly (Start ~29.6 s) fasst die Keymap nicht an (bestätigt: keine keymap-Strings im
+`ly-dm`-Binary) und spiegelt nur den globalen `us`-Zustand.
+
+**Fix:** Drop-in `config/systemd-system/ly@tty2.service.d/keymap.conf` mit
+`ExecStartPre=/usr/bin/loadkeys mod-dh-iso-uk` — lädt die Keymap unmittelbar vor
+`ly-dm` (nach dem Modeset) neu. Wie `wait-home.conf` als **reale Kopie** nach
+`/etc/systemd/system/ly@tty2.service.d/` deployt (kein `links.conf`-Symlink, da
+`/home` beim frühen systemd-Start noch nicht gemountet ist). Deploy-Schritt jetzt
+im README unter »Manual system state«. Verifiziert: `systemctl show ly@tty2 -p
+ExecStartPre` zeigt das Kommando; endgültige Bestätigung beim nächsten Reboot
+(ins ly-Feld tippen: `f p b` auf physisch `e r t`).
+
+Nebenbefund: Das ebenfalls im Repo liegende `wait-home.conf` war auf dieser
+Maschine **gar nicht** nach `/etc` deployt — jetzt mit deployt.
+
+---
+
+## Kurzfazit (ursprüngliche Diagnose, 2026-07-05)
 
 **Die Installation ist vollständig und korrekt — daran liegt es nicht.** Die
 gesamte vconsole-Kette (Symlink, Config-Inhalt, initramfs, `systemd-vconsole-setup`)

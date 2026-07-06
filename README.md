@@ -197,6 +197,24 @@ would capture). Checklist:
 - **Not tracked on purpose** (machine-specific / secrets): `/etc/hostname`,
   `/etc/fstab` (UUIDs), and NetworkManager Wi-Fi profiles
   (`/etc/NetworkManager/system-connections/*.nmconnection`, contain PSKs).
+- **ly@tty2 drop-ins** (`/etc/systemd/system/ly@tty2.service.d/`): the files in
+  `config/systemd-system/ly@tty2.service.d/` (`wait-home.conf`, `keymap.conf`)
+  must be deployed as **real copies on the root partition**, not symlinked via
+  `links.conf` — systemd reads unit drop-ins early at manager start, when a
+  `/home` symlink would still be a dead link. Deploy on a fresh machine:
+
+  ```bash
+  sudo install -d -m755 /etc/systemd/system/ly@tty2.service.d
+  sudo install -m644 config/systemd-system/ly@tty2.service.d/*.conf \
+      /etc/systemd/system/ly@tty2.service.d/
+  sudo systemctl daemon-reload
+  ```
+
+  `wait-home.conf` waits for the `/home` mount (the `/etc/ly/config.ini` symlink
+  lives there); `keymap.conf` reloads the console keymap right before `ly-dm`
+  (`ExecStartPre=loadkeys …`) to work around a boot-time KMS/vconsole-setup race
+  that otherwise leaves the ly login field on QWERTY instead of the
+  `/etc/vconsole.conf` `KEYMAP`.
 - **sudo**: this setup relies on passwordless sudo for the `wheel` group
   (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL` in `/etc/sudoers`) — a deliberate
   convenience choice; adjust to taste.
