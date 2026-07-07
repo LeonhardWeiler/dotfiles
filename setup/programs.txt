@@ -40,7 +40,7 @@ python-yaml 6.0.3-2
 qemu-desktop 11.0.2-2
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
-restic 0.19.0-1
+restic 0.19.1-1
 ripgrep 15.1.0-4
 rofi 2.0.0-1
 signal-desktop 8.17.0-1
