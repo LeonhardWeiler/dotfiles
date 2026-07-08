@@ -8,6 +8,7 @@ return {
 
     require("nvim-treesitter").install({
       "bash",
+      "c_sharp",
       "css",
       "diff",
       "git_config",

@@ -7,6 +7,7 @@ btop 1.4.7-1
 dmidecode 3.7-1
 dnsmasq 2.93-1
 dosfstools 4.2-5
+dotnet-sdk 10.0.9.sdk109-1
 figma-agent-linux-bin 0.4.3-1
 git 2.55.0-1
 hyprland 0.55.4-1
@@ -35,6 +36,7 @@ openssh 10.4p1-2
 pipewire 1:1.6.7-1
 pipewire-alsa 1:1.6.7-1
 pipewire-pulse 1:1.6.7-1
+plasticscm-client-gui 11.0.16.10181-1
 power-profiles-daemon 0.30-1
 python-yaml 6.0.3-2
 qemu-desktop 11.0.2-2
@@ -51,6 +53,7 @@ thunderbird 152.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.0-1
 ufw 0.36.2-7
+unityhub 3.19.1-1
 unzip 6.0-23
 virt-manager 5.1.0-3
 wayland 1.25.0-1
