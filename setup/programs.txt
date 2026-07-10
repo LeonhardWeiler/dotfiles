@@ -38,7 +38,6 @@ pipewire-alsa 1:1.6.7-1
 pipewire-pulse 1:1.6.7-1
 plasticscm-client-gui 11.0.16.10181-1
 power-profiles-daemon 0.30-1
-python-yaml 6.0.3-2
 qemu-desktop 11.0.2-3
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
@@ -46,7 +45,6 @@ restic 0.19.1-1
 ripgrep 15.1.0-4
 rofi 2.0.0-1
 signal-desktop 8.17.0-1
-stow 2.4.1-1
 swaybg 1.2.2-1
 swtpm 0.10.1-2
 thunderbird 152.0-1
@@ -58,7 +56,6 @@ unzip 6.0-23
 virt-manager 5.1.0-3
 wayland 1.25.0-1
 wayland-protocols 1.49-1
-wireless-regdb 2026.05.30-1
 wireplumber 0.5.15-1
 wl-clipboard 1:2.3.0-1
 wlr-randr 0.5.0-1

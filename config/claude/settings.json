@@ -4,7 +4,7 @@
   },
   "model": "opus",
   "language": "german",
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "promptSuggestionEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",

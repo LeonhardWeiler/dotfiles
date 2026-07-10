@@ -11,8 +11,8 @@ return {
       "gofumpt",
       "typstyle",
       "golangci-lint",
-      "roslyn", -- C#-Language-Server (Roslyn), von roslyn.nvim genutzt
-      "csharpier", -- C#-Formatter
+      "roslyn-language-server",
+      "csharpier",
     },
   },
 }
