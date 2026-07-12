@@ -298,18 +298,21 @@
         Momentaufnahme · Stand <strong>2026-07-05</strong> · Branch
         <code>main</code> · Arch Linux / Hyprland, verwaltet über einen
         <strong>eigenen, abhängigkeitsfreien Symlink-Manager</strong>
-        (<code>./install</code> + <code>setup/links.conf</code>, reines Bash).<br />
-        Geprüft: <code>install</code>-Skript &amp; <code>setup/links.conf</code>,
-        das <code>setup</code>-Bootstrap-Kommando, <code>setup/install-programs</code>
-        und der pacman-Hook (<code>update_programs_list</code>, atomares Schreiben),
-        alle Shell-Skripte (<code>bash -n</code> grün), Hyprland-Lua (9 Module, alle
-        <code>luac -p</code> ok), nvim (lädt headless), systemd-Units, Alacritty,
-        Mako, Rofi, Ly (<code>session_log</code> jetzt auf
+        (<code>./install</code> + <code>setup/links.conf</code>, reines
+        Bash).<br />
+        Geprüft: <code>install</code>-Skript &amp;
+        <code>setup/links.conf</code>, das
+        <code>setup</code>-Bootstrap-Kommando,
+        <code>setup/install-programs</code> und der pacman-Hook
+        (<code>update_programs_list</code>, atomares Schreiben), alle
+        Shell-Skripte (<code>bash -n</code> grün), Hyprland-Lua (9 Module, alle
+        <code>luac -p</code> ok), nvim (lädt headless), systemd-Units,
+        Alacritty, Mako, Rofi, Ly (<code>session_log</code> jetzt auf
         <code>.local/state/ly-session.log</code> gepinnt — Home bleibt sauber),
-        mpv, Typst, git-config, <code>setup/programs.txt</code>,
-        README und CLAUDE.md sowie die Live-Verlinkung
-        (<strong>40/40</strong> <code>ok</code>). Keine versehentlichen Secrets,
-        keine <code>TODO/FIXME</code>-Marker; KeePassXC-<code>.kdbx</code> (per
+        mpv, Typst, git-config, <code>setup/programs.txt</code>, README und
+        CLAUDE.md sowie die Live-Verlinkung (<strong>40/40</strong>
+        <code>ok</code>). Keine versehentlichen Secrets, keine
+        <code>TODO/FIXME</code>-Marker; KeePassXC-<code>.kdbx</code> (per
         <code>.gitignore</code>/<code>.claudeignore</code> ausgeschlossen) und
         fremde mpv-Lua-Scripts nur oberflächlich.<br />
         Das Repo ist insgesamt sehr sauber und in gutem Zustand — frischer
@@ -370,20 +373,24 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"><code>install</code> · <code>setup/links.conf</code></span>
+            <span class="loc"
+              ><code>install</code> · <code>setup/links.conf</code></span
+            >
           </div>
           <p>
-            Der eigene Symlink-Manager ist schlank und sicher: <b>eine</b>
-            Mapping-Datei (<code>setup/links.conf</code>, zwei Spalten) plus reines
-            Bash <b>ohne Abhängigkeiten</b> (kein Python/dotbot/Stow). Kommandos
-            <code>link</code>/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
+            Der eigene Symlink-Manager ist schlank und sicher:
+            <b>eine</b> Mapping-Datei (<code>setup/links.conf</code>, zwei
+            Spalten) plus reines Bash <b>ohne Abhängigkeiten</b> (kein
+            Python/dotbot/Stow). Kommandos
+            <code>link</code
+            >/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
             dazu <code>-n/--dry-run</code>, <code>--user-only</code> und
-            <code>--force</code> (sichert reale Ziele nach <code>.bak</code>); das
-            <code>setup</code>-Kommando bündelt den Erst-Setup (Pakete → Link →
-            Units → <code>locale-gen</code> → Checkliste).
-            Reale Dateien werden nie ungefragt überschrieben, <code>unlink</code>
-            entfernt nur Symlinks auf eigene Quellen, <code>/etc</code>-Ziele
-            laufen dateiweise per <code>sudo</code>, Glob-Quellen
+            <code>--force</code> (sichert reale Ziele nach <code>.bak</code>);
+            das <code>setup</code>-Kommando bündelt den Erst-Setup (Pakete →
+            Link → Units → <code>locale-gen</code> → Checkliste). Reale Dateien
+            werden nie ungefragt überschrieben, <code>unlink</code> entfernt nur
+            Symlinks auf eigene Quellen, <code>/etc</code>-Ziele laufen
+            dateiweise per <code>sudo</code>, Glob-Quellen
             (<code>config/usrbin/*</code>) verlinken dateiweise, damit
             Fremd-Einträge in <code>~/.local/bin</code> (z.&nbsp;B.
             <code>claude</code>) erhalten bleiben. Live verifiziert: 40/40
@@ -413,16 +420,14 @@
         <div class="card good">
           <div class="card-head">
             <span class="badge good">stark</span>
-            <span class="loc"
-              ><code>config/usrbin/rofi_keepassxc</code></span
-            >
+            <span class="loc"><code>config/usrbin/rofi_keepassxc</code></span>
           </div>
           <p>
             Das entschlüsselte Eintrags-Listing wird über einen
             <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> zuverlässig entfernt —
-            auch bei jedem frühen Abbruch (Escape, falsches Passwort). So bleiben
-            keine Klartext-Metadaten der Passwort-DB liegen. Sauberer Umgang mit
-            sensiblen Zwischendaten.
+            auch bei jedem frühen Abbruch (Escape, falsches Passwort). So
+            bleiben keine Klartext-Metadaten der Passwort-DB liegen. Sauberer
+            Umgang mit sensiblen Zwischendaten.
           </p>
         </div>
 
@@ -461,11 +466,12 @@
             Ohne Änderungsbedarf (jede Option trägt): <b>alacritty</b>,
             <b>mako</b>, <b>rofi</b>, <b>mpv</b> (bewusste Cache-/Screenshot-
             Profile, fremde Lua-Scripts unangetastet), <b>typst</b> (lokales
-            Paket <code>school-theme</code>), <b>systemd</b> (battery-check-Timer,
-            dotfiles-sync), <b>pacman</b>-Hook (minimaler Trigger). <b>keepassxc</b>:
-            nur Config getrackt, die <code>.kdbx</code> ist gitignored (lokal
-            vorhanden). <b>nvim</b> hat eine eigene <code>CLAUDE.md</code> und wird
-            dort vertieft.
+            Paket <code>school-theme</code>),
+            <b>systemd</b> (battery-check-Timer, dotfiles-sync),
+            <b>pacman</b>-Hook (minimaler Trigger). <b>keepassxc</b>: nur Config
+            getrackt, die <code>.kdbx</code> ist gitignored (lokal vorhanden).
+            <b>nvim</b> hat eine eigene <code>CLAUDE.md</code> und wird dort
+            vertieft.
           </p>
         </div>
       </section>
@@ -477,7 +483,9 @@
         <div class="card info">
           <div class="card-head">
             <span class="badge info">bewusst</span>
-            <span class="loc"><code>/etc/sudoers</code> · <code>%wheel</code></span>
+            <span class="loc"
+              ><code>/etc/sudoers</code> · <code>%wheel</code></span
+            >
           </div>
           <p>
             <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> — passwortloses sudo
@@ -512,11 +520,11 @@
           </div>
           <p>
             Animationen in Hyprland deaktiviert (<code>enabled = false</code> in
-            <code>looknfeel.lua</code>) und Maus in nvim ausgeschaltet
-            (<code>vim.opt.mouse = ""</code>) — bewusst minimalistischer,
-            tastaturzentrierter Workflow. Die Animations-Kurven bleiben in
-            <code>animations.lua</code> definiert, sodass ein Aktivieren nur das
-            Umschalten des Flags erfordert.
+            <code>looknfeel.lua</code>) und Maus in nvim ausgeschaltet (<code
+              >vim.opt.mouse = ""</code
+            >) — bewusst minimalistischer, tastaturzentrierter Workflow. Die
+            Animations-Kurven bleiben in <code>animations.lua</code> definiert,
+            sodass ein Aktivieren nur das Umschalten des Flags erfordert.
           </p>
         </div>
 
@@ -539,10 +547,10 @@
           </div>
           <p>
             Restic-Repo als SFTP zu einer LAN-IP mit Windows-Pfad
-            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). Interne IP ist
-            kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im Skript —
-            wird interaktiv abgefragt. In Ordnung, solange das Skript nicht
-            non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
+            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). Interne IP
+            ist kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im
+            Skript — wird interaktiv abgefragt. In Ordnung, solange das Skript
+            nicht non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
           </p>
         </div>
 
@@ -558,13 +566,13 @@
             Die Console-Keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH)
             wird über den initramfs-<code>keymap</code>-Hook geladen (in
             <code>HOOKS=(… keyboard keymap consolefont …)</code>), nicht (nur)
-            über <code>systemd-vconsole-setup</code> — Letzteres überspringt beim
-            Boot die erste VT („Configuration of first virtual console was
+            über <code>systemd-vconsole-setup</code> — Letzteres überspringt
+            beim Boot die erste VT („Configuration of first virtual console was
             skipped"). Der <code>keymap</code>-Hook backt die Keymap zur
             initramfs-<strong>Bauzeit</strong> ein. Zur Kenntnis: nach jeder
             Änderung an <code>vconsole.conf</code> einmal
-            <code>sudo mkinitcpio -P</code> laufen lassen, sonst greift beim ly-/
-            TTY-Login weiter die alte Keymap.
+            <code>sudo mkinitcpio -P</code> laufen lassen, sonst greift beim
+            ly-/ TTY-Login weiter die alte Keymap.
           </p>
         </div>
 
