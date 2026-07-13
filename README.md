@@ -259,4 +259,7 @@ sudo mkinitcpio -P
 
 ## License
 
-GPL-3.0 License
+Licensed under the GNU General Public License, either version 3 of the License,
+or (at your option) any later version — SPDX identifier
+[`GPL-3.0-or-later`](https://spdx.org/licenses/GPL-3.0-or-later.html). The full
+license text is in [`LICENSE`](LICENSE).
