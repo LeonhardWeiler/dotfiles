@@ -17,6 +17,8 @@
 #   --programs                Pakete aus setup/programs.txt installieren (yay)
 #   --remove-programs         explizit installierte Pakete entfernen, die NICHT
 #                             in programs.txt stehen (Manifest-Prune, mit Rückfrage)
+#   --systemd                 systemd-Units aktivieren (USER_UNITS + SYSTEM_UNITS)
+#   --remove-systemd          dieselben Units wieder deaktivieren (mit Rückfrage)
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -66,7 +68,7 @@ usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "
 STEP_ORDER=()
 declare -A STEP_DESC STEP_FN SELECTED
 # Im `setup` vorausgewählte Schritte (Menü-Enter / kein TTY = diese Defaults).
-DEFAULT_STEPS=(programs)
+DEFAULT_STEPS=(programs systemd)
 register_step() { STEP_ORDER+=("$1"); STEP_FN[$1]="$2"; STEP_DESC[$1]="$3"; }
 is_selected()   { [ -n "${SELECTED[$1]:-}" ]; }
 
@@ -92,6 +94,8 @@ while [ $# -gt 0 ]; do
     # ── Schritt-Flags (siehe Registry) ──────────────────────────────────────
     --programs)         SELECTED[programs]=1;        FLAG_STEPS_GIVEN=1 ;;
     --remove-programs)  SELECTED[remove-programs]=1; FLAG_STEPS_GIVEN=1 ;;
+    --systemd)          SELECTED[systemd]=1;         FLAG_STEPS_GIVEN=1 ;;
+    --remove-systemd)   SELECTED[remove-systemd]=1;  FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -302,6 +306,25 @@ reactivate_units() {
     else run 1 systemctl enable "$u" >/dev/null 2>&1 || warn "System-Unit nicht aktiviert: $u"; fi
   done
 }
+register_step systemd reactivate_units "systemd-Units aktivieren (enable)"
+
+# Gegenstück zu reactivate_units: dieselben Units wieder deaktivieren. Hinweis:
+# unsere Unit-Dateien sind linked units (Symlinks am Standardpfad) — `disable`
+# entfernt bei solchen Units auch diesen Symlink, die Unit ist danach ganz weg
+# (Neu-Verlinken via `./install` legt sie wieder an). Daher mit Rückfrage.
+do_systemd_disable() {
+  [ "$DRYRUN" = 0 ] && ! confirm "  systemd-Units wirklich deaktivieren?" && { info "übersprungen"; return 0; }
+  info "systemd User-Units deaktivieren"
+  for u in "${USER_UNITS[@]}"; do
+    run 0 systemctl --user disable "$u" >/dev/null 2>&1 || warn "User-Unit nicht deaktiviert: $u"
+  done
+  [ "$USER_ONLY" = 1 ] && return 0
+  info "systemd System-Units deaktivieren (sudo)"
+  for u in "${SYSTEM_UNITS[@]}"; do
+    run 1 systemctl disable "$u" >/dev/null 2>&1 || warn "System-Unit nicht deaktiviert: $u"
+  done
+}
+register_step remove-systemd do_systemd_disable "systemd-Units deaktivieren (disable)"
 
 # ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
 #    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
@@ -344,7 +367,8 @@ case "$CMD" in
     choose_steps
     is_selected programs && do_programs_install
     do_symlinks
-    reactivate_units
+    is_selected systemd && reactivate_units
+    is_selected remove-systemd && do_systemd_disable
     post_setup
     is_selected remove-programs && do_programs_remove
     next_steps
