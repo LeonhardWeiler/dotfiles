@@ -68,8 +68,8 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `alacritty`, `bash`, `btop`, `claude`,
   `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `systemd-user`, `typst`, `usrbin`, `vconsole`. Whole
-  directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
+  `systemd-system`, `systemd-user`, `typst`, `usrbin`, `vconsole`, `wallpaper`.
+  Whole directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
   mako, mpv, git, typst, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `systemd-user`/`/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system
@@ -109,6 +109,11 @@ scripts). The source->target mapping is stated explicitly in
   `/usr/local/bin/update_programs_list` (its own `links.conf` line), because the
   pacman hook (`/etc/pacman.d/hooks`) knows no `$HOME` variables and calls it from
   there - so the hook stays portable for a foreign user too.
+- **`config/wallpaper/`** = the picture set (`pictures/`, linked as a dir symlink
+  to `~/.local/share/wallpapers`) plus `change-wallpaper.sh` (linked to
+  `~/.local/bin/change-wallpaper`, picks a random wallpaper via swaybg; called
+  from `config/hypr/autostart.lua`). The script defaults to
+  `~/.local/share/wallpapers`, so both link targets line up.
 - **`nvim/`** has its **own `CLAUDE.md`** (`config/nvim/CLAUDE.md`) with the
   nvim-specific verification commands - for nvim changes look there.
 

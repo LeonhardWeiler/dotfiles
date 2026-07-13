@@ -180,6 +180,7 @@ systemctl --user status <name>.service
 | Systemd User   | `~/.config/systemd/`               |
 | Systemd System | `/etc/systemd/system/`             |
 | Typst          | `~/.config/typst`                  |
+| Wallpapers     | `~/.local/share/wallpapers`        |
 
 ## My Setup
 
