@@ -20,6 +20,8 @@
 #   --systemd                 systemd-Units aktivieren (USER_UNITS + SYSTEM_UNITS)
 #   --remove-systemd          dieselben Units wieder deaktivieren (mit Rückfrage)
 #   --groups                  Benutzer zu den benötigten Gruppen hinzufügen (usermod -aG)
+#   --timezone ZONE           Zeitzone setzen (z. B. --timezone Europe/Vienna);
+#                             ohne ZONE fragt das Menü interaktiv nach
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -41,6 +43,7 @@ NO_UNITS=0
 FORCE=0
 SKIPPED_REAL=0       # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
 FLAG_STEPS_GIVEN=0   # wurde mindestens ein --<schritt>-Flag übergeben?
+TIMEZONE=""          # optionaler --timezone-Wert (Region/Stadt)
 
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
@@ -98,6 +101,8 @@ while [ $# -gt 0 ]; do
     --systemd)          SELECTED[systemd]=1;         FLAG_STEPS_GIVEN=1 ;;
     --remove-systemd)   SELECTED[remove-systemd]=1;  FLAG_STEPS_GIVEN=1 ;;
     --groups)           SELECTED[groups]=1;          FLAG_STEPS_GIVEN=1 ;;
+    --timezone)         shift; TIMEZONE="${1:?--timezone braucht eine Zone (Region/Stadt)}"
+                        SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -259,8 +264,6 @@ post_setup() {
     info "Locales generieren (locale-gen)"
     run 1 locale-gen || warn "locale-gen fehlgeschlagen"
   fi
-  info "Manuelle Rest-Schritte (siehe README »Manual system state«)"
-  printf '  • Zeitzone: sudo ln -sf /usr/share/zoneinfo/<Region>/<Stadt> /etc/localtime\n'
 }
 
 # Interaktives Menü: optionale Schritte auswählen. Bei per Flag vorgewählten
@@ -339,6 +342,20 @@ do_groups() {
 }
 register_step groups do_groups "Benutzer zu Gruppen hinzufügen ($GROUP_LIST)"
 
+# Zeitzone per Symlink /etc/localtime → /usr/share/zoneinfo/<Zone> setzen. Zone
+# aus --timezone oder (im Menü) interaktiv erfragt.
+do_timezone() {
+  local tz="$TIMEZONE"
+  if [ -z "$tz" ] && [ -t 0 ]; then
+    printf '  Zeitzone (Region/Stadt, z. B. Europe/Vienna): ' >&2; read -r tz || tz=""
+  fi
+  [ -n "$tz" ] || { warn "keine Zeitzone angegeben — übersprungen"; return 0; }
+  if [ ! -e "/usr/share/zoneinfo/$tz" ]; then warn "unbekannte Zeitzone: $tz — übersprungen"; return 0; fi
+  info "Zeitzone setzen: $tz"
+  run 1 ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime || warn "Zeitzone setzen fehlgeschlagen"
+}
+register_step timezone do_timezone "Zeitzone setzen (/etc/localtime)"
+
 # ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
 #    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
 SRCS=(); TGTS=()
@@ -383,6 +400,7 @@ case "$CMD" in
     is_selected systemd && reactivate_units
     is_selected remove-systemd && do_systemd_disable
     is_selected groups && do_groups
+    is_selected timezone && do_timezone
     post_setup
     is_selected remove-programs && do_programs_remove
     next_steps
