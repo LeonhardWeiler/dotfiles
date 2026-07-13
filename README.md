@@ -32,21 +32,36 @@ Create all symlinks from `links.conf` (user and, via `sudo`, `/etc` targets) and
 ./install                 # = ./install link  (everyday: refresh symlinks + units)
 ```
 
-**Fresh machine — one command:** `./install setup` does the whole bootstrap in
-the right order:
+**Fresh machine — one command:** `./install setup` runs the whole bootstrap. On
+a terminal it shows a **menu of optional steps** (Enter picks the defaults); it
+then links every config (implies `--force`, backing up real files to `.bak`) and
+runs the selected steps:
 
 ```bash
 ./install setup
 ```
 
-1. installs the packages from `setup/programs.txt` (`yay`, bootstrapped from
-   the AUR if missing — needs `git` + `base-devel` present first),
-2. links every config, replacing existing **real** default files (e.g. a shipped
-   `~/.bashrc`) after backing them up to `.bak` (implies `--force`),
-3. (re)activates the systemd units,
-4. generates the locales (`locale-gen`),
-5. prints the remaining **manual** steps that can't be automated safely (user
-   groups, timezone) plus the `source ~/.bashrc` / re-login hint.
+The optional steps (menu entries; each also has a flag, see below):
+
+| Step | Flag | Default |
+| ---- | ---- | ------- |
+| Install packages from `programs.txt` | `--programs` | ✓ |
+| Remove installed packages not in the manifest (prune) | `--remove-programs` | |
+| (Re)activate systemd units | `--systemd` | ✓ |
+| Deactivate those systemd units | `--remove-systemd` | |
+| Add user to the required groups (`usermod -aG`) | `--groups` | |
+| Set the timezone (`/etc/localtime`) | `--timezone ZONE` | |
+| Generate locales (`locale-gen`) | `--locale` | ✓ |
+| Deploy the ly@tty2 drop-ins as real copies | `--ly-dropin` | |
+| Passwordless sudo for `wheel` (`/etc/sudoers.d/`) | `--sudoers` | |
+| Rebuild the initramfs (`mkinitcpio -P`) | `--initramfs` | |
+
+Each step is also runnable on its own for automation: `./install --<step>` runs
+just those steps (no linking, no menu), e.g. `./install --timezone Europe/Vienna`
+or `./install --groups --sudoers`. To skip the menu but still do the full setup,
+pass the flags to `setup`: `./install setup --programs --systemd --locale`.
+Destructive steps (`--remove-programs`, `--remove-systemd`) ask for confirmation
+and are skipped without a terminal.
 
 The scripts assume the repo lives at `~/dotfiles`; if you clone elsewhere, export
 `DOTFILES_DIR` (used by `dotfiles_sync`/`update_programs_list`) accordingly.
@@ -174,11 +189,12 @@ I use Arch Linux with the Hyprland window manager. The file `programs.txt` conta
 
 ## Manual system state (not symlinked)
 
-Some system state is not a config file this repo can symlink — it has to be set
-up by hand on a fresh machine (the kind of thing a declarative distro like NixOS
-would capture). Checklist:
+Some system state is not a config file this repo can symlink. Most of it is now
+available as optional `./install setup` steps (see the table above), but the
+commands are kept here as reference and for doing them by hand. Checklist:
 
-- **User groups** — add your user to the groups the tracked tools need:
+- **User groups** (`./install --groups`) — add your user to the groups the
+  tracked tools need:
 
   ```bash
   sudo usermod -aG wheel,input,kvm,libvirt,uucp,disk,lock <user>
@@ -187,9 +203,10 @@ would capture). Checklist:
 
   Group changes take effect after re-login. Conversely, drop groups whose program
   you no longer have installed, e.g. `sudo gpasswd -d <user> docker`.
-- **Timezone**: `sudo ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime`
-- **Locales**: `/etc/locale.conf` and `/etc/locale.gen` are tracked, but the
-  locales still have to be generated once: `sudo locale-gen`.
+- **Timezone** (`./install --timezone Europe/Vienna`):
+  `sudo ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime`
+- **Locales** (`./install --locale`): `/etc/locale.conf` and `/etc/locale.gen`
+  are tracked, but the locales still have to be generated once: `sudo locale-gen`.
 - **Bootloader / kernel cmdline**: systemd-boot (ESP at `/efi`); the kernel
   options `amd_pstate=active usbcore.autosuspend=1 quiet` live in
   `/efi/loader/entries/arch.conf` (`options` line) — machine-specific
@@ -197,11 +214,12 @@ would capture). Checklist:
 - **Not tracked on purpose** (machine-specific / secrets): `/etc/hostname`,
   `/etc/fstab` (UUIDs), and NetworkManager Wi-Fi profiles
   (`/etc/NetworkManager/system-connections/*.nmconnection`, contain PSKs).
-- **ly@tty2 drop-ins** (`/etc/systemd/system/ly@tty2.service.d/`): the files in
+- **ly@tty2 drop-ins** (`./install --ly-dropin`;
+  `/etc/systemd/system/ly@tty2.service.d/`): the files in
   `config/systemd-system/ly@tty2.service.d/` (`wait-home.conf`, `keymap.conf`)
   must be deployed as **real copies on the root partition**, not symlinked via
   `links.conf` — systemd reads unit drop-ins early at manager start, when a
-  `/home` symlink would still be a dead link. Deploy on a fresh machine:
+  `/home` symlink would still be a dead link. Deploy by hand:
 
   ```bash
   sudo install -d -m755 /etc/systemd/system/ly@tty2.service.d
@@ -215,9 +233,10 @@ would capture). Checklist:
   (`ExecStartPre=loadkeys …`) to work around a boot-time KMS/vconsole-setup race
   that otherwise leaves the ly login field on QWERTY instead of the
   `/etc/vconsole.conf` `KEYMAP`.
-- **sudo**: this setup relies on passwordless sudo for the `wheel` group
-  (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL` in `/etc/sudoers`) — a deliberate
-  convenience choice; adjust to taste.
+- **sudo** (`./install --sudoers`): this setup relies on passwordless sudo for
+  the `wheel` group (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, written to
+  `/etc/sudoers.d/10-wheel-nopasswd` and validated with `visudo -c`) — a
+  deliberate convenience choice; adjust to taste.
 
 ## Notes
 
@@ -232,7 +251,7 @@ would capture). Checklist:
 
 `mkinitcpio.conf` is tracked and linked to `/etc/mkinitcpio.conf` via `links.conf`
 (source `config/mkinitcpio/mkinitcpio.conf`). After modifying it, regenerate the
-initramfs with:
+initramfs with `./install --initramfs`, or by hand:
 
 ```bash
 sudo mkinitcpio -P

@@ -24,13 +24,30 @@ Skripte). Die Zuordnung Quelle→Ziel steht explizit in
   (systemd überspringen), `-n/--dry-run` (nur anzeigen), `--force` (reale
   Datei/Verzeichnis am Ziel nach `.bak` sichern und ersetzen — sonst bleiben
   reale Ziele geschützt; existierende Symlinks werden ohnehin ersetzt).
-- **Neue Maschine (Bootstrap, ein Kommando)**: `./install setup` — Pakete aus
-  `setup/programs.txt` installieren (`yay`, delegiert an
-  `setup/install-programs`, bootstrappt yay bei Bedarf) → Configs verlinken
-  (impliziert `--force`) → Units aktivieren → `locale-gen` → konkrete manuelle
-  Rest-Checkliste (Gruppen, Zeitzone) ausgeben. `link` bleibt der idempotente
-  Alltags-Refresh; `setup` fasst den Erst-Setup-Flow zusammen (kein separates
-  `--programs`-Flag mehr — in `setup` gefaltet).
+- **Neue Maschine (Bootstrap, ein Kommando)**: `./install setup` — zeigt ein
+  **Menü optionaler Schritte** (auf einem TTY; Enter = Defaults, ohne TTY laufen
+  die Defaults), verlinkt dann die Configs (impliziert `--force`) und führt die
+  gewählten Schritte aus. `link` bleibt der idempotente Alltags-Refresh; `setup`
+  fasst den Erst-Setup-Flow zusammen.
+- **Optionale Setup-Schritte** (im `setup`-Menü wählbar, **einzeln per Flag
+  automatisierbar** — `./install --<schritt>` läuft nur diese Schritte, ohne zu
+  verlinken; `./install setup --<schritt> …` überspringt das Menü und wählt
+  genau diese). Registry im Skript: `register_step <name> <fn> "<beschreibung>"`,
+  `DEFAULT_STEPS` = Menü-Vorauswahl:
+  - `--programs` — Pakete aus `programs.txt` installieren (delegiert an
+    `setup/install-programs`, bootstrappt yay). *Default.*
+  - `--remove-programs` — explizit installierte Pakete entfernen, die **nicht**
+    im Manifest stehen (`pacman -Rns`, mit Rückfrage; Prune auf die Paketliste).
+  - `--systemd` — User-/System-Units aktivieren (`reactivate_units`). *Default.*
+  - `--remove-systemd` — dieselben Units deaktivieren (Rückfrage; Hinweis: linked
+    units werden dabei entfernt).
+  - `--groups` — Benutzer per `usermod -aG` zu `GROUP_LIST` hinzufügen.
+  - `--timezone ZONE` — `/etc/localtime` setzen (ohne `ZONE` fragt das Menü).
+  - `--locale` — `locale-gen`. *Default.*
+  - `--ly-dropin` — ly@tty2-Drop-ins als **reale Kopien** nach `/etc` deployen.
+  - `--sudoers` — passwortloses sudo für `wheel` (`/etc/sudoers.d/`, per
+    `visudo -c` validiert).
+  - `--initramfs` — `mkinitcpio -P`.
 - **Entfernen**: `./install unlink` — entfernt die von uns verwalteten Symlinks
   (nur echte Symlinks auf unsere Quellen; reale Dateien/fremde Links bleiben).
 - **Status**: `./install status` — zeigt pro Eintrag ok / fremder Link / echte
