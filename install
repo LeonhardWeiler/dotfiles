@@ -24,6 +24,8 @@
 #                             ohne ZONE fragt das Menü interaktiv nach
 #   --locale                  Locales aus /etc/locale.gen generieren (locale-gen)
 #   --ly-dropin               ly@tty2-Drop-ins als reale Kopien nach /etc deployen
+#   --sudoers                 passwortloses sudo für die wheel-Gruppe einrichten
+#                             (/etc/sudoers.d/, per visudo geprüft)
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -107,6 +109,7 @@ while [ $# -gt 0 ]; do
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
     --locale)           SELECTED[locale]=1;          FLAG_STEPS_GIVEN=1 ;;
     --ly-dropin)        SELECTED[ly-dropin]=1;       FLAG_STEPS_GIVEN=1 ;;
+    --sudoers)          SELECTED[sudoers]=1;         FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -373,6 +376,25 @@ do_ly_dropin() {
 }
 register_step ly-dropin do_ly_dropin "ly@tty2-Drop-ins deployen (reale Kopien)"
 
+# Passwortloses sudo für die wheel-Gruppe — bewusste Komfort-Entscheidung dieses
+# Setups. Als Drop-in in /etc/sudoers.d/ (0440), vorher mit `visudo -c` auf einer
+# Temp-Datei geprüft, damit keine kaputte sudoers-Syntax das System aussperrt.
+do_sudoers() {
+  local file="/etc/sudoers.d/10-wheel-nopasswd"
+  local rule="%wheel ALL=(ALL:ALL) NOPASSWD: ALL"
+  info "Passwortloses sudo für wheel einrichten: $file"
+  if [ "$DRYRUN" = 1 ]; then
+    printf "    [dry] printf '%s' | visudo -c && sudo install -m0440 → %s\n" "$rule" "$file"; return 0
+  fi
+  local tmp; tmp="$(mktemp)"; printf '%s\n' "$rule" > "$tmp"
+  if ! visudo -cf "$tmp" >/dev/null 2>&1; then
+    warn "sudoers-Syntax ungültig — übersprungen"; rm -f "$tmp"; return 0
+  fi
+  run 1 install -m0440 -o root -g root "$tmp" "$file" || warn "sudoers-Datei nicht installiert"
+  rm -f "$tmp"
+}
+register_step sudoers do_sudoers "Passwortloses sudo für wheel (sudoers.d)"
+
 # ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
 #    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
 SRCS=(); TGTS=()
@@ -419,6 +441,7 @@ case "$CMD" in
     is_selected groups && do_groups
     is_selected timezone && do_timezone
     is_selected ly-dropin && do_ly_dropin
+    is_selected sudoers && do_sudoers
     is_selected locale && do_locale
     is_selected remove-programs && do_programs_remove
     next_steps
