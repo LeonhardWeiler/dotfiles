@@ -264,6 +264,11 @@ next_steps() {
   info "Next steps"
   printf '  • %ssource ~/.bashrc%s  - apply the shell config now (also loads ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
   printf '  • log in again once for the .bash_profile env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*)\n'
+  # After the fresh-machine setup, several changes (system units, initramfs,
+  # groups, timezone, locale) only take full effect after a reboot.
+  if [ "$CMD" = setup ]; then
+    printf '  • %sreboot your PC%s to fully apply system units, initramfs, groups, timezone and locale\n' "$C_WARN" "$C_RST"
+  fi
 }
 
 # Generate the freshly linked locales (/etc/locale.gen), idempotent.

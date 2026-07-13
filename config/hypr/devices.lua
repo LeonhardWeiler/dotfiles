@@ -1,4 +1,4 @@
--- Per-Device-Konfiguration.
+-- Per-device configuration.
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Devices/
 
 hl.device({

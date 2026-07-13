@@ -1,4 +1,4 @@
--- Monitor-Konfiguration.
+-- Monitor configuration.
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
 
 hl.monitor({
@@ -15,5 +15,5 @@ hl.monitor({
 	scale = "1.6",
 })
 
--- Alternative Setups (bei Bedarf einkommentieren):
+-- Alternative setups (uncomment if needed):
 -- monitor=DP-1,preferred,auto,1.6,mirror,eDP-1
