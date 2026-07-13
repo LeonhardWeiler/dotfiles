@@ -30,11 +30,12 @@ export BROWSER=zen-browser
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 export TYPST_PACKAGE_PATH="$HOME/.config/typst/packages"
 export GIT_CONFIG_GLOBAL="$HOME/.config/git/.gitconfig"
+eval "$(dircolors ~/.dircolors)"
 
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
-alias openimg='zen-browser'
 alias arst='sudo shutdown now'
+alias ls='ls --color=auto'
 export NIX_CONFIG="experimental-features = nix-command flakes"
 # Only source it if Nix is installed (otherwise an error in every shell without Nix).
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
