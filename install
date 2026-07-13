@@ -19,6 +19,7 @@
 #                             in programs.txt stehen (Manifest-Prune, mit Rückfrage)
 #   --systemd                 systemd-Units aktivieren (USER_UNITS + SYSTEM_UNITS)
 #   --remove-systemd          dieselben Units wieder deaktivieren (mit Rückfrage)
+#   --groups                  Benutzer zu den benötigten Gruppen hinzufügen (usermod -aG)
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -96,6 +97,7 @@ while [ $# -gt 0 ]; do
     --remove-programs)  SELECTED[remove-programs]=1; FLAG_STEPS_GIVEN=1 ;;
     --systemd)          SELECTED[systemd]=1;         FLAG_STEPS_GIVEN=1 ;;
     --remove-systemd)   SELECTED[remove-systemd]=1;  FLAG_STEPS_GIVEN=1 ;;
+    --groups)           SELECTED[groups]=1;          FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -258,8 +260,6 @@ post_setup() {
     run 1 locale-gen || warn "locale-gen fehlgeschlagen"
   fi
   info "Manuelle Rest-Schritte (siehe README »Manual system state«)"
-  printf '  • Gruppen:  sudo usermod -aG wheel,input,kvm,libvirt,uucp,disk,lock %s\n' "${USER:-<user>}"
-  printf '             (docker/wireshark nur, wenn du die Pakete nutzt)\n'
   printf '  • Zeitzone: sudo ln -sf /usr/share/zoneinfo/<Region>/<Stadt> /etc/localtime\n'
 }
 
@@ -326,6 +326,19 @@ do_systemd_disable() {
 }
 register_step remove-systemd do_systemd_disable "systemd-Units deaktivieren (disable)"
 
+# Benutzer zu den Gruppen der getrackten Tools hinzufügen. `GROUPS` ist in Bash
+# reserviert (aktuelle GIDs) — daher GROUP_LIST. docker/wireshark bewusst nicht
+# dabei (nur nötig, wenn man diese Pakete auch installiert).
+GROUP_LIST="wheel,input,kvm,libvirt,uucp,disk,lock"
+do_groups() {
+  local user="${SUDO_USER:-${USER:-}}"
+  [ -n "$user" ] || { warn "kein Benutzer ermittelbar — Gruppen übersprungen"; return 0; }
+  info "Benutzer '$user' zu Gruppen hinzufügen: $GROUP_LIST"
+  run 1 usermod -aG "$GROUP_LIST" "$user" || warn "usermod fehlgeschlagen"
+  info "(Gruppenänderung wirkt erst nach erneutem Login)"
+}
+register_step groups do_groups "Benutzer zu Gruppen hinzufügen ($GROUP_LIST)"
+
 # ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
 #    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
 SRCS=(); TGTS=()
@@ -369,6 +382,7 @@ case "$CMD" in
     do_symlinks
     is_selected systemd && reactivate_units
     is_selected remove-systemd && do_systemd_disable
+    is_selected groups && do_groups
     post_setup
     is_selected remove-programs && do_programs_remove
     next_steps
