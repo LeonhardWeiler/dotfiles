@@ -26,6 +26,7 @@
 #   --ly-dropin               ly@tty2-Drop-ins als reale Kopien nach /etc deployen
 #   --sudoers                 passwortloses sudo für die wheel-Gruppe einrichten
 #                             (/etc/sudoers.d/, per visudo geprüft)
+#   --initramfs               Initramfs neu generieren (mkinitcpio -P)
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -110,6 +111,7 @@ while [ $# -gt 0 ]; do
     --locale)           SELECTED[locale]=1;          FLAG_STEPS_GIVEN=1 ;;
     --ly-dropin)        SELECTED[ly-dropin]=1;       FLAG_STEPS_GIVEN=1 ;;
     --sudoers)          SELECTED[sudoers]=1;         FLAG_STEPS_GIVEN=1 ;;
+    --initramfs)        SELECTED[initramfs]=1;       FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -395,6 +397,15 @@ do_sudoers() {
 }
 register_step sudoers do_sudoers "Passwortloses sudo für wheel (sudoers.d)"
 
+# Initramfs neu bauen (mkinitcpio -P) — nötig nach Änderungen an
+# /etc/mkinitcpio.conf (via links.conf verlinkt).
+do_initramfs() {
+  command -v mkinitcpio >/dev/null 2>&1 || { warn "mkinitcpio fehlt — übersprungen"; return 0; }
+  info "Initramfs neu generieren (mkinitcpio -P)"
+  run 1 mkinitcpio -P || warn "mkinitcpio fehlgeschlagen"
+}
+register_step initramfs do_initramfs "Initramfs neu generieren (mkinitcpio -P)"
+
 # ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
 #    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
 SRCS=(); TGTS=()
@@ -442,6 +453,7 @@ case "$CMD" in
     is_selected timezone && do_timezone
     is_selected ly-dropin && do_ly_dropin
     is_selected sudoers && do_sudoers
+    is_selected initramfs && do_initramfs
     is_selected locale && do_locale
     is_selected remove-programs && do_programs_remove
     next_steps
