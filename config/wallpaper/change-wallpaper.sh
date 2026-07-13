@@ -17,13 +17,18 @@ mkdir -p "$STATE_DIR"
 # List all available images, excluding the previous one.
 if [ -f "$PREV_WALLPAPER_FILE" ]; then
   PREV_WALLPAPER=$(cat "$PREV_WALLPAPER_FILE")
-  WALLPAPER=$(find "$WALLPAPER_DIR" -type f | grep -vF "$PREV_WALLPAPER" | shuf -n 1)
+  WALLPAPER=$(
+    find -L "$WALLPAPER_DIR" -type f |
+      grep -Fxv "$PREV_WALLPAPER" |
+      shuf -n 1
+  )
 else
-  WALLPAPER=$(find "$WALLPAPER_DIR" -type f | shuf -n 1)
+  WALLPAPER=$(find -L "$WALLPAPER_DIR" -type f | shuf -n 1)
 fi
 
 # If nothing new was found, reshuffle over all images.
-[ -z "$WALLPAPER" ] && WALLPAPER=$(find "$WALLPAPER_DIR" -type f | shuf -n 1)
+[ -z "$WALLPAPER" ] && WALLPAPER=$(find -L "$WALLPAPER_DIR" -type f | shuf -n 1)
+
 if [ -z "$WALLPAPER" ]; then
   echo "no wallpapers found in $WALLPAPER_DIR" >&2
   exit 1
