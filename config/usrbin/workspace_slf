@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# workspace_slf — sets up the complete SLF AI workspace.
+# workspace_slf - sets up the complete SLF AI workspace.
 #
 # Target state (monitor eDP-1):
 #   WS1  left: zen             | right: alacritty (claude, bypass-all) in ~/files/projects/slf
@@ -44,7 +44,7 @@ if hyprctl monitors -j | jq -e --arg m "$MONITOR" 'any(.[]; .name==$m)' >/dev/nu
     hyprctl dispatch moveworkspacetomonitor "$ws $MONITOR" >/dev/null 2>&1
   done
 else
-  log "monitor $MONITOR not connected — using the current monitor."
+  log "monitor $MONITOR not connected - using the current monitor."
 fi
 
 # --- Zen: WS2 (with tabs) ----------------------------------------------------

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project Health Report – Neovim Config</title>
+    <title>Project Health Report - Neovim Config</title>
     <style>
       :root {
         --bg: #16161d;
@@ -271,23 +271,23 @@
 
     <div class="legend">
       <span
-        ><span class="dot" style="background: var(--krit)"></span>critical –
+        ><span class="dot" style="background: var(--krit)"></span>critical -
         breaks usage / data loss</span
       >
       <span
-        ><span class="dot" style="background: var(--hoch)"></span>high – clear
+        ><span class="dot" style="background: var(--hoch)"></span>high - clear
         defect / bug</span
       >
       <span
-        ><span class="dot" style="background: var(--mittel)"></span>medium –
+        ><span class="dot" style="background: var(--mittel)"></span>medium -
         noticeable friction</span
       >
       <span
-        ><span class="dot" style="background: var(--niedrig)"></span>low –
+        ><span class="dot" style="background: var(--niedrig)"></span>low -
         quality / cleanup</span
       >
       <span
-        ><span class="dot" style="background: var(--info)"></span>info – note /
+        ><span class="dot" style="background: var(--info)"></span>info - note /
         modernization</span
       >
     </div>
@@ -305,9 +305,9 @@
 
     <p class="empty">
       No open findings. From the last round CQ-2 (undofile), UX-4 (spell for
-      prose) and INFO-2 (diagnostics → quickfix) have been implemented; UX-3
+      prose) and INFO-2 (diagnostics -> quickfix) have been implemented; UX-3
       (gitsigns), INFO-3 (nvim-ts-autotag) and INFO-4 (multi-file replace) were
-      deliberately not implemented – UX-3 is under "Deliberately decided".
+      deliberately not implemented - UX-3 is under "Deliberately decided".
     </p>
 
     <h2 class="section" id="stark">2 · What is already strong</h2>
@@ -315,8 +315,8 @@
     <div class="card good">
       <div class="card-head"><span class="id">Clean module structure</span></div>
       <p>
-        <code>init.lua</code> loads deliberately <code>config.lazy</code> →
-        <code>options</code> → <code>keymaps</code> → <code>autocmds</code>;
+        <code>init.lua</code> loads deliberately <code>config.lazy</code> ->
+        <code>options</code> -> <code>keymaps</code> -> <code>autocmds</code>;
         plugins live individually under <code>lua/plugins/</code> and are
         collected automatically via <code>{ import = "plugins" }</code>. Clear
         and easy to maintain.
@@ -399,7 +399,7 @@
         <code>stylua --check lua/</code> is green. Linting runs without false
         alarms (Lua via <code>lua_ls</code>, no more selene/markdownlint), and
         diagnostics are shown multi-line under the affected line via
-        <code>virtual_lines</code> – you see the full message, not just a
+        <code>virtual_lines</code> - you see the full message, not just a
         squiggle.
       </p>
     </div>
@@ -415,14 +415,14 @@
         only thing wanted is showing the changed lines in the
         <code>signcolumn</code> (that runs by default). Git actions
         (stage/reset/commit/blame) are deliberately done in the terminal, not
-        from within Neovim – so no <code>on_attach</code> is needed.
+        from within Neovim - so no <code>on_attach</code> is needed.
       </p>
     </div>
     <div class="card info">
       <div class="card-head"><span class="id">Mouse disabled</span></div>
       <p>
         <code>vim.opt.mouse = ""</code> deliberately turns the mouse off entirely
-        – consistent keyboard-first use, not a finding.
+        - consistent keyboard-first use, not a finding.
       </p>
     </div>
     <div class="card info">
@@ -431,7 +431,7 @@
       </div>
       <p>
         Search matches are not highlighted permanently
-        (<code>hlsearch=false</code>), only incrementally – deliberate calm in the
+        (<code>hlsearch=false</code>), only incrementally - deliberate calm in the
         buffer.
       </p>
     </div>

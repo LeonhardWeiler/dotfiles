@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lib_hypr.sh — shared helpers for the Hyprland workspace automation.
+# lib_hypr.sh - shared helpers for the Hyprland workspace automation.
 # Sourced (via `source`) and requires bash (arrays, local, process
 # substitution). Every window is addressed via its stable address, new windows
 # are detected via an address diff (instead of fragile titles).

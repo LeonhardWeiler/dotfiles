@@ -24,7 +24,7 @@ vim.keymap.set(
 -- Write diagnostics into the quickfix list (then shown via <leader>sq)
 vim.keymap.set("n", "<leader>sd", function()
   vim.diagnostic.setqflist({ open = false })
-end, { desc = "Diagnostics → quickfix list" })
+end, { desc = "Diagnostics -> quickfix list" })
 
 vim.keymap.set("n", "<Backspace>", "<Nop>")
 vim.keymap.set("n", "<F1>", "<Nop>")

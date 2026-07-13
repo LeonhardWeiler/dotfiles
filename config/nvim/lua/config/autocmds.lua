@@ -35,7 +35,7 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- On save in prose buffers (spell active), automatically capitalize words that
--- Vim marks as a pure capitalization error ("caps") — i.e. typical sentence
+-- Vim marks as a pure capitalization error ("caps") - i.e. typical sentence
 -- starts where only the first letter changes from lower to upper case. Real
 -- typos (type "bad"/"rare"/"local") are deliberately NOT auto-corrected.
 --
@@ -46,7 +46,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- and capitalized, while a continued sentence is correctly NOT. This is
 -- deliberately conservative (never a false capitalization).
 -- Limit: a sentence start directly after a *hard* line break (".\n") is not
--- recognized — with soft-wrap prose (long lines) that is the normal case and it
+-- recognized - with soft-wrap prose (long lines) that is the normal case and it
 -- works; if you hard-wrap sentences you have to capitalize the line start yourself.
 function M.autocapitalize_on_save()
   if not vim.wo.spell or not vim.bo.modifiable then

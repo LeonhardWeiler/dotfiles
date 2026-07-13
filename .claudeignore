@@ -1,7 +1,7 @@
 config/keepassxc/
 
 # Secret-/State-Verzeichnisse defensiv vom Claude-Zugriff ausnehmen (falls je
-# unter config/ vorhanden) — siehe Health-Report TRACK-2.
+# unter config/ vorhanden) - siehe Health-Report TRACK-2.
 Signal/
 pulse/
 ssh/

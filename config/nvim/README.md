@@ -28,7 +28,7 @@ mason-tool-installer pull in the LSP servers, formatters, linters and the
 ## Structure
 
 ```
-init.lua                 entry point: loads config.lazy → options → keymaps → autocmds
+init.lua                 entry point: loads config.lazy -> options -> keymaps -> autocmds
 lua/config/
   lazy.lua               lazy.nvim bootstrap, leader keys
   options.lua            editor options (incl. clipboard=unnamedplus)
@@ -76,7 +76,7 @@ Leader = `<Space>`.
 |-------|--------|
 | `<leader>a` | Pin file |
 | `<leader>h` | Menu |
-| `<leader>1`…`<leader>4` | Jump to file 1–4 |
+| `<leader>1`…`<leader>4` | Jump to file 1-4 |
 
 ### Telescope
 `<leader>s` + `f` files · `g` live grep · `h` help · `c` colorscheme ·

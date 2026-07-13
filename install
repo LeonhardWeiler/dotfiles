@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Symlink manager for these dotfiles — no external dependencies.
+# Symlink manager for these dotfiles - no external dependencies.
 # Reads the mapping file `links.conf` (source -> target) and creates the
 # symlinks, removes them again, or shows their current state.
 #
@@ -12,7 +12,7 @@
 #   ./install clean           delete the .bak backups created by --force
 #
 # Optional setup steps (selectable in the `setup` menu, runnable individually via
-# a flag for automation — e.g. `./install --groups` or
+# a flag for automation - e.g. `./install --groups` or
 # `./install setup --timezone Europe/Vienna`):
 #   --programs                install packages from setup/programs.txt (yay)
 #   --remove-programs         remove explicitly installed packages that are NOT
@@ -29,7 +29,7 @@
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
 #
 # Options:
-#   -n, --dry-run             only show what would happen — change nothing
+#   -n, --dry-run             only show what would happen - change nothing
 #   -c, --config FILE         other mapping file (default: setup/links.conf)
 #       --user-only           only ~ targets (no /etc targets, no sudo)
 #       --no-units            do not (re)activate the systemd units
@@ -46,14 +46,14 @@ DRYRUN=0
 USER_ONLY=0
 NO_UNITS=0
 FORCE=0
-SKIPPED_REAL=0       # number of skipped real targets (without --force) — for the closing hint
+SKIPPED_REAL=0       # number of skipped real targets (without --force) - for the closing hint
 FLAG_STEPS_GIVEN=0   # was at least one --<step> flag passed?
 TIMEZONE=""          # optional --timezone value (Region/City)
 
 # systemd units reactivated after linking (self-healing).
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
 # Only system units that really exist. pipewire/wireplumber are user services
-# (package presets, not tracked) and swtpm is socket-activated — those have no
+# (package presets, not tracked) and swtpm is socket-activated - those have no
 # enable-able bare <name>.service. iptables loads the (default) rules from
 # /etc/iptables/; fstrim.timer does periodic SSD TRIM; timesyncd = NTP;
 # power-profiles-daemon = power profiles (laptop).
@@ -135,7 +135,7 @@ expand_target() {
 # Target outside $HOME -> needs root.
 needs_root() { case "$1" in "$HOME"/*|"$HOME") return 1 ;; *) return 0 ;; esac; }
 
-# `run <root?> cmd…` — run a command (via sudo if needed), honouring dry-run.
+# `run <root?> cmd…` - run a command (via sudo if needed), honouring dry-run.
 run() {
   local root="$1"; shift
   if [ "$DRYRUN" = 1 ]; then
@@ -162,8 +162,8 @@ link_one() {
     fi
   fi
   local parent; parent="$(dirname "$target")"
-  # A dead (broken) symlink as the parent path — e.g. left over from an old
-  # setup — would otherwise make `mkdir -p` fail with "File exists" and abort the
+  # A dead (broken) symlink as the parent path - e.g. left over from an old
+  # setup - would otherwise make `mkdir -p` fail with "File exists" and abort the
   # whole run under `set -e`. A dead symlink has no content -> safe to remove
   # (only real, dangling symlinks; real files/dirs are left untouched).
   if [ -L "$parent" ] && [ ! -e "$parent" ]; then run "$root" rm -f "$parent"; fi
@@ -228,17 +228,17 @@ do_programs_install() {
 register_step programs do_programs_install "Install packages from programs.txt"
 
 # Remove explicitly installed packages that are NOT in the manifest
-# (programs.txt) — pulls the system onto the tracked package list. Deliberately
+# (programs.txt) - pulls the system onto the tracked package list. Deliberately
 # asks first and defaults to "no" (aggressive operation); pacman -Rns also
 # removes dependencies and config leftovers.
 do_programs_remove() {
-  command -v pacman >/dev/null 2>&1 || { warn "pacman missing — package removal skipped"; return 0; }
+  command -v pacman >/dev/null 2>&1 || { warn "pacman missing - package removal skipped"; return 0; }
   local manifest="$BASEDIR/setup/programs.txt"
-  [ -f "$manifest" ] || { warn "programs.txt missing — nothing to remove"; return 0; }
+  [ -f "$manifest" ] || { warn "programs.txt missing - nothing to remove"; return 0; }
   info "Finding untracked packages (explicitly installed but not in programs.txt)"
   local extras
   extras="$(comm -23 <(pacman -Qqe | sort -u) <(awk 'NF{print $1}' "$manifest" | sort -u))"
-  if [ -z "$extras" ]; then ok "no untracked packages — nothing to remove"; return 0; fi
+  if [ -z "$extras" ]; then ok "no untracked packages - nothing to remove"; return 0; fi
   printf '  To remove:\n'; printf '    %s\n' $extras
   if [ "$DRYRUN" = 1 ]; then printf '    [dry] sudo pacman -Rns %s\n' "$extras"; return 0; fi
   if confirm "  Really remove these packages (pacman -Rns)?"; then
@@ -252,15 +252,15 @@ register_step remove-programs do_programs_remove "Remove untracked packages (pru
 
 # Closing hint after linking: report skipped real targets prominently and remind
 # the user to apply the freshly linked shell config. (A script cannot reload the
-# interactive parent shell itself — hence the explicit hint instead of a useless
+# interactive parent shell itself - hence the explicit hint instead of a useless
 # `source` inside the script.)
 next_steps() {
   if [ "$SKIPPED_REAL" -gt 0 ]; then
-    warn "$SKIPPED_REAL real target(s) skipped — use './install --force' to back up to .bak and replace."
+    warn "$SKIPPED_REAL real target(s) skipped - use './install --force' to back up to .bak and replace."
   fi
   [ "$DRYRUN" = 1 ] && return 0
   info "Next steps"
-  printf '  • %ssource ~/.bashrc%s  — apply the shell config now (also loads ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
+  printf '  • %ssource ~/.bashrc%s  - apply the shell config now (also loads ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
   printf '  • log in again once for the .bash_profile env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*)\n'
 }
 
@@ -299,7 +299,7 @@ reactivate_units() {
   # Deliberately `enable`, not `reenable`: our unit files are symlinks (linked
   # units); `reenable` would delete exactly that unit symlink during its internal
   # `disable`. `enable` is idempotent and only creates the missing enablement
-  # link (…​.wants/) — it also survives a repo move because the unit symlink sits
+  # link (…​.wants/) - it also survives a repo move because the unit symlink sits
   # at the standard path.
   info "Activating systemd user units"
   run 0 systemctl --user daemon-reload || warn "daemon-reload failed"
@@ -317,7 +317,7 @@ reactivate_units() {
 register_step systemd reactivate_units "Activate systemd units (enable)"
 
 # Counterpart to reactivate_units: deactivate those same units. Note: our unit
-# files are linked units (symlinks at the standard path) — for such units
+# files are linked units (symlinks at the standard path) - for such units
 # `disable` also removes that symlink, so the unit is gone entirely afterwards
 # (re-linking via `./install` recreates it). Hence the confirmation.
 do_systemd_disable() {
@@ -335,12 +335,12 @@ do_systemd_disable() {
 register_step remove-systemd do_systemd_disable "Deactivate systemd units (disable)"
 
 # Add the user to the groups the tracked tools need. `GROUPS` is reserved in Bash
-# (current GIDs) — hence GROUP_LIST. docker/wireshark deliberately excluded (only
+# (current GIDs) - hence GROUP_LIST. docker/wireshark deliberately excluded (only
 # needed if you also install those packages).
 GROUP_LIST="wheel,input,kvm,libvirt,uucp,disk,lock"
 do_groups() {
   local user="${SUDO_USER:-${USER:-}}"
-  [ -n "$user" ] || { warn "no user determinable — groups skipped"; return 0; }
+  [ -n "$user" ] || { warn "no user determinable - groups skipped"; return 0; }
   info "Adding user '$user' to groups: $GROUP_LIST"
   run 1 usermod -aG "$GROUP_LIST" "$user" || warn "usermod failed"
   info "(group change takes effect after re-login)"
@@ -354,8 +354,8 @@ do_timezone() {
   if [ -z "$tz" ] && [ -t 0 ]; then
     printf '  Timezone (Region/City, e.g. Europe/Vienna): ' >&2; read -r tz || tz=""
   fi
-  [ -n "$tz" ] || { warn "no timezone given — skipped"; return 0; }
-  if [ ! -e "/usr/share/zoneinfo/$tz" ]; then warn "unknown timezone: $tz — skipped"; return 0; fi
+  [ -n "$tz" ] || { warn "no timezone given - skipped"; return 0; }
+  if [ ! -e "/usr/share/zoneinfo/$tz" ]; then warn "unknown timezone: $tz - skipped"; return 0; fi
   info "Setting timezone: $tz"
   run 1 ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime || warn "setting timezone failed"
 }
@@ -376,7 +376,7 @@ do_ly_dropin() {
 }
 register_step ly-dropin do_ly_dropin "Deploy ly@tty2 drop-ins (real copies)"
 
-# Passwordless sudo for the wheel group — a deliberate convenience choice of this
+# Passwordless sudo for the wheel group - a deliberate convenience choice of this
 # setup. As a drop-in in /etc/sudoers.d/ (0440), first checked with `visudo -c`
 # on a temp file so broken sudoers syntax cannot lock you out of the system.
 do_sudoers() {
@@ -388,23 +388,23 @@ do_sudoers() {
   fi
   local tmp; tmp="$(mktemp)"; printf '%s\n' "$rule" > "$tmp"
   if ! visudo -cf "$tmp" >/dev/null 2>&1; then
-    warn "sudoers syntax invalid — skipped"; rm -f "$tmp"; return 0
+    warn "sudoers syntax invalid - skipped"; rm -f "$tmp"; return 0
   fi
   run 1 install -m0440 -o root -g root "$tmp" "$file" || warn "sudoers file not installed"
   rm -f "$tmp"
 }
 register_step sudoers do_sudoers "Passwordless sudo for wheel (sudoers.d)"
 
-# Rebuild the initramfs (mkinitcpio -P) — needed after changes to
+# Rebuild the initramfs (mkinitcpio -P) - needed after changes to
 # /etc/mkinitcpio.conf (linked via links.conf).
 do_initramfs() {
-  command -v mkinitcpio >/dev/null 2>&1 || { warn "mkinitcpio missing — skipped"; return 0; }
+  command -v mkinitcpio >/dev/null 2>&1 || { warn "mkinitcpio missing - skipped"; return 0; }
   info "Regenerating initramfs (mkinitcpio -P)"
   run 1 mkinitcpio -P || warn "mkinitcpio failed"
 }
 register_step initramfs do_initramfs "Regenerate initramfs (mkinitcpio -P)"
 
-# ── Read the mapping file (fully first, then iterate — otherwise a sudo password
+# ── Read the mapping file (fully first, then iterate - otherwise a sudo password
 #    prompt collides with the read loop's stdin) ──────────────────────────────
 SRCS=(); TGTS=()
 while IFS= read -r line || [ -n "$line" ]; do
@@ -431,7 +431,7 @@ done < "$BASEDIR/$CONFIG"
 [ "${#SRCS[@]}" -gt 0 ] || { warn "no entries in $CONFIG"; exit 1; }
 
 # ── Execution ────────────────────────────────────────────────────────────────
-[ "$DRYRUN" = 1 ] && info "— Dry run: nothing is changed —"
+[ "$DRYRUN" = 1 ] && info "- Dry run: nothing is changed -"
 case "$CMD" in
   link)
     do_symlinks
@@ -466,7 +466,7 @@ case "$CMD" in
   unlink)
     info "Removing symlinks"
     for i in "${!SRCS[@]}"; do unlink_one "${SRCS[$i]}" "${TGTS[$i]}"; done
-    warn "Note: systemd units are not deactivated — do it manually if needed via 'systemctl [--user] disable …'."
+    warn "Note: systemd units are not deactivated - do it manually if needed via 'systemctl [--user] disable …'."
     ;;
   status)
     info "Status (${#SRCS[@]} entries)"

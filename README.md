@@ -5,16 +5,16 @@ This repository contains my personal dotfiles for configuring my development env
 ## Requirements
 
 - **Linux-based operating system**
-- **Git (`git`)** – for cloning the repository
-- **Bash** – the `./install` script is plain Bash, no other dependencies
-- **Sudo privileges** – for the system-wide (`/etc`) configuration
+- **Git (`git`)** - for cloning the repository
+- **Bash** - the `./install` script is plain Bash, no other dependencies
+- **Sudo privileges** - for the system-wide (`/etc`) configuration
 
 > Please back up your existing dotfiles before installing.
 
 ## Installation
 
 Symlinks are managed by a small, dependency-free Bash script (`./install`). The
-whole mapping lives in a single file, `setup/links.conf` — one line per link, two
+whole mapping lives in a single file, `setup/links.conf` - one line per link, two
 columns: `<source-in-repo>  <target>`. Targets under `~` are user configs;
 `/etc/…` targets are system configs and are linked via `sudo`.
 
@@ -32,7 +32,7 @@ Create all symlinks from `links.conf` (user and, via `sudo`, `/etc` targets) and
 ./install                 # = ./install link  (everyday: refresh symlinks + units)
 ```
 
-**Fresh machine — one command:** `./install setup` runs the whole bootstrap. On
+**Fresh machine - one command:** `./install setup` runs the whole bootstrap. On
 a terminal it shows a **menu of optional steps** (Enter picks the defaults); it
 then links every config (implies `--force`, backing up real files to `.bak`) and
 runs the selected steps:
@@ -82,13 +82,13 @@ Useful variants:
 > without touching anything else, run `./setup/install-programs` directly.
 
 > **Repo layout:** every config lives directly under `config/<name>/` (flat
-> source paths — e.g. `config/btop/btop.conf`), and `setup/links.conf` maps each
+> source paths - e.g. `config/btop/btop.conf`), and `setup/links.conf` maps each
 > source to its target. Existing symlinks are always replaced; by default
-> `./install` never overwrites a **real** file/dir (only symlinks are replaced) —
+> `./install` never overwrites a **real** file/dir (only symlinks are replaced) -
 > use `--force` to back those up to `.bak` and replace them. `unlink` only removes
 > symlinks that point back into this repo. If a source path ends in `/*`, each
 > entry inside it is linked individually into the target directory, which stays
-> real — used for `config/usrbin/*` → `~/.local/bin`, so foreign entries there
+> real - used for `config/usrbin/*` -> `~/.local/bin`, so foreign entries there
 > (e.g. `claude`) are left untouched.
 > `setup/` holds the deployment machinery: the link map (`links.conf`), the
 > package manifest (`programs.txt`) and the `install-programs` bootstrap script.
@@ -103,7 +103,7 @@ configuration.
 ### System Services
 
 The system services below are enabled automatically by `./install` (the
-`SYSTEM_UNITS` list at the top of the script, via `systemctl enable` — without
+`SYSTEM_UNITS` list at the top of the script, via `systemctl enable` - without
 `--now`, so the running session is not disturbed; start them manually or reboot
 to activate). To do it by hand:
 
@@ -192,7 +192,7 @@ Some system state is not a config file this repo can symlink. Most of it is now
 available as optional `./install setup` steps (see the table above), but the
 commands are kept here as reference and for doing them by hand. Checklist:
 
-- **User groups** (`./install --groups`) — add your user to the groups the
+- **User groups** (`./install --groups`) - add your user to the groups the
   tracked tools need:
 
   ```bash
@@ -208,7 +208,7 @@ commands are kept here as reference and for doing them by hand. Checklist:
   are tracked, but the locales still have to be generated once: `sudo locale-gen`.
 - **Bootloader / kernel cmdline**: systemd-boot (ESP at `/efi`); the kernel
   options `amd_pstate=active usbcore.autosuspend=1 quiet` live in
-  `/efi/loader/entries/arch.conf` (`options` line) — machine-specific
+  `/efi/loader/entries/arch.conf` (`options` line) - machine-specific
   (`root=UUID=…`), so set them by hand rather than tracking the file.
 - **Not tracked on purpose** (machine-specific / secrets): `/etc/hostname`,
   `/etc/fstab` (UUIDs), and NetworkManager Wi-Fi profiles
@@ -217,7 +217,7 @@ commands are kept here as reference and for doing them by hand. Checklist:
   `/etc/systemd/system/ly@tty2.service.d/`): the files in
   `config/systemd-system/ly@tty2.service.d/` (`wait-home.conf`, `keymap.conf`)
   must be deployed as **real copies on the root partition**, not symlinked via
-  `links.conf` — systemd reads unit drop-ins early at manager start, when a
+  `links.conf` - systemd reads unit drop-ins early at manager start, when a
   `/home` symlink would still be a dead link. Deploy by hand:
 
   ```bash
@@ -234,7 +234,7 @@ commands are kept here as reference and for doing them by hand. Checklist:
   `/etc/vconsole.conf` `KEYMAP`.
 - **sudo** (`./install --sudoers`): this setup relies on passwordless sudo for
   the `wheel` group (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, written to
-  `/etc/sudoers.d/10-wheel-nopasswd` and validated with `visudo -c`) — a
+  `/etc/sudoers.d/10-wheel-nopasswd` and validated with `visudo -c`) - a
   deliberate convenience choice; adjust to taste.
 
 ## Notes
@@ -259,6 +259,6 @@ sudo mkinitcpio -P
 ## License
 
 Licensed under the GNU General Public License, either version 3 of the License,
-or (at your option) any later version — SPDX identifier
+or (at your option) any later version - SPDX identifier
 [`GPL-3.0-or-later`](https://spdx.org/licenses/GPL-3.0-or-later.html). The full
 license text is in [`LICENSE`](LICENSE).

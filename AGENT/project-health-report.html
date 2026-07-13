@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dotfiles – Health Report</title>
+    <title>Dotfiles - Health Report</title>
     <style>
       :root {
         --bg: #141414;
@@ -293,7 +293,7 @@
   </head>
   <body>
     <div class="wrap">
-      <h1>Dotfiles – Health Report</h1>
+      <h1>Dotfiles - Health Report</h1>
       <div class="meta">
         Momentaufnahme · Stand <strong>2026-07-05</strong> · Branch
         <code>main</code> · Arch Linux / Hyprland, verwaltet über einen
@@ -308,16 +308,16 @@
         Shell-Skripte (<code>bash -n</code> grün), Hyprland-Lua (9 Module, alle
         <code>luac -p</code> ok), nvim (lädt headless), systemd-Units,
         Alacritty, Mako, Rofi, Ly (<code>session_log</code> jetzt auf
-        <code>.local/state/ly-session.log</code> gepinnt — Home bleibt sauber),
+        <code>.local/state/ly-session.log</code> gepinnt - Home bleibt sauber),
         mpv, Typst, git-config, <code>setup/programs.txt</code>, README und
         CLAUDE.md sowie die Live-Verlinkung (<strong>40/40</strong>
         <code>ok</code>). Keine versehentlichen Secrets, keine
         <code>TODO/FIXME</code>-Marker; KeePassXC-<code>.kdbx</code> (per
         <code>.gitignore</code>/<code>.claudeignore</code> ausgeschlossen) und
         fremde mpv-Lua-Scripts nur oberflächlich.<br />
-        Das Repo ist insgesamt sehr sauber und in gutem Zustand — frischer
+        Das Repo ist insgesamt sehr sauber und in gutem Zustand - frischer
         Voll-Scan, <strong>keine offenen Findings</strong>. Die Notizen unten
-        („stark" / „bewusst entschieden") sind gegen den aktuellen Code
+        ("stark" / "bewusst entschieden") sind gegen den aktuellen Code
         verifiziert (Pfade und Zeilenreferenzen stimmen).
       </div>
 
@@ -355,7 +355,7 @@
             <span class="loc">nichts zu tun</span>
           </div>
           <p>
-            Dieser Voll-Scan hat keine offenen Probleme ergeben — weder
+            Dieser Voll-Scan hat keine offenen Probleme ergeben - weder
             Korrektheits-/Robustheits-, Security-, Struktur- noch Doku-Findings.
             Alle Shell-Skripte sind syntaktisch grün, die Hyprland-Lua-Module
             parsen, die Live-Verlinkung ist vollständig (40/40) und README wie
@@ -386,8 +386,8 @@
             >/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
             dazu <code>-n/--dry-run</code>, <code>--user-only</code> und
             <code>--force</code> (sichert reale Ziele nach <code>.bak</code>);
-            das <code>setup</code>-Kommando bündelt den Erst-Setup (Pakete →
-            Link → Units → <code>locale-gen</code> → Checkliste). Reale Dateien
+            das <code>setup</code>-Kommando bündelt den Erst-Setup (Pakete ->
+            Link -> Units -> <code>locale-gen</code> -> Checkliste). Reale Dateien
             werden nie ungefragt überschrieben, <code>unlink</code> entfernt nur
             Symlinks auf eigene Quellen, <code>/etc</code>-Ziele laufen
             dateiweise per <code>sudo</code>, Glob-Quellen
@@ -424,7 +424,7 @@
           </div>
           <p>
             Das entschlüsselte Eintrags-Listing wird über einen
-            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> zuverlässig entfernt —
+            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> zuverlässig entfernt -
             auch bei jedem frühen Abbruch (Escape, falsches Passwort). So
             bleiben keine Klartext-Metadaten der Passwort-DB liegen. Sauberer
             Umgang mit sensiblen Zwischendaten.
@@ -439,7 +439,7 @@
           <p>
             SSH-basiertes Commit-Signing (<code>gpg.format = ssh</code>,
             <code>commit.gpgsign = true</code>, <code>signingkey</code> als
-            <code>id_ed25519.pub</code>) ist eingerichtet — gute
+            <code>id_ed25519.pub</code>) ist eingerichtet - gute
             Sicherheitshygiene für die Commit-Authentizität.
           </p>
         </div>
@@ -452,7 +452,7 @@
           <p>
             Durchgängig konsistentes, dunkles Farbschema (<code>#141414</code> /
             <code>#dddddd</code> / Akzent <code>#768e84</code>) über alle
-            UI-Komponenten hinweg — wirkt wie aus einem Guss. Auch der
+            UI-Komponenten hinweg - wirkt wie aus einem Guss. Auch der
             Health-Report selbst nutzt dasselbe Schema.
           </p>
         </div>
@@ -488,9 +488,9 @@
             >
           </div>
           <p>
-            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> — passwortloses sudo
+            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> - passwortloses sudo
             für die <code>wheel</code>-Gruppe. Bewusste Bequemlichkeits-
-            Entscheidung (im README unter „Manual system state" festgehalten).
+            Entscheidung (im README unter "Manual system state" festgehalten).
             Zur Kenntnis: jeder Prozess des Users wird damit ohne weitere Hürde
             root; die sudo-Datei bleibt auf Wunsch unverändert.
           </p>
@@ -503,7 +503,7 @@
           </div>
           <p>
             <code>workspace_slf</code> startet Claude mit
-            <code>--dangerously-skip-permissions</code> (Bypass-All-Modus) —
+            <code>--dangerously-skip-permissions</code> (Bypass-All-Modus) -
             bewusste Workflow-Entscheidung für schnelles Arbeiten. Zur Kenntnis:
             läuft ohne Permission-Prompts, nur in vertrauenswürdigen
             Projektverzeichnissen sinnvoll.
@@ -522,7 +522,7 @@
             Animationen in Hyprland deaktiviert (<code>enabled = false</code> in
             <code>looknfeel.lua</code>) und Maus in nvim ausgeschaltet (<code
               >vim.opt.mouse = ""</code
-            >) — bewusst minimalistischer, tastaturzentrierter Workflow. Die
+            >) - bewusst minimalistischer, tastaturzentrierter Workflow. Die
             Animations-Kurven bleiben in <code>animations.lua</code> definiert,
             sodass ein Aktivieren nur das Umschalten des Flags erfordert.
           </p>
@@ -534,8 +534,8 @@
             <span class="loc"><code>config/mpv/mpv.conf</code></span>
           </div>
           <p>
-            Sehr große Demuxer-Caches (mehrere GB Readahead) — laut Kommentar
-            bewusst, „viel RAM vorhanden". Legitim für ein Desktop-Setup mit
+            Sehr große Demuxer-Caches (mehrere GB Readahead) - laut Kommentar
+            bewusst, "viel RAM vorhanden". Legitim für ein Desktop-Setup mit
             reichlich Speicher.
           </p>
         </div>
@@ -549,7 +549,7 @@
             Restic-Repo als SFTP zu einer LAN-IP mit Windows-Pfad
             (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). Interne IP
             ist kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im
-            Skript — wird interaktiv abgefragt. In Ordnung, solange das Skript
+            Skript - wird interaktiv abgefragt. In Ordnung, solange das Skript
             nicht non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
           </p>
         </div>
@@ -566,8 +566,8 @@
             Die Console-Keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH)
             wird über den initramfs-<code>keymap</code>-Hook geladen (in
             <code>HOOKS=(… keyboard keymap consolefont …)</code>), nicht (nur)
-            über <code>systemd-vconsole-setup</code> — Letzteres überspringt
-            beim Boot die erste VT („Configuration of first virtual console was
+            über <code>systemd-vconsole-setup</code> - Letzteres überspringt
+            beim Boot die erste VT ("Configuration of first virtual console was
             skipped"). Der <code>keymap</code>-Hook backt die Keymap zur
             initramfs-<strong>Bauzeit</strong> ein. Zur Kenntnis: nach jeder
             Änderung an <code>vconsole.conf</code> einmal
@@ -588,7 +588,7 @@
             Gerätespezifische Hardcodes: <code>WLR_DRM_DEVICES</code> auf einen
             festen PCI-Pfad (<code>pci-0000:34:00.0-card</code>) sowie feste
             Monitor-Outputs (<code>eDP-1</code>, <code>HDMI-A-1</code>). Für ein
-            persönliches Single-Machine-Setup in Ordnung — nur als
+            persönliches Single-Machine-Setup in Ordnung - nur als
             Portabilitäts-Hinweis: bei Hardware-Wechsel müssen diese Werte
             angepasst werden.
           </p>
@@ -596,15 +596,15 @@
       </section>
 
       <div class="legend">
-        <span><span class="dot krit"></span> kritisch – sofort handeln</span>
-        <span><span class="dot hoch"></span> hoch – zeitnah beheben</span>
-        <span><span class="dot mittel"></span> mittel – einplanen</span>
-        <span><span class="dot niedrig"></span> niedrig – bei Gelegenheit</span>
+        <span><span class="dot krit"></span> kritisch - sofort handeln</span>
+        <span><span class="dot hoch"></span> hoch - zeitnah beheben</span>
+        <span><span class="dot mittel"></span> mittel - einplanen</span>
+        <span><span class="dot niedrig"></span> niedrig - bei Gelegenheit</span>
         <span><span class="dot info"></span> info / bewusst entschieden</span>
       </div>
 
       <footer>
-        Health-Report – reine Momentaufnahme, keine Historie. Erzeugt aus einem
+        Health-Report - reine Momentaufnahme, keine Historie. Erzeugt aus einem
         frischen Scan des Repos.
       </footer>
     </div>

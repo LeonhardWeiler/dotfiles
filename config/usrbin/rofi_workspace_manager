@@ -1,5 +1,5 @@
 #!/bin/sh
-# rofi_workspace_manager — picks a workspace configuration and starts it.
+# rofi_workspace_manager - picks a workspace configuration and starts it.
 # Add new configurations as another line in the list + in the case statement.
 
 m() { rofi -dmenu -i -p "Workspace" "$@" ;}

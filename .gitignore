@@ -7,7 +7,7 @@
 # Von Hyprland bei Lua-Nutzung autogenerierter Stub (echte Config: hyprland.lua)
 config/hypr/hyprland.conf
 
-# Secrets/Runtime-State defensiv ausschliessen (analog zu *.kdbx) — falls solche
+# Secrets/Runtime-State defensiv ausschliessen (analog zu *.kdbx) - falls solche
 # Verzeichnisse/Dateien je unter config/ landen, gehoeren sie NICHT ins Repo.
 # Siehe Health-Report TRACK-2 (Signal/ssh/pulse u. a.).
 Signal/

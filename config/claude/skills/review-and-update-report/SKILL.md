@@ -8,7 +8,7 @@ user-invocable: true
 
 **Purpose:** Run a full, fresh review of the entire project and bring the health
 report `AGENT/project-health-report.html` up to date. **No** code changes are
-made — only the report is adjusted and committed.
+made - only the report is adjusted and committed.
 
 This skill is **project-independent**: it works in any repository. All paths are
 relative to the repo root; run the skill from the root directory of the
@@ -26,7 +26,7 @@ respective project.
 
 ---
 
-## Step 1 — Analyze the project fully
+## Step 1 - Analyze the project fully
 
 - Get an overview of the project's structure and purpose first (language,
   framework, entry points, existing docs like `README.md`/`CLAUDE.md`).
@@ -34,7 +34,7 @@ respective project.
 - Assess the **current state of the code**, not earlier report versions. Verify
   every existing finding against the real code before keeping it.
 - If the project provides format/lint/test/build commands, check (as far as
-  possible without side effects) whether they are green — a broken gate is itself
+  possible without side effects) whether they are green - a broken gate is itself
   a finding. Make **no** code changes to repair them.
 - Pay particular attention to:
   - Bugs & correctness
@@ -53,18 +53,18 @@ code: are the functions, commands (build/test/lint), project structure and
 conventions documented there still correct? An **outdated** `CLAUDE.md` (e.g.
 because a function changed) or a **missing** `CLAUDE.md` you record as a
 documentation finding (`DOC-*`) with the recommendation to update it or create it
-via `create-claude-md`. This skill makes **no** change to the `CLAUDE.md` itself —
+via `create-claude-md`. This skill makes **no** change to the `CLAUDE.md` itself -
 it only documents it in the report.
 
 ### Actively walk through the central user flows (mandatory)
 
-Do **not** rely on static reading alone — identify the central user/usage flows
+Do **not** rely on static reading alone - identify the central user/usage flows
 of the application (the main entry points and the most important sequences within
 them) and walk through them. Look specifically for friction, dead ends, missing
 feedback and inconsistencies. Record such insights as `UX-*` findings.
 
 - Determine the relevant flows from the project itself (e.g. screens/pages, CLI
-  commands, API endpoints, handlers) — depending on the type of application.
+  commands, API endpoints, handlers) - depending on the type of application.
 - Walk through **each main flow from start to end**, including branches.
 - Consider **edge cases**: error states, interrupted/resumed sequences, missing
   connection/resources, invalid inputs, destructive actions and their
@@ -76,7 +76,7 @@ walk through them carefully in your head based on the code (entry points, views,
 handlers). At every step ask yourself: what does the user want to do here but
 cannot? Where do they get stuck? Is feedback or confirmation missing?
 
-## Step 2 — Update `AGENT/project-health-report.html`
+## Step 2 - Update `AGENT/project-health-report.html`
 
 Adjust **only** this file. Keep its existing HTML structure and styling (title,
 meta line with date/branch, summary counters, table of contents, cards with
@@ -84,9 +84,9 @@ severity badges, legend).
 
 Rules for the content:
 
-- The report is a **snapshot** (health check) — it contains **no history**.
+- The report is a **snapshot** (health check) - it contains **no history**.
 - **Delete solved or no-longer-relevant findings entirely.** Do not mark them as
-  "Done/Completed", do not archive them — just remove them.
+  "Done/Completed", do not archive them - just remove them.
 - Add **new insights** from the scan as findings.
 - **Update existing findings** if their assessment has changed.
 - Every finding has: a short ID, a severity (`critical` -> `high` -> `medium` ->
@@ -97,16 +97,16 @@ Rules for the content:
   **consistent** with the findings that actually exist.
 - Put the current date and the current branch in the meta line.
 
-## Step 3 — No implementations
+## Step 3 - No implementations
 
 Make **no** changes outside of `AGENT/project-health-report.html`:
 
 - No fixes, refactorings or new features.
 - No formatting or other changes to other files.
 
-## Step 4 — Commit
+## Step 4 - Commit
 
 Create a commit that contains **only** `AGENT/project-health-report.html`, with a
 meaningful commit message (e.g. what was added/removed). Commit **on the current
-branch** — do **not** create a new branch unasked (unless the user explicitly
+branch** - do **not** create a new branch unasked (unless the user explicitly
 asks for it).

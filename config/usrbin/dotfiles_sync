@@ -1,5 +1,5 @@
 #!/bin/bash
-# dotfiles_sync — updates generated configs, commits changes and pushes them.
+# dotfiles_sync - updates generated configs, commits changes and pushes them.
 # Run at login via a systemd user service (dotfiles-sync.service) and
 # deliberately extensible:
 #   - more generators      -> extend GENERATORS

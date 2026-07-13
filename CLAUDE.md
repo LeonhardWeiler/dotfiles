@@ -17,41 +17,41 @@ scripts). The source->target mapping is stated explicitly in
 
 ## Installation & commands
 
-- **Linking**: `./install` (= `./install link`) — creates/refreshes all links
+- **Linking**: `./install` (= `./install link`) - creates/refreshes all links
   from `links.conf` and then reactivates the systemd units (self-healing). `~/…`
   targets without, `/etc/…` targets via sudo (asks for the password if needed).
   Options: `--user-only` (only `~`, no sudo), `--no-units` (skip systemd),
   `-n/--dry-run` (only show), `--force` (back up a real file/dir at the target to
-  `.bak` and replace it — otherwise real targets stay protected; existing
+  `.bak` and replace it - otherwise real targets stay protected; existing
   symlinks are replaced anyway).
-- **New machine (bootstrap, one command)**: `./install setup` — shows a **menu of
+- **New machine (bootstrap, one command)**: `./install setup` - shows a **menu of
   optional steps** (on a TTY; Enter = defaults, without a TTY the defaults run),
   then links the configs (implies `--force`) and runs the chosen steps. `link`
   stays the idempotent everyday refresh; `setup` wraps the first-time setup flow.
 - **Optional setup steps** (selectable in the `setup` menu, **runnable
-  individually via a flag** — `./install --<step>` runs only those steps without
+  individually via a flag** - `./install --<step>` runs only those steps without
   linking; `./install setup --<step> …` skips the menu and selects exactly
   those). Registry in the script: `register_step <name> <fn> "<description>"`,
   `DEFAULT_STEPS` = menu preselection:
-  - `--programs` — install packages from `programs.txt` (delegates to
+  - `--programs` - install packages from `programs.txt` (delegates to
     `setup/install-programs`, bootstraps yay). *Default.*
-  - `--remove-programs` — remove explicitly installed packages that are **not**
+  - `--remove-programs` - remove explicitly installed packages that are **not**
     in the manifest (`pacman -Rns`, with a prompt; prune to the package list).
-  - `--systemd` — activate user/system units (`reactivate_units`). *Default.*
-  - `--remove-systemd` — deactivate those same units (prompt; note: linked units
+  - `--systemd` - activate user/system units (`reactivate_units`). *Default.*
+  - `--remove-systemd` - deactivate those same units (prompt; note: linked units
     are removed in the process).
-  - `--groups` — add the user to `GROUP_LIST` via `usermod -aG`.
-  - `--timezone ZONE` — set `/etc/localtime` (without `ZONE` the menu asks).
-  - `--locale` — `locale-gen`. *Default.*
-  - `--ly-dropin` — deploy the ly@tty2 drop-ins as **real copies** to `/etc`.
-  - `--sudoers` — passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
+  - `--groups` - add the user to `GROUP_LIST` via `usermod -aG`.
+  - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).
+  - `--locale` - `locale-gen`. *Default.*
+  - `--ly-dropin` - deploy the ly@tty2 drop-ins as **real copies** to `/etc`.
+  - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
-  - `--initramfs` — `mkinitcpio -P`.
-- **Removing**: `./install unlink` — removes the symlinks we manage (only real
+  - `--initramfs` - `mkinitcpio -P`.
+- **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
-- **Status**: `./install status` — shows per entry ok / foreign link / real file
+- **Status**: `./install status` - shows per entry ok / foreign link / real file
   / missing.
-- **Cleaning backups**: `./install clean` — deletes the `.bak` backups of the
+- **Cleaning backups**: `./install clean` - deletes the `.bak` backups of the
   managed targets that `--force` created (incl. `*.bak.<timestamp>`; foreign
   `.bak` are left untouched). Preview with `-n`.
 - **Update the package list** (without re-linking): `update_programs_list` (from
@@ -69,7 +69,7 @@ scripts). The source->target mapping is stated explicitly in
   directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
   mako, mpv, git, typst, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `systemd-user`/`/etc` targets deliberately **only the single file**
-  is linked (parent directory stays real — app runtime, or to avoid hiding system
+  is linked (parent directory stays real - app runtime, or to avoid hiding system
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
   are preserved. `claude` does **not** track
@@ -89,14 +89,14 @@ scripts). The source->target mapping is stated explicitly in
   `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
 - **System/user services**: activated by the `install` script after linking via
   `systemctl enable` (system) or `systemctl --user enable` (user:
-  `battery-check.timer`, `dotfiles-sync.service`) — the unit lists are at the top
+  `battery-check.timer`, `dotfiles-sync.service`) - the unit lists are at the top
   of the script (`USER_UNITS` / `SYSTEM_UNITS`). Deliberately `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
-  only contains system units that really exist — pipewire/wireplumber (user
+  only contains system units that really exist - pipewire/wireplumber (user
   scope) and swtpm (socket-activated) are **not** in it.
   PipeWire/WirePlumber/figma-agent come from their package presets and are
-  **not** tracked (formerly `*.wants` links in the repo — now removed).
+  **not** tracked (formerly `*.wants` links in the repo - now removed).
 - **Not linked**: `AGENT/` (work/workflow files) stays in the repo root.
 - Custom scripts: **`config/usrbin/*`** -> `~/.local/bin` (per file, on the
   `PATH` via `.bashrc`). `lib_hypr.sh` is a helper lib sourced via `source`
@@ -105,9 +105,9 @@ scripts). The source->target mapping is stated explicitly in
   `update_programs_list` is **additionally** linked to the fixed system path
   `/usr/local/bin/update_programs_list` (its own `links.conf` line), because the
   pacman hook (`/etc/pacman.d/hooks`) knows no `$HOME` variables and calls it from
-  there — so the hook stays portable for a foreign user too.
+  there - so the hook stays portable for a foreign user too.
 - **`nvim/`** has its **own `CLAUDE.md`** (`config/nvim/CLAUDE.md`) with the
-  nvim-specific verification commands — for nvim changes look there.
+  nvim-specific verification commands - for nvim changes look there.
 
 ## Conventions & pitfalls
 
@@ -115,12 +115,12 @@ scripts). The source->target mapping is stated explicitly in
   `<source-in-repo>  <target>` to `setup/links.conf`. `/etc` targets **always per
   file** (full `/etc/…` target path), never whole directories. If a target
   directory should stay real and only individual files inside it be linked, let
-  the source end in `/*` (glob; links each entry into `<target>/<name>`) — see
+  the source end in `/*` (glob; links each entry into `<target>/<name>`) - see
   `config/usrbin/*`.
 - **`AGENT/` stays in the root** and outside the link logic.
 - **Scaling/cursor env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) are set
   exclusively in `config/hypr/env.lua` (via `hl.env(...)`), **not** in `.bashrc`
-  — do not duplicate them (otherwise apps render differently depending on how
+  - do not duplicate them (otherwise apps render differently depending on how
   they were launched). (`hyprland.conf` is only the gitignored, auto-generated
   stub.)
 - Hyprland config: since 0.55 **hyprlang (`.conf`) is deprecated** in favour of
@@ -132,7 +132,7 @@ scripts). The source->target mapping is stated explicitly in
   (`require("module")`, flat in the hypr directory). On changes, maintain the
   matching module and check it with `luac -p <file>.lua`; format with **stylua**
   (tabs). `hyprland.conf` is **auto-generated** by Hyprland as a stub when Lua is
-  used and is therefore **gitignored** — do not edit it. The old hyprlang config
+  used and is therefore **gitignored** - do not edit it. The old hyprlang config
   still lives in the git history or locally as `hyprland.conf.bak`. The conversion
   was done with `hyprlang2lua`.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the

@@ -1,9 +1,9 @@
 #!/bin/bash
-# update_programs_list — regenerates programs.txt in the dotfiles repo from the
+# update_programs_list - regenerates programs.txt in the dotfiles repo from the
 # explicitly installed packages (without the base group). Non-interactive.
 #
 # The single source for the package list (previously also duplicated as an
-# interactive setup/update-package-list — removed). Linked via config/usrbin/*
+# interactive setup/update-package-list - removed). Linked via config/usrbin/*
 # into ~/.local/bin (PATH) and additionally under /usr/local/bin for the pacman
 # hook (both via setup/links.conf).
 #
@@ -16,7 +16,7 @@
 # so it is not owned by root in the repo.
 set -euo pipefail
 
-# Determine the real login user — even when the pacman hook runs as root (logname
+# Determine the real login user - even when the pacman hook runs as root (logname
 # returns the logged-in user, not root). Home via getent so no /home/leo is
 # hardcoded. Everything overridable via the environment.
 OWNER="${DOTFILES_OWNER:-$(logname 2>/dev/null || id -un)}"
@@ -28,7 +28,7 @@ OUT="$DOTFILES/setup/programs.txt"
 # pacman hook does NOT make the package transaction fail (best effort).
 OUT_DIR="$(dirname "$OUT")"
 if [ ! -d "$OUT_DIR" ]; then
-  echo "update_programs_list: $OUT_DIR missing — skipped" >&2
+  echo "update_programs_list: $OUT_DIR missing - skipped" >&2
   exit 0
 fi
 

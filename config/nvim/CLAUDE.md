@@ -12,7 +12,7 @@ Keyboard-first (mouse disabled). Comment language: **English**.
 - `init.lua` loads in order: `config.lazy` -> `config.options` ->
   `config.keymaps` -> `config.autocmds`.
 - `lua/config/` holds the non-plugin configuration.
-- `lua/plugins/` — **one file per plugin/area**; lazy collects them
+- `lua/plugins/` - **one file per plugin/area**; lazy collects them
   automatically via `{ import = "plugins" }`. Each file returns a lazy spec
   (table).
 - `autocmds.lua` returns a module `M` (including `M.OpenBrowser`) used in
@@ -26,7 +26,7 @@ Keyboard-first (mouse disabled). Comment language: **English**.
   (installs missing plugins, updates `lazy-lock.json`).
 - For single modules: `nvim --headless "+lua require('config.autocmds')" +qa`.
 - **Lua formatting** of the config: `stylua lua/` (or `stylua --check lua/` to
-  check). The `stylua.toml` in the repo root fixes **spaces with width 2** —
+  check). The `stylua.toml` in the repo root fixes **spaces with width 2** -
   matching `options.lua`. stylua also runs on format-on-save (conform).
 
 Keep the indentation at 2 spaces (see `options.lua`/`stylua.toml`).
@@ -34,7 +34,7 @@ Keep the indentation at 2 spaces (see `options.lua`/`stylua.toml`).
 ## Plugin management
 
 - Versions are pinned in `lazy-lock.json`. After changes to plugin specs the
-  lockfile is rewritten by a `nvim --headless "+qa"` start — commit that change
+  lockfile is rewritten by a `nvim --headless "+qa"` start - commit that change
   along with it.
 - LSP servers are installed via `mason-lspconfig` (`ensure_installed`),
   formatters/linters/`tree-sitter-cli` via `mason-tool-installer`
