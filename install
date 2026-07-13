@@ -23,6 +23,7 @@
 #   --timezone ZONE           Zeitzone setzen (z. B. --timezone Europe/Vienna);
 #                             ohne ZONE fragt das Menü interaktiv nach
 #   --locale                  Locales aus /etc/locale.gen generieren (locale-gen)
+#   --ly-dropin               ly@tty2-Drop-ins als reale Kopien nach /etc deployen
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -105,6 +106,7 @@ while [ $# -gt 0 ]; do
     --timezone)         shift; TIMEZONE="${1:?--timezone braucht eine Zone (Region/Stadt)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
     --locale)           SELECTED[locale]=1;          FLAG_STEPS_GIVEN=1 ;;
+    --ly-dropin)        SELECTED[ly-dropin]=1;       FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -356,6 +358,21 @@ do_timezone() {
 }
 register_step timezone do_timezone "Zeitzone setzen (/etc/localtime)"
 
+# ly@tty2-Drop-ins als REALE Kopien auf die Root-Partition legen (nicht per
+# links.conf symlinken): systemd liest Unit-Drop-ins früh beim Manager-Start,
+# wenn ein /home-Symlink noch ein toter Link wäre. Danach daemon-reload.
+LY_DROPIN_DIR="/etc/systemd/system/ly@tty2.service.d"
+do_ly_dropin() {
+  local src="$BASEDIR/config/systemd-system/ly@tty2.service.d"
+  [ -d "$src" ] || { warn "ly@tty2-Drop-in-Quelle fehlt: $src"; return 0; }
+  info "ly@tty2-Drop-ins nach $LY_DROPIN_DIR kopieren"
+  run 1 install -d -m755 "$LY_DROPIN_DIR" || { warn "Verzeichnis nicht anlegbar"; return 0; }
+  run 1 install -m644 "$src"/wait-home.conf "$src"/keymap.conf "$LY_DROPIN_DIR"/ \
+    || warn "Drop-in-Kopie fehlgeschlagen"
+  run 1 systemctl daemon-reload || warn "daemon-reload fehlgeschlagen"
+}
+register_step ly-dropin do_ly_dropin "ly@tty2-Drop-ins deployen (reale Kopien)"
+
 # ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
 #    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
 SRCS=(); TGTS=()
@@ -401,6 +418,7 @@ case "$CMD" in
     is_selected remove-systemd && do_systemd_disable
     is_selected groups && do_groups
     is_selected timezone && do_timezone
+    is_selected ly-dropin && do_ly_dropin
     is_selected locale && do_locale
     is_selected remove-programs && do_programs_remove
     next_steps
