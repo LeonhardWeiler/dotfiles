@@ -5,12 +5,18 @@
 #
 # Nutzung:
 #   ./install [link]          Symlinks anlegen/auffrischen (Default, Alltag)
-#   ./install setup           Neue Maschine, EIN Kommando: Pakete installieren
-#                             (yay) → Configs verlinken (--force) → Units
-#                             aktivieren → locale-gen → manuelle Rest-Checkliste
+#   ./install setup           Neue Maschine, EIN Kommando: optionale Schritte
+#                             (Menü) → Configs verlinken (--force) → Units
+#                             aktivieren → manuelle Rest-Checkliste
 #   ./install unlink          von uns verwaltete Symlinks entfernen
 #   ./install status          Ist-Zustand aller Einträge zeigen
 #   ./install clean           von --force angelegte .bak-Sicherungen löschen
+#
+# Optionale Setup-Schritte (im `setup`-Menü wählbar, einzeln per Flag
+# automatisierbar — z. B. `./install --groups` oder `./install setup --timezone Europe/Vienna`):
+#   --programs                Pakete aus setup/programs.txt installieren (yay)
+#   --remove-programs         explizit installierte Pakete entfernen, die NICHT
+#                             in programs.txt stehen (Manifest-Prune, mit Rückfrage)
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -25,12 +31,13 @@ set -euo pipefail
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG="setup/links.conf"
 CMD="link"
+EXPLICIT_CMD=0       # wurde ein Subkommando explizit getippt?
 DRYRUN=0
 USER_ONLY=0
 NO_UNITS=0
 FORCE=0
-INSTALL_PROGRAMS=0   # intern; nur vom `setup`-Kommando gesetzt
 SKIPPED_REAL=0       # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
+FLAG_STEPS_GIVEN=0   # wurde mindestens ein --<schritt>-Flag übergeben?
 
 # systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
@@ -52,20 +59,47 @@ info() { printf '%s%s%s\n'     "$C_INFO" "$*" "$C_RST"; }
 
 usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
 
+# ── Optionale Setup-Schritte (Registry) ──────────────────────────────────────
+# Jeder Schritt hat eine do_<name>-Funktion, ein Flag `--<name>` und eine
+# Menü-Zeile im `setup`. Neue Schritte werden weiter unten per register_step
+# eingetragen. SELECTED hält die aktuell ausgewählten Schritte.
+STEP_ORDER=()
+declare -A STEP_DESC STEP_FN SELECTED
+# Im `setup` vorausgewählte Schritte (Menü-Enter / kein TTY = diese Defaults).
+DEFAULT_STEPS=(programs)
+register_step() { STEP_ORDER+=("$1"); STEP_FN[$1]="$2"; STEP_DESC[$1]="$3"; }
+is_selected()   { [ -n "${SELECTED[$1]:-}" ]; }
+
+# Interaktive Ja/Nein-Rückfrage. Ohne TTY (skriptbar) immer „nein".
+confirm() {
+  local reply
+  [ -t 0 ] || return 1
+  printf '%s [y/N] ' "$1" >&2
+  read -r reply || return 1
+  case "$reply" in [yYjJ]*) return 0 ;; *) return 1 ;; esac
+}
+
 # ── Argument-Parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
-    link|setup|unlink|status|clean) CMD="$1" ;;
+    link|setup|unlink|status|clean) CMD="$1"; EXPLICIT_CMD=1 ;;
     -n|--dry-run)  DRYRUN=1 ;;
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
     --force)       FORCE=1 ;;
     -c|--config)   shift; CONFIG="${1:?--config braucht eine Datei}" ;;
     -h|--help)     usage 0 ;;
+    # ── Schritt-Flags (siehe Registry) ──────────────────────────────────────
+    --programs)         SELECTED[programs]=1;        FLAG_STEPS_GIVEN=1 ;;
+    --remove-programs)  SELECTED[remove-programs]=1; FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
 done
+
+# Ohne explizites Subkommando, aber mit Schritt-Flags → nur diese Schritte
+# ausführen (skriptbar, kein Verlinken, kein Menü).
+if [ "$EXPLICIT_CMD" = 0 ] && [ "$FLAG_STEPS_GIVEN" = 1 ]; then CMD="run-steps"; fi
 
 [ -f "$BASEDIR/$CONFIG" ] || { warn "Mapping-Datei nicht gefunden: $CONFIG"; exit 1; }
 
@@ -161,18 +195,41 @@ clean_one() {
   shopt -u nullglob
 }
 
-# Optional: Pakete aus setup/programs.txt installieren (nur beim `setup`).
-# Delegiert an das bestehende setup/install-programs (bootstrappt yay aus dem
-# AUR, falls nötig; überspringt bereits installierte Pakete). Läuft VOR dem
-# Verlinken, damit die danach reaktivierten Units auch existieren.
-install_programs() {
-  [ "$INSTALL_PROGRAMS" = 1 ] || return 0
+# ── Optionale Schritt-Funktionen ─────────────────────────────────────────────
+# Pakete aus setup/programs.txt installieren. Delegiert an setup/install-programs
+# (bootstrappt yay aus dem AUR, falls nötig; überspringt bereits installierte
+# Pakete). Läuft VOR dem Verlinken, damit danach reaktivierte Units existieren.
+do_programs_install() {
   local script="$BASEDIR/setup/install-programs"
   [ -x "$script" ] || { warn "setup/install-programs fehlt/nicht ausführbar: $script"; return 0; }
   info "Pakete aus setup/programs.txt installieren (yay)"
   if [ "$DRYRUN" = 1 ]; then printf '    [dry] %s\n' "$script"; return 0; fi
   "$script" || warn "Paket-Installation nicht (vollständig) erfolgreich"
 }
+register_step programs do_programs_install "Pakete aus programs.txt installieren"
+
+# Explizit installierte Pakete entfernen, die NICHT im Manifest (programs.txt)
+# stehen — zieht das System auf die getrackte Paketliste. Bewusst mit Rückfrage
+# und Default „nein" (aggressive Operation); yay -Rns räumt auch Abhängigkeiten
+# und Config-Reste weg.
+do_programs_remove() {
+  command -v pacman >/dev/null 2>&1 || { warn "pacman fehlt — Paket-Entfernung übersprungen"; return 0; }
+  local manifest="$BASEDIR/setup/programs.txt"
+  [ -f "$manifest" ] || { warn "programs.txt fehlt — nichts zu entfernen"; return 0; }
+  info "Nicht getrackte Pakete ermitteln (explizit installiert, aber nicht in programs.txt)"
+  local extras
+  extras="$(comm -23 <(pacman -Qqe | sort -u) <(awk 'NF{print $1}' "$manifest" | sort -u))"
+  if [ -z "$extras" ]; then ok "keine ungetrackten Pakete — nichts zu entfernen"; return 0; fi
+  printf '  Zu entfernen:\n'; printf '    %s\n' $extras
+  if [ "$DRYRUN" = 1 ]; then printf '    [dry] sudo pacman -Rns %s\n' "$extras"; return 0; fi
+  if confirm "  Diese Pakete wirklich entfernen (yay -Rns)?"; then
+    # shellcheck disable=SC2086
+    run 1 pacman -Rns $extras || warn "Paket-Entfernung nicht (vollständig) erfolgreich"
+  else
+    info "Paket-Entfernung übersprungen"
+  fi
+}
+register_step remove-programs do_programs_remove "Nicht getrackte Pakete entfernen (Prune)"
 
 # Schlusshinweis nach dem Verlinken: übersprungene reale Ziele prominent melden
 # und den Nutzer daran erinnern, die frisch verlinkte Shell-Config anzuwenden.
@@ -202,13 +259,27 @@ post_setup() {
   printf '  • Zeitzone: sudo ln -sf /usr/share/zoneinfo/<Region>/<Stadt> /etc/localtime\n'
 }
 
-# Verlinken-Kern (von `link` und `setup` gemeinsam genutzt): optional Pakete,
-# dann Symlinks, dann Units.
-do_link() {
-  install_programs
+# Interaktives Menü: optionale Schritte auswählen. Bei per Flag vorgewählten
+# Schritten (FLAG_STEPS_GIVEN) übernimmt es diese unverändert; ohne TTY greifen
+# die DEFAULT_STEPS.
+choose_steps() {
+  [ "$FLAG_STEPS_GIVEN" = 1 ] && return 0
+  if [ ! -t 0 ]; then for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; return 0; fi
+  info "Optionale Schritte auswählen (Nummern per Leerzeichen; Enter = Defaults)"
+  local i=1 idx=() def
+  for s in "${STEP_ORDER[@]}"; do
+    def=""; for d in "${DEFAULT_STEPS[@]}"; do [ "$d" = "$s" ] && def=" (default)"; done
+    printf '  [%d] %s%s\n' "$i" "${STEP_DESC[$s]}" "$def"; idx[$i]="$s"; i=$((i+1))
+  done
+  printf '> '; local line n; read -r line || line=""
+  if [ -z "$line" ]; then for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; return 0; fi
+  for n in $line; do [ -n "${idx[$n]:-}" ] && SELECTED[${idx[$n]}]=1; done
+}
+
+# Verlinken-Kern (nur Symlinks). Paket-/Unit-Schritte laufen separat.
+do_symlinks() {
   info "Symlinks anlegen (${#SRCS[@]} Einträge)"
   for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
-  reactivate_units
 }
 
 reactivate_units() {
@@ -262,16 +333,28 @@ done < "$BASEDIR/$CONFIG"
 [ "$DRYRUN" = 1 ] && info "— Dry-Run: es wird nichts verändert —"
 case "$CMD" in
   link)
-    do_link
+    do_symlinks
+    reactivate_units
     next_steps
     ;;
   setup)
     # Ein-Kommando-Bootstrap für eine frische Maschine.
-    FORCE=1; INSTALL_PROGRAMS=1
-    info "Setup: Pakete installieren → verlinken (--force) → Units → locale-gen"
-    do_link
+    FORCE=1
+    info "Setup: optionale Schritte → verlinken (--force) → Units → Rest-Checkliste"
+    choose_steps
+    is_selected programs && do_programs_install
+    do_symlinks
+    reactivate_units
     post_setup
+    is_selected remove-programs && do_programs_remove
     next_steps
+    ;;
+  run-steps)
+    # Nur die per Flag gewählten optionalen Schritte (skriptbar), in
+    # kanonischer Reihenfolge (STEP_ORDER).
+    for s in "${STEP_ORDER[@]}"; do
+      is_selected "$s" && "${STEP_FN[$s]}"
+    done
     ;;
   unlink)
     info "Symlinks entfernen"
