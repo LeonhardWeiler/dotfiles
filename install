@@ -27,6 +27,7 @@
 #   --sudoers                 set up passwordless sudo for the wheel group
 #                             (/etc/sudoers.d/, validated with visudo)
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
+#   --fonts                   install the font packages and refresh the font cache
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -112,6 +113,7 @@ while [ $# -gt 0 ]; do
     --ly-dropin)        SELECTED[ly-dropin]=1;       FLAG_STEPS_GIVEN=1 ;;
     --sudoers)          SELECTED[sudoers]=1;         FLAG_STEPS_GIVEN=1 ;;
     --initramfs)        SELECTED[initramfs]=1;       FLAG_STEPS_GIVEN=1 ;;
+    --fonts)            SELECTED[fonts]=1;           FLAG_STEPS_GIVEN=1 ;;
     *) warn "unknown argument: $1"; usage 1 ;;
   esac
   shift
@@ -404,6 +406,28 @@ do_initramfs() {
 }
 register_step initramfs do_initramfs "Regenerate initramfs (mkinitcpio -P)"
 
+# Install the font packages (also part of programs.txt, but installable on their
+# own here) and rebuild the fontconfig cache so freshly installed fonts are
+# picked up without a re-login.
+FONT_PACKAGES=(noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-jetbrains-mono-nerd)
+do_fonts() {
+  info "Installing fonts and refreshing the font cache: ${FONT_PACKAGES[*]}"
+  if [ "$DRYRUN" = 1 ]; then
+    printf '    [dry] yay -S --needed --noconfirm %s\n' "${FONT_PACKAGES[*]}"
+    printf '    [dry] fc-cache -f\n'; return 0
+  fi
+  if command -v yay >/dev/null 2>&1; then
+    yay -S --needed --noconfirm "${FONT_PACKAGES[@]}" || warn "font install not (fully) successful"
+  elif command -v pacman >/dev/null 2>&1; then
+    sudo pacman -S --needed --noconfirm "${FONT_PACKAGES[@]}" || warn "font install not (fully) successful"
+  else
+    warn "no package manager - font install skipped"
+  fi
+  if command -v fc-cache >/dev/null 2>&1; then fc-cache -f || warn "fc-cache failed"
+  else warn "fc-cache missing - font cache not refreshed"; fi
+}
+register_step fonts do_fonts "Install fonts + refresh font cache (fc-cache)"
+
 # ── Read the mapping file (fully first, then iterate - otherwise a sudo password
 #    prompt collides with the read loop's stdin) ──────────────────────────────
 SRCS=(); TGTS=()
@@ -452,6 +476,7 @@ case "$CMD" in
     is_selected ly-dropin && do_ly_dropin
     is_selected sudoers && do_sudoers
     is_selected initramfs && do_initramfs
+    is_selected fonts && do_fonts
     is_selected locale && do_locale
     is_selected remove-programs && do_programs_remove
     next_steps
