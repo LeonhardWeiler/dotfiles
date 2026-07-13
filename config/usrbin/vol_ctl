@@ -2,17 +2,17 @@
 
 STEP=5
 
-# Benoetigte Kommandos pruefen (still degradieren statt kryptisch scheitern).
+# Check required commands (degrade quietly instead of failing cryptically).
 for cmd in pactl notify-send; do
   command -v "$cmd" >/dev/null 2>&1 || {
-    echo "vol_ctl: '$cmd' nicht gefunden" >&2
+    echo "vol_ctl: '$cmd' not found" >&2
     exit 1
   }
 done
 
 SINK=$(pactl info | grep "Default Sink" | awk '{print $3}')
 if [ -z "$SINK" ]; then
-  echo "Error: Kein Default Sink gefunden"
+  echo "Error: no default sink found"
   exit 1
 fi
 

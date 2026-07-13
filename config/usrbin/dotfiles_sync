@@ -1,43 +1,43 @@
 #!/bin/bash
-# dotfiles_sync — aktualisiert generierte Configs, committet Aenderungen und
-# pusht sie. Wird beim Login per systemd-User-Service (dotfiles-sync.service)
-# ausgefuehrt und ist bewusst erweiterbar:
-#   - weitere Generatoren  -> GENERATORS ergaenzen
-#   - weitere zu versionierende Pfade -> PATHS ergaenzen
+# dotfiles_sync — updates generated configs, commits changes and pushes them.
+# Run at login via a systemd user service (dotfiles-sync.service) and
+# deliberately extensible:
+#   - more generators      -> extend GENERATORS
+#   - more paths to version -> extend PATHS
 #
-# Robust: laeuft als oneshot, toleriert Offline/kein-Upstream (best effort push)
-# und beendet sich mit 0, damit der Login nicht blockiert wird.
+# Robust: runs as a oneshot, tolerates offline/no-upstream (best-effort push)
+# and exits with 0 so login is not blocked.
 set -uo pipefail
 
 DOTFILES="${DOTFILES_DIR:-$HOME/dotfiles}"
 SCRIPTS="${SCRIPTS_DIR:-$HOME/.local/bin}"
 cd "$DOTFILES" || exit 0
 
-# --- Generatoren: erzeugen/aktualisieren versionierte Artefakte --------------
+# --- Generators: create/update versioned artifacts ---------------------------
 GENERATORS=(
   "$SCRIPTS/update_programs_list"
 )
 
-# --- Zu versionierende Pfade (relativ zum Repo) ------------------------------
+# --- Paths to version (relative to the repo) ---------------------------------
 PATHS=(
   "setup/programs.txt"
 )
 
 for gen in "${GENERATORS[@]}"; do
-  "$gen" || echo "dotfiles_sync: Generator '$gen' fehlgeschlagen" >&2
+  "$gen" || echo "dotfiles_sync: generator '$gen' failed" >&2
 done
 
 git add -- "${PATHS[@]}" 2>/dev/null || true
 
-# Nur committen, wenn wirklich etwas gestaged ist.
+# Only commit if something is actually staged.
 if ! git diff --cached --quiet; then
-  git commit -q -m "chore: automatischer Config-Sync ($(date +%F))" \
-    || echo "dotfiles_sync: commit fehlgeschlagen (Signing-Key/Passphrase?)" >&2
+  git commit -q -m "chore: automatic config sync ($(date +%F))" \
+    || echo "dotfiles_sync: commit failed (signing key/passphrase?)" >&2
 fi
 
-# Best effort: nur pushen, wenn ein Upstream existiert.
+# Best effort: only push if an upstream exists.
 if git rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
-  git push --quiet || echo "dotfiles_sync: push fehlgeschlagen (offline/divergiert?)" >&2
+  git push --quiet || echo "dotfiles_sync: push failed (offline/diverged?)" >&2
 fi
 
 exit 0

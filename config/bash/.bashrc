@@ -5,8 +5,8 @@ mkdir -p "$(dirname "$HISTFILE")"
 shopt -s histappend
 
 BAT_CAPACITY=/sys/class/power_supply/BAT0/capacity
-# Akkustand vor jedem Prompt aus sysfs lesen (Bash-Builtin, kein acpi-Subprozess).
-# Ohne Akku (Desktop) bleibt die Anzeige leer statt eines nackten "%".
+# Read the battery level before every prompt from sysfs (bash builtin, no acpi subprocess).
+# Without a battery (desktop) the display stays empty instead of a bare "%".
 update_battery() {
   if [ -r "$BAT_CAPACITY" ]; then
     battery="$(<"$BAT_CAPACITY")% "
@@ -23,9 +23,9 @@ export EDITOR="nvim"
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM=wayland
 export BROWSER=zen-browser
-# Skalierung/Cursor werden bewusst NICHT hier gesetzt, sondern ausschliesslich
-# als Session-Env in hyprland.conf (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE,
-# ...). So rendern GUI-Apps unabhaengig vom Startweg (Terminal vs. Rofi) gleich.
+# Scaling/cursor are deliberately NOT set here, but exclusively as session env in
+# hyprland.conf (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, ...). That way GUI apps
+# render the same regardless of how they were launched (terminal vs. rofi).
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 export TYPST_PACKAGE_PATH="$HOME/.config/typst/packages"
@@ -36,10 +36,10 @@ alias dot='cd $HOME/dotfiles'
 alias openimg='zen-browser'
 alias arst='sudo shutdown now'
 export NIX_CONFIG="experimental-features = nix-command flakes"
-# Nur einbinden, wenn Nix installiert ist (sonst Fehler in jeder Shell ohne Nix).
+# Only source it if Nix is installed (otherwise an error in every shell without Nix).
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
-# Go: GOPATH nach XDG (~/.local/share/go) statt ~/go, damit das Home schlank bleibt.
+# Go: GOPATH to XDG (~/.local/share/go) instead of ~/go, to keep the home lean.
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
-# npm-Cache nach XDG (~/.cache/npm) statt ~/.npm.
+# npm cache to XDG (~/.cache/npm) instead of ~/.npm.
 export npm_config_cache="${XDG_CACHE_HOME:-$HOME/.cache}/npm"
 export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"

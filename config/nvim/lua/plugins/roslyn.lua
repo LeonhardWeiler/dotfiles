@@ -1,20 +1,20 @@
 -- C#/Unity: Roslyn Language Server (Microsoft.CodeAnalysis.LanguageServer).
--- Der Server selbst wird als mason-Paket "roslyn" installiert (siehe
--- mason-tools.lua); roslyn.nvim findet die mason-Installation automatisch und
--- erkennt das passende .sln/.csproj (Unity legt diese im Projekt-Root an).
+-- The server itself is installed as the mason package "roslyn" (see
+-- mason-tools.lua); roslyn.nvim finds the mason installation automatically and
+-- detects the matching .sln/.csproj (Unity places these in the project root).
 return {
   "seblyng/roslyn.nvim",
   ft = "cs",
   ---@module "roslyn.config"
   ---@type RoslynNvimConfig
   opts = {
-    -- Dateiüberwachung dem Server überlassen (robuster bei großen
-    -- Unity-Projekten mit vielen generierten Dateien).
+    -- Let the server handle file watching (more robust for large Unity
+    -- projects with many generated files).
     filewatching = "roslyn",
   },
   config = function(_, opts)
-    -- LSP-Einstellungen; Capabilities (blink.cmp) kommen aus der globalen
-    -- "*"-Config in lsp.lua. Konfiguration vor dem Server-Start setzen.
+    -- LSP settings; capabilities (blink.cmp) come from the global "*" config in
+    -- lsp.lua. Set the configuration before the server starts.
     vim.lsp.config("roslyn", {
       settings = {
         ["csharp|inlay_hints"] = {

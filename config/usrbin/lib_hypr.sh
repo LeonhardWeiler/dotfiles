@@ -1,39 +1,39 @@
 #!/usr/bin/env bash
-# lib_hypr.sh — geteilte Helfer fuer die Hyprland-Workspace-Automatisierung.
-# Wird per `source` eingebunden und setzt bash voraus (Arrays, local, Prozess-
-# substitution). Alle Fenster werden ueber ihre stabile Adresse angesprochen,
-# neue Fenster ueber einen Adress-Diff erkannt (statt ueber fragile Titel).
+# lib_hypr.sh — shared helpers for the Hyprland workspace automation.
+# Sourced (via `source`) and requires bash (arrays, local, process
+# substitution). Every window is addressed via its stable address, new windows
+# are detected via an address diff (instead of fragile titles).
 
-# --- Konfiguration (per Environment ueberschreibbar) -------------------------
-: "${HYPR_WAIT_TIMEOUT:=15}"    # Sekunden, bis das Warten auf ein Fenster aufgibt
-: "${HYPR_WAIT_INTERVAL:=0.1}"  # Poll-Intervall in Sekunden
+# --- Configuration (overridable via the environment) -------------------------
+: "${HYPR_WAIT_TIMEOUT:=15}"    # seconds before waiting for a window gives up
+: "${HYPR_WAIT_INTERVAL:=0.1}"  # poll interval in seconds
 
 log() { printf '[slf] %s\n' "$*" >&2; }
 
-# Bricht mit Fehlermeldung ab (auch als Rofi-Popup, falls verfuegbar).
+# Abort with an error message (also as a rofi popup if available).
 die() {
-  printf '[slf] FEHLER: %s\n' "$*" >&2
-  command -v rofi >/dev/null 2>&1 && rofi -e "SLF-Workspace: $*" >/dev/null 2>&1
+  printf '[slf] ERROR: %s\n' "$*" >&2
+  command -v rofi >/dev/null 2>&1 && rofi -e "SLF workspace: $*" >/dev/null 2>&1
   exit 1
 }
 
-# Prueft, ob alle benoetigten Kommandos vorhanden sind.
+# Check that all required commands are present.
 require_cmds() {
   local missing=0 c
   for c in "$@"; do
-    command -v "$c" >/dev/null 2>&1 || { log "fehlendes Kommando: $c"; missing=1; }
+    command -v "$c" >/dev/null 2>&1 || { log "missing command: $c"; missing=1; }
   done
-  [ "$missing" -eq 0 ] || die "benoetigte Programme fehlen (siehe Log oben)."
+  [ "$missing" -eq 0 ] || die "required programs missing (see log above)."
 }
 
-# Gibt alle Fenster-Adressen einer Klasse aus (eine pro Zeile).
+# Print all window addresses of a class (one per line).
 addresses_of_class() {
   hyprctl clients -j | jq -r --arg c "$1" '.[] | select(.class==$c) | .address'
 }
 
-# Wartet, bis eine NEUE Adresse der Klasse $1 erscheint (Diff gegen die in $2
-# uebergebene, per Newline getrennte Liste bekannter Adressen) und gibt sie aus.
-# Rueckgabe 1 bei Timeout.
+# Wait until a NEW address of class $1 appears (diff against the newline-
+# separated list of known addresses passed in $2) and print it. Returns 1 on
+# timeout.
 wait_for_new_window() {
   local class="$1" before="$2" addr
   local deadline=$(( $(date +%s) + HYPR_WAIT_TIMEOUT ))
@@ -41,8 +41,8 @@ wait_for_new_window() {
     while IFS= read -r addr; do
       [ -n "$addr" ] || continue
       case "$before" in
-        *"$addr"*) : ;;                      # war schon vorher da
-        *) printf '%s\n' "$addr"; return 0 ;; # neu -> zurueckgeben
+        *"$addr"*) : ;;                       # was already there
+        *) printf '%s\n' "$addr"; return 0 ;; # new -> return it
       esac
     done < <(addresses_of_class "$class")
     sleep "$HYPR_WAIT_INTERVAL"
@@ -50,14 +50,14 @@ wait_for_new_window() {
   return 1
 }
 
-# Erste zen-Fenster-Adresse auf einem bestimmten Workspace (leer, wenn keine).
+# First zen window address on a given workspace (empty if none).
 zen_on_ws() {
   hyprctl clients -j \
     | jq -r --argjson w "$1" '.[] | select(.class=="zen" and .workspace.id==$w) | .address' \
     | head -n1
 }
 
-# Verschiebt ein Fenster (Adresse) still (ohne Fokuswechsel) auf einen Workspace.
+# Move a window (address) silently (without focus change) to a workspace.
 move_window_to_ws() {
   hyprctl dispatch movetoworkspacesilent "$2,address:$1" >/dev/null
 }
@@ -65,15 +65,15 @@ move_window_to_ws() {
 focus_ws()     { hyprctl dispatch workspace "$1" >/dev/null; }
 focus_window() { hyprctl dispatch focuswindow "address:$1" >/dev/null; }
 
-# Setzt fuer den aktuell fokussierten Workspace master-Orientierung links und
-# eine 50/50-Aufteilung. Fehler werden geschluckt (Default-mfact ist nah dran).
+# Set the currently focused workspace to master orientation left and a 50/50
+# split. Errors are swallowed (the default mfact is close enough).
 master_split_5050() {
   hyprctl dispatch layoutmsg orientationleft >/dev/null 2>&1
   hyprctl dispatch layoutmsg "mfact exact 0.5" >/dev/null 2>&1
 }
 
-# Stellt sicher, dass $1 der Master von Workspace $2 ist, und setzt 50/50.
-# Robust auch dann, wenn das Fenster bereits Master ist (kein Fehl-Swap).
+# Ensure $1 is the master of workspace $2 and set 50/50. Robust even when the
+# window is already master (no faulty swap).
 ensure_master() {
   local addr="$1" ws="$2" cur
   focus_ws "$ws"
@@ -86,10 +86,10 @@ ensure_master() {
   master_split_5050
 }
 
-# Startet ein Alacritty im Verzeichnis $1 und fuehrt optional den Befehl $2 in
-# einer interaktiven Bash aus (danach bleibt die Shell offen). Interaktiv, damit
-# ~/.bashrc geladen ist (PATH inkl. ~/.nix-profile/bin). Gibt die Adresse des
-# neuen Fensters aus; Rueckgabe 1 bei Timeout.
+# Start an Alacritty in directory $1 and optionally run command $2 in an
+# interactive bash (the shell stays open afterwards). Interactive so ~/.bashrc is
+# loaded (PATH incl. ~/.nix-profile/bin). Prints the address of the new window;
+# returns 1 on timeout.
 spawn_alacritty() {
   local dir="$1" innercmd="$2" before
   before="$(addresses_of_class Alacritty)"
@@ -102,9 +102,9 @@ spawn_alacritty() {
   wait_for_new_window Alacritty "$before"
 }
 
-# Oeffnet ein neues zen-Fenster mit den uebergebenen zen-browser-Argumenten und
-# gibt die Adresse des neuen Fensters aus. Zen ist single-instance, daher wird
-# das Fenster ueber den Adress-Diff erkannt (Cold Start braucht laenger).
+# Open a new zen window with the given zen-browser arguments and print the
+# address of the new window. Zen is single-instance, so the window is detected
+# via the address diff (a cold start takes longer).
 spawn_zen_window() {
   local before
   before="$(addresses_of_class zen)"

@@ -1,63 +1,62 @@
 # CLAUDE.md
 
-Hinweise für die Arbeit an dieser Neovim-Konfiguration.
+Notes for working on this Neovim configuration.
 
-## Überblick
+## Overview
 
-Persönliche Neovim-Config (Neovim ≥ 0.11, entwickelt auf 0.12) auf Basis von
-lazy.nvim. Keyboard-first (Maus deaktiviert). Sprache der Kommentare: **Deutsch**.
+Personal Neovim config (Neovim >= 0.11, developed on 0.12) based on lazy.nvim.
+Keyboard-first (mouse disabled). Comment language: **English**.
 
-## Struktur
+## Structure
 
-- `init.lua` lädt in Reihenfolge: `config.lazy` → `config.options` →
-  `config.keymaps` → `config.autocmds`.
-- `lua/config/` enthält die nicht-plugin-bezogene Konfiguration.
-- `lua/plugins/` — **eine Datei pro Plugin/Bereich**; lazy sammelt sie über
-  `{ import = "plugins" }` automatisch ein. Jede Datei gibt eine lazy-Spec
-  (Tabelle) zurück.
-- `autocmds.lua` gibt ein Modul `M` zurück (u. a. `M.OpenBrowser`), das in
-  `keymaps.lua` verwendet wird.
+- `init.lua` loads in order: `config.lazy` -> `config.options` ->
+  `config.keymaps` -> `config.autocmds`.
+- `lua/config/` holds the non-plugin configuration.
+- `lua/plugins/` — **one file per plugin/area**; lazy collects them
+  automatically via `{ import = "plugins" }`. Each file returns a lazy spec
+  (table).
+- `autocmds.lua` returns a module `M` (including `M.OpenBrowser`) used in
+  `keymaps.lua`.
 
-## Verifikation (kein Test-Framework)
+## Verification (no test framework)
 
-- **Lua-Syntax** einer Datei: `luajit -bl <datei.lua> >/dev/null`
-- **Config lädt fehlerfrei**: `nvim --headless "+lua print('ok')" +qa`
-- **Voller Start inkl. Plugin-Install/-Clean**: `nvim --headless "+qa"`
-  (installiert fehlende Plugins, aktualisiert `lazy-lock.json`).
-- Für einzelne Module: `nvim --headless "+lua require('config.autocmds')" +qa`.
-- **Lua-Formatierung** der Config: `stylua lua/` (bzw. `stylua --check lua/` zum
-  Prüfen). Die `stylua.toml` im Repo-Root fixiert **Spaces mit 2 Breite** —
-  passend zu `options.lua`. stylua läuft auch per Format-on-Save (conform).
+- **Lua syntax** of a file: `luajit -bl <file.lua> >/dev/null`
+- **Config loads without errors**: `nvim --headless "+lua print('ok')" +qa`
+- **Full start incl. plugin install/clean**: `nvim --headless "+qa"`
+  (installs missing plugins, updates `lazy-lock.json`).
+- For single modules: `nvim --headless "+lua require('config.autocmds')" +qa`.
+- **Lua formatting** of the config: `stylua lua/` (or `stylua --check lua/` to
+  check). The `stylua.toml` in the repo root fixes **spaces with width 2** —
+  matching `options.lua`. stylua also runs on format-on-save (conform).
 
-Halte die Einrückung bei 2 Spaces (siehe `options.lua`/`stylua.toml`).
+Keep the indentation at 2 spaces (see `options.lua`/`stylua.toml`).
 
-## Plugin-Management
+## Plugin management
 
-- Versionen sind in `lazy-lock.json` gepinnt. Nach Änderungen an Plugin-Specs
-  wird die Lockdatei durch einen `nvim --headless "+qa"`-Start neu geschrieben —
-  diese Änderung mitcommitten.
-- LSP-Server werden über `mason-lspconfig` (`ensure_installed`) installiert,
-  Formatter/Linter/`tree-sitter-cli` über `mason-tool-installer`
+- Versions are pinned in `lazy-lock.json`. After changes to plugin specs the
+  lockfile is rewritten by a `nvim --headless "+qa"` start — commit that change
+  along with it.
+- LSP servers are installed via `mason-lspconfig` (`ensure_installed`),
+  formatters/linters/`tree-sitter-cli` via `mason-tool-installer`
   (`lua/plugins/mason-tools.lua`).
 
-## Wichtige Besonderheiten
+## Notable specifics
 
-- **Treesitter läuft auf dem `main`-Branch** (nicht master). Parser werden per
-  `require('nvim-treesitter').install{…}` ins `site`-Verzeichnis installiert und
-  benötigen die `tree-sitter`-CLI (kommt über mason). Highlighting/Indent werden
-  in `treesitter.lua` per `FileType`-Autocmd (`vim.treesitter.start`) aktiviert.
-  Treesitter Text Objects und Incremental Selection werden **bewusst nicht**
-  verwendet.
-- **mini.icons ersetzt nvim-web-devicons**; per `package.preload`-Mock in
-  `plugins.lua` funktionieren Plugins weiter, die `require("nvim-web-devicons")`
-  erwarten.
-- **Completion ist blink.cmp** (nicht nvim-cmp). LSP-Capabilities kommen aus
+- **Treesitter runs on the `main` branch** (not master). Parsers are installed
+  into the `site` directory via `require('nvim-treesitter').install{…}` and need
+  the `tree-sitter` CLI (comes via mason). Highlighting/indent are enabled in
+  `treesitter.lua` via a `FileType` autocmd (`vim.treesitter.start`). Treesitter
+  text objects and incremental selection are **deliberately not** used.
+- **mini.icons replaces nvim-web-devicons**; a `package.preload` mock in
+  `plugins.lua` keeps plugins working that expect
+  `require("nvim-web-devicons")`.
+- **Completion is blink.cmp** (not nvim-cmp). LSP capabilities come from
   `require("blink.cmp").get_lsp_capabilities()`.
-- **mason nutzt die `mason-org`-Organisation** (nicht mehr `williamboman`).
+- **mason uses the `mason-org` organization** (no longer `williamboman`).
 
-## Konventionen
+## Conventions
 
-- Neue Plugins als eigene Datei unter `lua/plugins/`.
-- Deutsche Kommentare, sparsam und erklärend (Warum, nicht Was).
-- Keymaps mit `desc` versehen.
-- Bestehendes Verhalten bewahren, sofern sinnvoll.
+- New plugins as their own file under `lua/plugins/`.
+- English comments, sparse and explanatory (why, not what).
+- Give keymaps a `desc`.
+- Preserve existing behaviour where it makes sense.

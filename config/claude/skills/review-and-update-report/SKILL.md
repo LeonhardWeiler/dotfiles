@@ -1,115 +1,112 @@
 ---
 name: review-and-update-report
-description: Vollständiger Projekt-Review (frischer Scan) und Aktualisierung des Health-Reports AGENT/project-health-report.html; committet ausschließlich diesen Report, keine Code-Änderungen. Nutze diesen Skill, wenn der User einen Projekt-Review/Health-Check will oder den Report aktualisieren möchte ("review das projekt", "update den report", "health-check"). Projekt-unabhängig; Pfade sind relativ zum Repo-Root.
+description: Full project review (fresh scan) and update of the health report AGENT/project-health-report.html; commits only that report, no code changes. Use this skill when the user wants a project review/health check or wants to update the report ("review the project", "update the report", "health check"). Project-independent; paths are relative to the repo root.
 user-invocable: true
 ---
 
-# Projekt-Review durchführen & Health-Report aktualisieren
+# Run a project review & update the health report
 
-**Zweck:** Führe einen vollständigen, frischen Review des gesamten Projekts durch
-und bringe den Health-Report `AGENT/project-health-report.html` auf den
-aktuellen Stand. Es werden **keine** Code-Änderungen vorgenommen — nur der Report
-wird angepasst und committet.
+**Purpose:** Run a full, fresh review of the entire project and bring the health
+report `AGENT/project-health-report.html` up to date. **No** code changes are
+made — only the report is adjusted and committed.
 
-Dieser Skill ist **projekt-unabhängig**: Er funktioniert in jedem Repository.
-Alle Pfade sind relativ zum Repo-Root; führe den Skill aus dem Wurzelverzeichnis
-des jeweiligen Projekts aus.
+This skill is **project-independent**: it works in any repository. All paths are
+relative to the repo root; run the skill from the root directory of the
+respective project.
 
-**Ergebnis:** Ein einziger Commit, Der ausschließlich
-`AGENT/project-health-report.html` ändert.
+**Result:** A single commit that changes only
+`AGENT/project-health-report.html`.
 
-> **Fehlende Dateien/Ordner anlegen:** Existiert eine in diesem Skill genannte
-> Datei oder ein Ordner noch nicht (z. B. Der `AGENT/`-Ordner oder
-> `AGENT/project-health-report.html` selbst), **lege sie an**, statt
-> abzubrechen. Erzeuge den Report dabei mit der weiter unten beschriebenen
-> HTML-Grundstruktur (Titel, Meta-Zeile mit Datum/Branch, Summary-Zähler,
-> Inhaltsverzeichnis, Karten mit Schweregrad-Badges, Legende) und den drei
-> Abschnitten (Offene Findings · Was schon stark ist · Bewusst entschieden).
+> **Create missing files/folders:** If a file or folder named in this skill does
+> not exist yet (e.g. the `AGENT/` folder or `AGENT/project-health-report.html`
+> itself), **create it** instead of aborting. Create the report with the HTML
+> base structure described below (title, meta line with date/branch, summary
+> counters, table of contents, cards with severity badges, legend) and the three
+> sections (Open findings · What is already strong · Deliberately decided).
 
 ---
 
-## Schritt 1 — Projekt vollständig analysieren
+## Step 1 — Analyze the project fully
 
-- Verschaff dir zuerst einen Überblick über Aufbau und Zweck des Projekts (Sprache,
-  Framework, Einstiegspunkte, vorhandene Doku wie `README.md`/`CLAUDE.md`).
-- Scanne das **gesamte** Projekt neu (Quellcode + Config/CI/Docs/Tests).
-- Bewerte den **aktuellen Codestand**, nicht frühere Report-Versionen. Verifiziere
-  jedes bestehende Finding gegen den echten Code, bevor du es behältst.
-- Wenn das Projekt Format-/Lint-/Test-/Build-Befehle vorsieht, prüfe (soweit ohne
-  Nebenwirkungen möglich), ob diese grün sind — ein gebrochenes Gate ist selbst ein
-  Finding. Führe **keine** Code-Änderungen durch, um sie zu reparieren.
-- Achte insbesondere auf:
-  - Bugs & Korrektheit
-  - Security (Auth, Input-Validierung, Header, Rate-Limits, Leaks)
+- Get an overview of the project's structure and purpose first (language,
+  framework, entry points, existing docs like `README.md`/`CLAUDE.md`).
+- Re-scan the **entire** project (source code + config/CI/docs/tests).
+- Assess the **current state of the code**, not earlier report versions. Verify
+  every existing finding against the real code before keeping it.
+- If the project provides format/lint/test/build commands, check (as far as
+  possible without side effects) whether they are green — a broken gate is itself
+  a finding. Make **no** code changes to repair them.
+- Pay particular attention to:
+  - Bugs & correctness
+  - Security (auth, input validation, headers, rate limits, leaks)
   - Performance
-  - UX & UI-/UX-Konsistenz
-  - Accessibility (A11y)
-  - Code-Qualität, Wartbarkeit, Architektur, technische Schuld
-  - Projektstruktur & Sauberkeit
-  - Fehlende oder brüchige Tests
-  - Dokumentationslücken
-  - Sonstiges Verbesserungspotenzial
+  - UX & UI/UX consistency
+  - Accessibility (a11y)
+  - Code quality, maintainability, architecture, technical debt
+  - Project structure & cleanliness
+  - Missing or fragile tests
+  - Documentation gaps
+  - Other potential for improvement
 
-Prüfe dabei auch die **`CLAUDE.md`** (falls vorhanden) gegen den aktuellen Code:
-Stimmen die dort dokumentierten Funktionen, Befehle (Build/Test/Lint),
-Projektstruktur und Konventionen noch? Eine **veraltete** `CLAUDE.md` (z. B. Weil
-sich eine Funktion geändert hat) oder eine **fehlende** `CLAUDE.md` erfasst du als
-Dokumentations-Finding (`DOC-*`) mit der Empfehlung, sie zu aktualisieren bzw.
-via `create-claude-md` anzulegen. Dieser Skill nimmt **selbst keine** Änderung an
-der `CLAUDE.md` vor — er dokumentiert das nur im Report.
+While doing so, also check the **`CLAUDE.md`** (if present) against the current
+code: are the functions, commands (build/test/lint), project structure and
+conventions documented there still correct? An **outdated** `CLAUDE.md` (e.g.
+because a function changed) or a **missing** `CLAUDE.md` you record as a
+documentation finding (`DOC-*`) with the recommendation to update it or create it
+via `create-claude-md`. This skill makes **no** change to the `CLAUDE.md` itself —
+it only documents it in the report.
 
-### Zentrale Nutzer-Flows aktiv durchspielen (Pflicht)
+### Actively walk through the central user flows (mandatory)
 
-Verlass dich **nicht nur auf statisches Lesen** — identifiziere die zentralen
-Nutzer-/Nutzungs-Flows der Anwendung (die Haupt-Einstiegspunkte und die wichtigsten
-Abläufe darin) und geh sie durch. Achte gezielt auf Reibung, Sackgassen, fehlendes
-Feedback und Inkonsistenzen. Solche Erkenntnisse als `UX-*`-Findings erfassen.
+Do **not** rely on static reading alone — identify the central user/usage flows
+of the application (the main entry points and the most important sequences within
+them) and walk through them. Look specifically for friction, dead ends, missing
+feedback and inconsistencies. Record such insights as `UX-*` findings.
 
-- Ermittle die relevanten Flows aus dem Projekt selbst (z. B. Screens/Seiten,
-  CLI-Kommandos, API-Endpunkte, Handler) — je nach Art der Anwendung.
-- Spiele **jeden Hauptflow von Anfang bis Ende** durch, inkl. Verzweigungen.
-- Denk an **Randfälle**: Fehlerzustände, unterbrochene/wiederaufgenommene Abläufe,
-  fehlende Verbindung/Ressourcen, ungültige Eingaben, destruktive Aktionen und deren
-  Bestätigung, gleichzeitige/verschachtelte Zustände.
+- Determine the relevant flows from the project itself (e.g. screens/pages, CLI
+  commands, API endpoints, handlers) — depending on the type of application.
+- Walk through **each main flow from start to end**, including branches.
+- Consider **edge cases**: error states, interrupted/resumed sequences, missing
+  connection/resources, invalid inputs, destructive actions and their
+  confirmation, concurrent/nested states.
 
-Wenn möglich, die Anwendung dazu **real starten** und die Flows tatsächlich
-ausführen bzw. per Screenshot prüfen (nutze die projekteigenen Start-Befehle);
-andernfalls sie anhand des Codes (Einstiegspunkte, Views, Handler) sorgfältig
-mental durchspielen. Frag dich bei jedem Schritt: Was möchte der Nutzer hier tun,
-kann es aber nicht? Wo hängt er fest? Fehlt eine Rückmeldung oder Bestätigung?
+If possible, **actually start** the application for this and really run the flows
+or check them via screenshots (use the project's own start commands); otherwise
+walk through them carefully in your head based on the code (entry points, views,
+handlers). At every step ask yourself: what does the user want to do here but
+cannot? Where do they get stuck? Is feedback or confirmation missing?
 
-## Schritt 2 — `AGENT/project-health-report.html` aktualisieren
+## Step 2 — Update `AGENT/project-health-report.html`
 
-Passe **ausschließlich** diese Datei an. Behalte ihre bestehende HTML-Struktur und
-ihr Styling bei (Titel, Meta-Zeile mit Datum/Branch, Summary-Zähler,
-Inhaltsverzeichnis, Karten mit Schweregrad-Badges, Legende).
+Adjust **only** this file. Keep its existing HTML structure and styling (title,
+meta line with date/branch, summary counters, table of contents, cards with
+severity badges, legend).
 
-Regeln für den Inhalt:
+Rules for the content:
 
-- Der Report ist eine **Momentaufnahme** (Health-Check) — er enthält **keine Historie**.
-- **Erledigte oder nicht mehr relevante Findings vollständig löschen.** Nicht als
-  „Done/Completed" markieren, nicht archivieren — einfach entfernen.
-- **Neue Erkenntnisse** aus dem Scan als Findings ergänzen.
-- **Bestehende Findings aktualisieren**, wenn sich ihre Bewertung geändert hat.
-- Jedes Finding hat: eine kurze ID, einen Schweregrad
-  (`kritisch` → `hoch` → `mittel` → `niedrig` → `info`), die betroffene
-  Datei/Stelle, eine knappe Beschreibung und eine konkrete Empfehlung.
-- Sortiere/priorisiere klar von **kritisch → optional**.
-- Halte die Summary-Zähler, das Inhaltsverzeichnis und die Abschnittsnummern
-  **konsistent** mit den tatsächlich vorhandenen Findings.
-- Setze in der Meta-Zeile das aktuelle Datum und den aktuellen Branch ein.
+- The report is a **snapshot** (health check) — it contains **no history**.
+- **Delete solved or no-longer-relevant findings entirely.** Do not mark them as
+  "Done/Completed", do not archive them — just remove them.
+- Add **new insights** from the scan as findings.
+- **Update existing findings** if their assessment has changed.
+- Every finding has: a short ID, a severity (`critical` -> `high` -> `medium` ->
+  `low` -> `info`), the affected file/place, a concise description and a concrete
+  recommendation.
+- Sort/prioritize clearly from **critical -> optional**.
+- Keep the summary counters, the table of contents and the section numbers
+  **consistent** with the findings that actually exist.
+- Put the current date and the current branch in the meta line.
 
-## Schritt 3 — Keine Implementierungen
+## Step 3 — No implementations
 
-Nimm **keinerlei** Änderungen außerhalb von
-`AGENT/project-health-report.html` vor:
+Make **no** changes outside of `AGENT/project-health-report.html`:
 
-- Keine Fixes, Refactorings oder neuen Features.
-- Keine Formatierungs- oder sonstigen Änderungen an anderen Dateien.
+- No fixes, refactorings or new features.
+- No formatting or other changes to other files.
 
-## Schritt 4 — Commit
+## Step 4 — Commit
 
-Erstelle einen Commit, der **nur** `AGENT/project-health-report.html` enthält,
-mit einer aussagekräftigen Commit-Message (z. B. Was hinzugekommen/entfernt wurde).
-Committe **auf dem aktuellen Branch** — lege **nicht** ungefragt einen neuen Branch
-an (außer der User bittet ausdrücklich darum).
+Create a commit that contains **only** `AGENT/project-health-report.html`, with a
+meaningful commit message (e.g. what was added/removed). Commit **on the current
+branch** — do **not** create a new branch unasked (unless the user explicitly
+asks for it).

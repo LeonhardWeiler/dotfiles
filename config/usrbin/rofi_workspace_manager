@@ -1,6 +1,6 @@
 #!/bin/sh
-# rofi_workspace_manager — waehlt eine Workspace-Konfiguration und startet sie.
-# Neue Konfigurationen einfach als weitere Zeile in der Liste + im case ergaenzen.
+# rofi_workspace_manager — picks a workspace configuration and starts it.
+# Add new configurations as another line in the list + in the case statement.
 
 m() { rofi -dmenu -i -p "Workspace" "$@" ;}
 
@@ -13,5 +13,5 @@ choice="$(printf '%s\n' \
 case "$choice" in
   slf-workspace) exec "$SCRIPTS/workspace_slf" ;;
   "") exit 0 ;;
-  *) rofi -e "Unbekannte Auswahl: $choice"; exit 1 ;;
+  *) rofi -e "Unknown choice: $choice"; exit 1 ;;
 esac

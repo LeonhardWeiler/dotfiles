@@ -1,17 +1,17 @@
--- Einstiegspunkt der Hyprland-Konfiguration (Lua).
+-- Entry point of the Hyprland configuration (Lua).
 --
--- Die eigentliche Konfiguration ist thematisch auf Module aufgeteilt
--- (~/.config/hypr/*.lua) und wird hier in fester Reihenfolge geladen. Das
--- Splitting per require() ist das offiziell empfohlene Muster:
+-- The actual configuration is split thematically into modules
+-- (~/.config/hypr/*.lua) and loaded here in a fixed order. Splitting via
+-- require() is the officially recommended pattern:
 --   https://wiki.hypr.land/Configuring/Start/
 --
--- Autocompletion/Typen fuer das globale `hl` kommen aus dem Stub
--- (/usr/share/hypr/stubs/hl.meta.lua), eingebunden ueber .luarc.json (lua_ls).
--- Pruefen: `luac -p <datei>.lua`; formatieren mit `stylua` (Tabs).
+-- Autocompletion/types for the global `hl` come from the stub
+-- (/usr/share/hypr/stubs/hl.meta.lua), included via .luarc.json (lua_ls).
+-- Check with `luac -p <file>.lua`; format with `stylua` (tabs).
 
-require("env") -- Umgebungsvariablen der Session
-require("monitors") -- Monitor-Setup
-require("devices") -- Per-Device-Einstellungen
-require("keybinds") -- Tastatur-/Maus-Bindings
-require("looknfeel") -- Look & Feel, Layout, Eingabe
-require("autostart") -- Autostart beim Session-Start
+require("env") -- session environment variables
+require("monitors") -- monitor setup
+require("devices") -- per-device settings
+require("keybinds") -- keyboard/mouse bindings
+require("looknfeel") -- look & feel, layout, input
+require("autostart") -- autostart at session start

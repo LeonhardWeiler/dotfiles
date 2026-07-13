@@ -1,9 +1,9 @@
-# Neovim-Konfiguration
+# Neovim configuration
 
-Persönliche, keyboard-first Neovim-Config auf Basis von
-[lazy.nvim](https://github.com/folke/lazy.nvim). Getestet mit **Neovim 0.12**
-(benötigt mindestens 0.11 wegen der neuen `vim.lsp.config`-API und dem
-nvim-treesitter-`main`-Branch).
+Personal, keyboard-first Neovim config based on
+[lazy.nvim](https://github.com/folke/lazy.nvim). Tested with **Neovim 0.12**
+(needs at least 0.11 because of the new `vim.lsp.config` API and the
+nvim-treesitter `main` branch).
 
 ## Installation
 
@@ -12,44 +12,44 @@ git clone <repo> ~/.config/nvim
 nvim
 ```
 
-Beim ersten Start installiert lazy.nvim alle Plugins automatisch; mason und
-mason-tool-installer ziehen LSP-Server, Formatter, Linter und die
-`tree-sitter`-CLI nach.
+On the first start lazy.nvim installs all plugins automatically; mason and
+mason-tool-installer pull in the LSP servers, formatters, linters and the
+`tree-sitter` CLI.
 
-### Voraussetzungen
+### Requirements
 
-- **Neovim ≥ 0.11**
-- **git** und ein **C-Compiler** (für das Kompilieren der Treesitter-Parser)
-- **Nerd Font** (Icons via mini.icons)
-- **ripgrep** / **fd** (empfohlen für Telescope)
-- **xdg-open** (für `<leader>ob`, öffnet die aktuelle Datei im Standardprogramm)
-- Node.js/Go/etc. je nach genutztem LSP/Formatter (werden über mason verwaltet)
+- **Neovim >= 0.11**
+- **git** and a **C compiler** (to compile the Treesitter parsers)
+- **Nerd Font** (icons via mini.icons)
+- **ripgrep** / **fd** (recommended for Telescope)
+- **xdg-open** (for `<leader>ob`, opens the current file in the default program)
+- Node.js/Go/etc. depending on the LSP/formatter you use (managed via mason)
 
-## Struktur
+## Structure
 
 ```
-init.lua                 Einstieg: lädt config.lazy → options → keymaps → autocmds
+init.lua                 entry point: loads config.lazy → options → keymaps → autocmds
 lua/config/
-  lazy.lua               lazy.nvim-Bootstrap, Leader-Keys
-  options.lua            Editor-Optionen (inkl. clipboard=unnamedplus)
-  keymaps.lua            globale Keymaps
-  autocmds.lua           Autocommands + OpenBrowser
-lua/plugins/             je eine Datei pro Plugin/Bereich (auto-import)
+  lazy.lua               lazy.nvim bootstrap, leader keys
+  options.lua            editor options (incl. clipboard=unnamedplus)
+  keymaps.lua            global keymaps
+  autocmds.lua           autocommands + OpenBrowser
+lua/plugins/             one file per plugin/area (auto-import)
 ```
 
 ## Plugins
 
-| Bereich       | Plugin(s) |
+| Area          | Plugin(s) |
 |---------------|-----------|
 | Manager       | lazy.nvim |
 | Theme         | kanagawa.nvim |
-| Dateimanager  | oil.nvim |
-| Suche         | telescope.nvim, plenary.nvim |
+| File manager  | oil.nvim |
+| Search        | telescope.nvim, plenary.nvim |
 | Navigation    | harpoon (`harpoon2`) |
 | Statusline    | lualine.nvim |
 | Git           | gitsigns.nvim |
-| Kommentare    | Comment.nvim |
-| Bearbeitung   | mini.pairs, mini.icons |
+| Comments      | Comment.nvim |
+| Editing       | mini.pairs, mini.icons |
 | Treesitter    | nvim-treesitter (`main`) |
 | LSP           | mason.nvim, mason-lspconfig.nvim, nvim-lspconfig, lazydev.nvim, mason-tool-installer.nvim |
 | Completion    | blink.cmp, LuaSnip, friendly-snippets |
@@ -57,40 +57,40 @@ lua/plugins/             je eine Datei pro Plugin/Bereich (auto-import)
 | Linter        | nvim-lint (biome, golangci-lint) |
 | Typst         | typst-preview.nvim |
 
-## Keymaps (Auswahl)
+## Keymaps (selection)
 
 Leader = `<Space>`.
 
-### Allgemein
-| Taste | Aktion |
+### General
+| Key | Action |
 |-------|--------|
-| `<leader>pv` | Oil (Dateimanager) |
-| `<leader>ob` | Aktuelle Datei im Standardprogramm/Browser öffnen |
-| `<leader>S` | Wort unter Cursor suchen & ersetzen |
-| `<leader>sd` | Diagnosen in die Quickfix-Liste (Anzeige mit `<leader>sq`) |
-| `<leader>r` (visual) | Über Auswahl einfügen ohne Register zu überschreiben |
-| `J`/`K` (visual) | Zeilen verschieben |
+| `<leader>pv` | Oil (file manager) |
+| `<leader>ob` | Open the current file in the default program/browser |
+| `<leader>S` | Search & replace word under cursor |
+| `<leader>sd` | Diagnostics into the quickfix list (shown with `<leader>sq`) |
+| `<leader>r` (visual) | Paste over selection without overwriting the register |
+| `J`/`K` (visual) | Move lines |
 
 ### Harpoon
-| Taste | Aktion |
+| Key | Action |
 |-------|--------|
-| `<leader>a` | Datei anheften |
-| `<leader>h` | Menü |
-| `<leader>1`…`<leader>4` | Datei 1–4 ansteuern |
+| `<leader>a` | Pin file |
+| `<leader>h` | Menu |
+| `<leader>1`…`<leader>4` | Jump to file 1–4 |
 
 ### Telescope
-`<leader>s` + `f` Dateien · `g` Live-Grep · `h` Hilfe · `c` Colorscheme ·
-`q` Quickfix · `l` Rechtschreibung · `k` Keymaps · `t` Filetypes
+`<leader>s` + `f` files · `g` live grep · `h` help · `c` colorscheme ·
+`q` quickfix · `l` spelling · `k` keymaps · `t` filetypes
 
-### LSP (buffer-lokal bei Attach)
-`gd` Definition · `gr` Referenzen · `K` Hover · `<leader>rn` Rename ·
-`<leader>ca` Code-Action · `<leader>e` Diagnostik · `[d`/`]d` Diagnostik navigieren
+### LSP (buffer-local on attach)
+`gd` definition · `gr` references · `K` hover · `<leader>rn` rename ·
+`<leader>ca` code action · `<leader>e` diagnostics · `[d`/`]d` navigate diagnostics
 
-## Formatierung & Linting
+## Formatting & linting
 
-- **Format-on-Save** über conform.nvim (LSP-Fallback, falls kein Formatter
-  konfiguriert ist).
-- **Linting** über nvim-lint bei `BufReadPost`/`BufWritePost`/`InsertLeave`.
-  Lua-Diagnosen liefert `lua_ls` (LSP); Markdown wird nur von prettierd formatiert.
-- **Diagnosen** werden per `virtual_lines` mehrzeilig unter der betroffenen Zeile
-  angezeigt; `<leader>e` öffnet zusätzlich den Diagnostik-Float.
+- **Format-on-save** via conform.nvim (LSP fallback if no formatter is
+  configured).
+- **Linting** via nvim-lint on `BufReadPost`/`BufWritePost`/`InsertLeave`.
+  Lua diagnostics come from `lua_ls` (LSP); Markdown is only formatted by prettierd.
+- **Diagnostics** are shown multi-line under the affected line via
+  `virtual_lines`; `<leader>e` additionally opens the diagnostic float.

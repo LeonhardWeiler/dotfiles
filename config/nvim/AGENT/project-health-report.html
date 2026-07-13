@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -246,23 +246,23 @@
     <header>
       <h1>🩺 Project Health Report</h1>
       <div class="meta">
-        Neovim-Konfiguration · Momentaufnahme vom <strong>2026-07-02</strong> ·
+        Neovim configuration · Snapshot from <strong>2026-07-02</strong> ·
         Branch <code>main</code> · Neovim <code>v0.12.3</code>
       </div>
     </header>
 
     <section class="summary">
       <div class="count krit">
-        <span class="n">0</span><span class="l">kritisch</span>
+        <span class="n">0</span><span class="l">critical</span>
       </div>
       <div class="count hoch">
-        <span class="n">0</span><span class="l">hoch</span>
+        <span class="n">0</span><span class="l">high</span>
       </div>
       <div class="count mittel">
-        <span class="n">0</span><span class="l">mittel</span>
+        <span class="n">0</span><span class="l">medium</span>
       </div>
       <div class="count niedrig">
-        <span class="n">0</span><span class="l">niedrig</span>
+        <span class="n">0</span><span class="l">low</span>
       </div>
       <div class="count info">
         <span class="n">0</span><span class="l">info</span>
@@ -271,176 +271,174 @@
 
     <div class="legend">
       <span
-        ><span class="dot" style="background: var(--krit)"></span>kritisch –
-        bricht Nutzung / Datenverlust</span
+        ><span class="dot" style="background: var(--krit)"></span>critical –
+        breaks usage / data loss</span
       >
       <span
-        ><span class="dot" style="background: var(--hoch)"></span>hoch – klarer
-        Defekt / Fehler</span
+        ><span class="dot" style="background: var(--hoch)"></span>high – clear
+        defect / bug</span
       >
       <span
-        ><span class="dot" style="background: var(--mittel)"></span>mittel –
-        spürbare Reibung</span
+        ><span class="dot" style="background: var(--mittel)"></span>medium –
+        noticeable friction</span
       >
       <span
-        ><span class="dot" style="background: var(--niedrig)"></span>niedrig –
-        Qualität / Aufräumen</span
+        ><span class="dot" style="background: var(--niedrig)"></span>low –
+        quality / cleanup</span
       >
       <span
-        ><span class="dot" style="background: var(--info)"></span>info – Hinweis
-        / Modernisierung</span
+        ><span class="dot" style="background: var(--info)"></span>info – note /
+        modernization</span
       >
     </div>
 
     <nav class="toc">
-      <h2>Inhalt</h2>
+      <h2>Contents</h2>
       <ol>
-        <li><a href="#offen">Offene Findings</a></li>
-        <li><a href="#stark">Was schon stark ist</a></li>
-        <li><a href="#entschieden">Bewusst entschieden</a></li>
+        <li><a href="#offen">Open findings</a></li>
+        <li><a href="#stark">What is already strong</a></li>
+        <li><a href="#entschieden">Deliberately decided</a></li>
       </ol>
     </nav>
 
-    <h2 class="section" id="offen">1 · Offene Findings</h2>
+    <h2 class="section" id="offen">1 · Open findings</h2>
 
     <p class="empty">
-      Keine offenen Findings. Aus der letzten Runde sind CQ-2 (undofile), UX-4
-      (spell für Prosa) und INFO-2 (Diagnosen → Quickfix) umgesetzt; UX-3
-      (gitsigns), INFO-3 (nvim-ts-autotag) und INFO-4 (Multi-File-Replace)
-      wurden bewusst nicht umgesetzt – UX-3 steht unter „Bewusst entschieden".
+      No open findings. From the last round CQ-2 (undofile), UX-4 (spell for
+      prose) and INFO-2 (diagnostics → quickfix) have been implemented; UX-3
+      (gitsigns), INFO-3 (nvim-ts-autotag) and INFO-4 (multi-file replace) were
+      deliberately not implemented – UX-3 is under "Deliberately decided".
     </p>
 
-    <h2 class="section" id="stark">2 · Was schon stark ist</h2>
+    <h2 class="section" id="stark">2 · What is already strong</h2>
 
     <div class="card good">
-      <div class="card-head"><span class="id">Saubere Modulstruktur</span></div>
+      <div class="card-head"><span class="id">Clean module structure</span></div>
       <p>
-        <code>init.lua</code> lädt gezielt <code>config.lazy</code> →
+        <code>init.lua</code> loads deliberately <code>config.lazy</code> →
         <code>options</code> → <code>keymaps</code> → <code>autocmds</code>;
-        Plugins liegen einzeln unter <code>lua/plugins/</code> und werden per
-        <code>{ import = "plugins" }</code> automatisch eingesammelt.
-        Übersichtlich und gut wartbar.
+        plugins live individually under <code>lua/plugins/</code> and are
+        collected automatically via <code>{ import = "plugins" }</code>. Clear
+        and easy to maintain.
       </p>
     </div>
     <div class="card good">
       <div class="card-head">
-        <span class="id">Robuster lazy.nvim-Bootstrap</span>
+        <span class="id">Robust lazy.nvim bootstrap</span>
       </div>
       <p>
-        Der Bootstrap in <code>lazy.lua</code> nutzt <code>vim.uv</code> mit
-        <code>vim.loop</code>-Fallback, behandelt Clone-Fehler sauber und
-        deaktiviert die störende <code>change_detection</code>-Notification.
+        The bootstrap in <code>lazy.lua</code> uses <code>vim.uv</code> with a
+        <code>vim.loop</code> fallback, handles clone errors cleanly and disables
+        the annoying <code>change_detection</code> notification.
       </p>
     </div>
     <div class="card good">
       <div class="card-head">
-        <span class="id">Moderne LSP-Einrichtung</span>
+        <span class="id">Modern LSP setup</span>
       </div>
       <p>
-        <code>lsp.lua</code> nutzt die neue <code>vim.lsp.config</code>-API
-        (Neovim 0.11+) mit per-Server-Konfiguration, die Server werden über
-        <code>mason-lspconfig</code> (<code>ensure_installed</code>,
-        <code>mason-org</code>-Org) installiert und automatisch aktiviert.
-        Capabilities kommen aus <code>blink.cmp</code>,
-        <code>lazydev.nvim</code> versorgt Lua mit den Neovim-Runtime-Typen.
-        Keymaps sauber per <code>LspAttach</code>-Autocmd.
+        <code>lsp.lua</code> uses the new <code>vim.lsp.config</code> API
+        (Neovim 0.11+) with per-server configuration; the servers are installed
+        and activated automatically via <code>mason-lspconfig</code>
+        (<code>ensure_installed</code>, <code>mason-org</code> org). Capabilities
+        come from <code>blink.cmp</code>, <code>lazydev.nvim</code> provides Lua
+        with the Neovim runtime types. Keymaps cleanly via an
+        <code>LspAttach</code> autocmd.
       </p>
     </div>
     <div class="card good">
       <div class="card-head">
-        <span class="id">Moderner Editing-Stack</span>
+        <span class="id">Modern editing stack</span>
       </div>
       <p>
-        Completion via <code>blink.cmp</code> (Ghost Text, Signature Help,
-        LuaSnip), Formatierung via <code>conform.nvim</code> (Format-on-Save mit
-        LSP-Fallback) und Linting via <code>nvim-lint</code>. Nicht-LSP-Tools
-        installiert <code>mason-tool-installer</code> automatisch.
-        <code>mini.pairs</code>/<code>mini.icons</code> ersetzen ältere
-        Einzelplugins.
+        Completion via <code>blink.cmp</code> (ghost text, signature help,
+        LuaSnip), formatting via <code>conform.nvim</code> (format-on-save with
+        LSP fallback) and linting via <code>nvim-lint</code>. Non-LSP tools are
+        installed automatically by <code>mason-tool-installer</code>.
+        <code>mini.pairs</code>/<code>mini.icons</code> replace older single
+        plugins.
       </p>
     </div>
     <div class="card good">
       <div class="card-head">
-        <span class="id">Treesitter auf dem main-Branch</span>
+        <span class="id">Treesitter on the main branch</span>
       </div>
       <p>
-        <code>nvim-treesitter</code> läuft auf dem zukunftssicheren
-        <code>main</code>-Branch mit expliziter Parserliste und
-        FileType-gesteuertem Highlighting/Indent. Text Objects und Incremental
-        Selection werden bewusst nicht verwendet.
+        <code>nvim-treesitter</code> runs on the future-proof <code>main</code>
+        branch with an explicit parser list and FileType-driven
+        highlighting/indent. Text objects and incremental selection are
+        deliberately not used.
       </p>
     </div>
     <div class="card good">
       <div class="card-head">
-        <span class="id">Durchdachte Editor-Defaults</span>
+        <span class="id">Well-considered editor defaults</span>
       </div>
       <p>
-        <code>options.lua</code> setzt sinnvolle Grundlagen:
-        <code>scrolloff=10</code>, stets sichtbare <code>signcolumn</code>,
-        deaktivierte Swap/Backup-Dateien, konsistente 2-Space-Indents,
-        System-Clipboard (<code>unnamedplus</code>) und ein kompiliertes
-        kanagawa-Theme.
+        <code>options.lua</code> sets sensible foundations:
+        <code>scrolloff=10</code>, an always-visible <code>signcolumn</code>,
+        disabled swap/backup files, consistent 2-space indents, the system
+        clipboard (<code>unnamedplus</code>) and a compiled kanagawa theme.
       </p>
     </div>
     <div class="card good">
-      <div class="card-head"><span class="id">Guter Plugin-Kern</span></div>
+      <div class="card-head"><span class="id">Good plugin core</span></div>
       <p>
-        oil.nvim als Datei-Manager (mit Trash-Support), gitsigns, Telescope,
-        Harpoon, Comment.nvim und typst-preview bilden eine schlanke,
-        praxistaugliche Auswahl ohne Overhead.
+        oil.nvim as the file manager (with trash support), gitsigns, Telescope,
+        Harpoon, Comment.nvim and typst-preview form a lean, practical selection
+        without overhead.
       </p>
     </div>
     <div class="card good">
       <div class="card-head">
-        <span class="id">Konsistente Formatierung &amp; lesbare Diagnosen</span>
+        <span class="id">Consistent formatting &amp; readable diagnostics</span>
       </div>
       <p>
-        Eine <code>stylua.toml</code> (<code>Spaces</code>, Breite&nbsp;2)
-        fixiert die Einrückung passend zu <code>options.lua</code>;
-        <code>stylua --check lua/</code> ist grün. Linting läuft ohne Fehlalarme
-        (Lua über <code>lua_ls</code>, kein selene/markdownlint mehr), und
-        Diagnosen werden per <code>virtual_lines</code> mehrzeilig unter der
-        betroffenen Zeile angezeigt – man sieht die volle Meldung, nicht nur
-        eine Wellenlinie.
+        A <code>stylua.toml</code> (<code>spaces</code>, width&nbsp;2) fixes the
+        indentation to match <code>options.lua</code>;
+        <code>stylua --check lua/</code> is green. Linting runs without false
+        alarms (Lua via <code>lua_ls</code>, no more selene/markdownlint), and
+        diagnostics are shown multi-line under the affected line via
+        <code>virtual_lines</code> – you see the full message, not just a
+        squiggle.
       </p>
     </div>
 
-    <h2 class="section" id="entschieden">3 · Bewusst entschieden</h2>
+    <h2 class="section" id="entschieden">3 · Deliberately decided</h2>
 
     <div class="card info">
       <div class="card-head">
-        <span class="id">Git nur als Signs, Aktionen im Terminal (UX-3)</span>
+        <span class="id">Git only as signs, actions in the terminal (UX-3)</span>
       </div>
       <p>
-        <code>gitsigns.nvim</code> bleibt bewusst ohne Hunk-Keymaps: Gewollt ist
-        allein die Anzeige der geänderten Zeilen in der <code>signcolumn</code>
-        (das läuft per Default). Git-Aktionen (stage/reset/commit/blame) werden
-        bewusst im Terminal erledigt, nicht aus Neovim heraus – daher kein
-        <code>on_attach</code> nötig.
+        <code>gitsigns.nvim</code> deliberately stays without hunk keymaps: the
+        only thing wanted is showing the changed lines in the
+        <code>signcolumn</code> (that runs by default). Git actions
+        (stage/reset/commit/blame) are deliberately done in the terminal, not
+        from within Neovim – so no <code>on_attach</code> is needed.
       </p>
     </div>
     <div class="card info">
-      <div class="card-head"><span class="id">Maus deaktiviert</span></div>
+      <div class="card-head"><span class="id">Mouse disabled</span></div>
       <p>
-        <code>vim.opt.mouse = ""</code> schaltet die Maus bewusst komplett ab –
-        konsequente Keyboard-First-Nutzung, kein Finding.
+        <code>vim.opt.mouse = ""</code> deliberately turns the mouse off entirely
+        – consistent keyboard-first use, not a finding.
       </p>
     </div>
     <div class="card info">
       <div class="card-head">
-        <span class="id">hlsearch aus, incsearch an</span>
+        <span class="id">hlsearch off, incsearch on</span>
       </div>
       <p>
-        Suchtreffer werden nicht dauerhaft hervorgehoben
-        (<code>hlsearch=false</code>), nur inkrementell – bewusste Ruhe im
-        Buffer.
+        Search matches are not highlighted permanently
+        (<code>hlsearch=false</code>), only incrementally – deliberate calm in the
+        buffer.
       </p>
     </div>
 
     <footer>
-      Automatisch erstellter Health-Check · Momentaufnahme, keine Historie ·
-      Betrachtet ausschließlich den Neovim-Ordner
-      (<code>nvim/.config/nvim</code>).
+      Automatically generated health check · Snapshot, no history · Considers only
+      the Neovim folder (<code>nvim/.config/nvim</code>).
     </footer>
   </body>
 </html>

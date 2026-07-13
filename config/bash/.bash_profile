@@ -5,5 +5,5 @@ export QT_QPA_PLATFORMTHEME=qt5ct
 export XDG_CURRENT_DESKTOP=Hyprland
 export XDG_THEME=dark
 
-# Nix wird bereits bedingt in .bashrc geladen (oben via `. ~/.bashrc`);
-# keine zweite (zudem hartkodierte) Einbindung hier noetig.
+# Nix is already sourced conditionally in .bashrc (above via `. ~/.bashrc`);
+# no second (and hardcoded) sourcing is needed here.

@@ -2,11 +2,11 @@
 set -euo pipefail
 
 command -v restic >/dev/null 2>&1 || {
-  echo "restic-backup: 'restic' nicht gefunden" >&2
+  echo "restic-backup: 'restic' not found" >&2
   exit 1
 }
 
-# Repo/Host per Environment ueberschreibbar (portabel); Default = eigenes NAS.
+# Repo/host overridable via the environment (portable); default = own NAS.
 export RESTIC_REPOSITORY="${RESTIC_REPOSITORY:-sftp:Leo@192.168.178.23:D:\\ResticBackup}"
 
 restic backup \

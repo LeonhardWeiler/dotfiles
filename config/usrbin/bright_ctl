@@ -2,10 +2,10 @@
 
 STEP=5
 
-# Benoetigte Kommandos pruefen (still degradieren statt kryptisch scheitern).
+# Check required commands (degrade quietly instead of failing cryptically).
 for cmd in brightnessctl notify-send; do
   command -v "$cmd" >/dev/null 2>&1 || {
-    echo "bright_ctl: '$cmd' nicht gefunden" >&2
+    echo "bright_ctl: '$cmd' not found" >&2
     exit 1
   }
 done

@@ -8,15 +8,15 @@ return {
 
     vim.keymap.set("n", "<leader>a", function()
       harpoon:list():add()
-    end, { desc = "Harpoon: Datei anheften" })
+    end, { desc = "Harpoon: pin file" })
     vim.keymap.set("n", "<leader>h", function()
       harpoon.ui:toggle_quick_menu(harpoon:list())
-    end, { desc = "Harpoon: Menü" })
+    end, { desc = "Harpoon: menu" })
 
     for i = 1, 4 do
       vim.keymap.set("n", "<leader>" .. i, function()
         harpoon:list():select(i)
-      end, { desc = "Harpoon: Datei " .. i })
+      end, { desc = "Harpoon: file " .. i })
     end
   end,
 }

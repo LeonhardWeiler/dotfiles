@@ -9,22 +9,22 @@ function save_chapter()
     local timestamp = string.format("%02d:%02d:%02d", time_pos / 3600, (time_pos % 3600) / 60, time_pos % 60)
     local rofi_command = {
         "bash", "-c",
-        "rofi -dmenu -p 'Kapitelname für " .. timestamp .. ":'"
+        "rofi -dmenu -p 'Chapter name for " .. timestamp .. ":'"
     }
 
     local result = utils.subprocess({args = rofi_command})
     if result.status == 0 and result.stdout and result.stdout ~= "" then
         local title = result.stdout:gsub("\n", "")
         table.insert(chapters, {start = time_pos, title = title})
-        mp.osd_message("Kapitel gespeichert: " .. timestamp .. " - " .. title)
+        mp.osd_message("Chapter saved: " .. timestamp .. " - " .. title)
     else
-        mp.osd_message("Kapitel-Eingabe abgebrochen.")
+        mp.osd_message("Chapter input cancelled.")
     end
 end
 
 function export_all()
     if #chapters == 0 then
-        mp.osd_message("Keine Kapitel zum Exportieren.")
+        mp.osd_message("No chapters to export.")
         return
     end
 
@@ -73,10 +73,10 @@ function export_all()
     ffmeta:close()
     edl:close()
 
-    mp.osd_message("Export abgeschlossen.")
+    mp.osd_message("Export finished.")
 end
 
--- Frame-Zeit für EDL (assume 25 fps for simplicity)
+-- Frame time for EDL (assume 25 fps for simplicity)
 function frame_time(seconds)
     local fps = 25
     local total_frames = math.floor(seconds * fps)

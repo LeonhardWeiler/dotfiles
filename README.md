@@ -139,15 +139,14 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 
 ```bash
 systemctl --user enable --now battery-check.timer
-# Sync von `programs.txt` (und weiteren Configs) bei jedem Login: commit + push
+# Sync `programs.txt` (and further configs) on every login: commit + push
 systemctl --user enable --now dotfiles-sync.service
 ```
 
-> `dotfiles-sync.service` committet und **pusht** automatisch. Das setzt einen
-> ohne Interaktion nutzbaren SSH-Key voraus (passphrase-los oder per `ssh-agent`
-> beim Login bereitgestellt); sonst schlägt nur der Push fehl (best effort, der
-> Login wird nicht blockiert). Erweiterbar über `GENERATORS`/`PATHS` in
-> `~/.local/bin/dotfiles_sync`.
+> `dotfiles-sync.service` commits and **pushes** automatically. That requires an
+> SSH key usable without interaction (passphrase-less or provided via `ssh-agent`
+> at login); otherwise only the push fails (best effort, login is not blocked).
+> Extensible via `GENERATORS`/`PATHS` in `~/.local/bin/dotfiles_sync`.
 
 Check status:
 

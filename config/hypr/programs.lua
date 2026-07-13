@@ -1,6 +1,6 @@
--- Programme, die in Keybinds und Autostart referenziert werden. Zentral
--- gebuendelt, damit ein Wechsel (z. B. anderes Terminal) nur an einer Stelle
--- noetig ist. Wird von anderen Modulen per `require("programs")` eingebunden.
+-- Programs referenced in keybinds and autostart. Bundled centrally so a change
+-- (e.g. a different terminal) is only needed in one place. Included by other
+-- modules via `require("programs")`.
 return {
 	terminal = "alacritty",
 	menu = "rofi -show drun",

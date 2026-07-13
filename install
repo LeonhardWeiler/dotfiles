@@ -1,67 +1,67 @@
 #!/usr/bin/env bash
-# Symlink-Manager für diese Dotfiles — ohne externe Abhängigkeiten.
-# Liest die Mapping-Datei `links.conf` (Quelle → Ziel) und legt die Symlinks an,
-# entfernt sie wieder oder zeigt ihren Ist-Zustand.
+# Symlink manager for these dotfiles — no external dependencies.
+# Reads the mapping file `links.conf` (source -> target) and creates the
+# symlinks, removes them again, or shows their current state.
 #
-# Nutzung:
-#   ./install [link]          Symlinks anlegen/auffrischen (Default, Alltag)
-#   ./install setup           Neue Maschine, EIN Kommando: optionale Schritte
-#                             (Menü) → Configs verlinken (--force) → Units
-#                             aktivieren → manuelle Rest-Checkliste
-#   ./install unlink          von uns verwaltete Symlinks entfernen
-#   ./install status          Ist-Zustand aller Einträge zeigen
-#   ./install clean           von --force angelegte .bak-Sicherungen löschen
+# Usage:
+#   ./install [link]          create/refresh symlinks (default, everyday)
+#   ./install setup           fresh machine, ONE command: optional steps (menu)
+#                             -> link configs (--force) -> activate units
+#   ./install unlink          remove the symlinks we manage
+#   ./install status          show the current state of every entry
+#   ./install clean           delete the .bak backups created by --force
 #
-# Optionale Setup-Schritte (im `setup`-Menü wählbar, einzeln per Flag
-# automatisierbar — z. B. `./install --groups` oder `./install setup --timezone Europe/Vienna`):
-#   --programs                Pakete aus setup/programs.txt installieren (yay)
-#   --remove-programs         explizit installierte Pakete entfernen, die NICHT
-#                             in programs.txt stehen (Manifest-Prune, mit Rückfrage)
-#   --systemd                 systemd-Units aktivieren (USER_UNITS + SYSTEM_UNITS)
-#   --remove-systemd          dieselben Units wieder deaktivieren (mit Rückfrage)
-#   --groups                  Benutzer zu den benötigten Gruppen hinzufügen (usermod -aG)
-#   --timezone ZONE           Zeitzone setzen (z. B. --timezone Europe/Vienna);
-#                             ohne ZONE fragt das Menü interaktiv nach
-#   --locale                  Locales aus /etc/locale.gen generieren (locale-gen)
-#   --ly-dropin               ly@tty2-Drop-ins als reale Kopien nach /etc deployen
-#   --sudoers                 passwortloses sudo für die wheel-Gruppe einrichten
-#                             (/etc/sudoers.d/, per visudo geprüft)
-#   --initramfs               Initramfs neu generieren (mkinitcpio -P)
+# Optional setup steps (selectable in the `setup` menu, runnable individually via
+# a flag for automation — e.g. `./install --groups` or
+# `./install setup --timezone Europe/Vienna`):
+#   --programs                install packages from setup/programs.txt (yay)
+#   --remove-programs         remove explicitly installed packages that are NOT
+#                             in programs.txt (manifest prune, asks first)
+#   --systemd                 activate systemd units (USER_UNITS + SYSTEM_UNITS)
+#   --remove-systemd          deactivate those same units (asks first)
+#   --groups                  add the user to the required groups (usermod -aG)
+#   --timezone ZONE           set the timezone (e.g. --timezone Europe/Vienna);
+#                             without ZONE the menu asks interactively
+#   --locale                  generate the locales from /etc/locale.gen (locale-gen)
+#   --ly-dropin               deploy the ly@tty2 drop-ins as real copies to /etc
+#   --sudoers                 set up passwordless sudo for the wheel group
+#                             (/etc/sudoers.d/, validated with visudo)
+#   --initramfs               rebuild the initramfs (mkinitcpio -P)
 #
-# Optionen:
-#   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
-#   -c, --config DATEI        andere Mapping-Datei (Default: setup/links.conf)
-#       --user-only           nur ~-Ziele bearbeiten (keine /etc-Ziele, kein sudo)
-#       --no-units            systemd-Units nicht (re)aktivieren
-#       --force               reale Dateien/Verzeichnisse am Ziel nach .bak
-#                             sichern und durch den Symlink ersetzen
-#   -h, --help                diese Hilfe
+# Options:
+#   -n, --dry-run             only show what would happen — change nothing
+#   -c, --config FILE         other mapping file (default: setup/links.conf)
+#       --user-only           only ~ targets (no /etc targets, no sudo)
+#       --no-units            do not (re)activate the systemd units
+#       --force               back up real files/dirs at the target to .bak and
+#                             replace them with the symlink
+#   -h, --help                this help
 set -euo pipefail
 
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG="setup/links.conf"
 CMD="link"
-EXPLICIT_CMD=0       # wurde ein Subkommando explizit getippt?
+EXPLICIT_CMD=0       # was a subcommand typed explicitly?
 DRYRUN=0
 USER_ONLY=0
 NO_UNITS=0
 FORCE=0
-SKIPPED_REAL=0       # Anzahl übersprungener realer Ziele (ohne --force) — für den Schlusshinweis
-FLAG_STEPS_GIVEN=0   # wurde mindestens ein --<schritt>-Flag übergeben?
-TIMEZONE=""          # optionaler --timezone-Wert (Region/Stadt)
+SKIPPED_REAL=0       # number of skipped real targets (without --force) — for the closing hint
+FLAG_STEPS_GIVEN=0   # was at least one --<step> flag passed?
+TIMEZONE=""          # optional --timezone value (Region/City)
 
-# systemd-Units, die nach dem Verlinken (self-healing) reaktiviert werden.
+# systemd units reactivated after linking (self-healing).
 USER_UNITS=(battery-check.timer dotfiles-sync.service)
-# Nur real existierende System-Units. pipewire/wireplumber sind User-Dienste
-# (Paket-Presets, nicht getrackt) und swtpm ist socket-aktiviert — die haben
-# keine enable-bare <name>.service. iptables lädt die (Default-)Regeln aus
-# /etc/iptables/; fstrim.timer macht periodisches SSD-TRIM; timesyncd = NTP;
-# power-profiles-daemon = Energieprofile (Notebook).
+# Only system units that really exist. pipewire/wireplumber are user services
+# (package presets, not tracked) and swtpm is socket-activated — those have no
+# enable-able bare <name>.service. iptables loads the (default) rules from
+# /etc/iptables/; fstrim.timer does periodic SSD TRIM; timesyncd = NTP;
+# power-profiles-daemon = power profiles (laptop).
 SYSTEM_UNITS=(NetworkManager.service ly@tty2.service dnsmasq.service sshd.service
   libvirtd.service legion-conservation.service iptables.service
   power-profiles-daemon.service systemd-timesyncd.service fstrim.timer)
 
-# ── Ausgabe-Helfer ───────────────────────────────────────────────────────────
+# ── Output helpers ───────────────────────────────────────────────────────────
 if [ -t 1 ]; then C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_INFO=$'\e[36m'; C_RST=$'\e[0m'
 else C_OK=; C_WARN=; C_INFO=; C_RST=; fi
 ok()   { printf '  %s✓%s %s\n' "$C_OK"   "$C_RST" "$*"; }
@@ -70,18 +70,18 @@ info() { printf '%s%s%s\n'     "$C_INFO" "$*" "$C_RST"; }
 
 usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
 
-# ── Optionale Setup-Schritte (Registry) ──────────────────────────────────────
-# Jeder Schritt hat eine do_<name>-Funktion, ein Flag `--<name>` und eine
-# Menü-Zeile im `setup`. Neue Schritte werden weiter unten per register_step
-# eingetragen. SELECTED hält die aktuell ausgewählten Schritte.
+# ── Optional setup steps (registry) ──────────────────────────────────────────
+# Each step has a do_<name> function, a `--<name>` flag and a menu line in
+# `setup`. New steps are added below via register_step. SELECTED holds the
+# currently chosen steps.
 STEP_ORDER=()
 declare -A STEP_DESC STEP_FN SELECTED
-# Im `setup` vorausgewählte Schritte (Menü-Enter / kein TTY = diese Defaults).
+# Steps preselected in `setup` (menu Enter / no TTY = these defaults).
 DEFAULT_STEPS=(programs systemd locale)
 register_step() { STEP_ORDER+=("$1"); STEP_FN[$1]="$2"; STEP_DESC[$1]="$3"; }
 is_selected()   { [ -n "${SELECTED[$1]:-}" ]; }
 
-# Interaktive Ja/Nein-Rückfrage. Ohne TTY (skriptbar) immer „nein".
+# Interactive yes/no prompt. Without a TTY (scriptable) always "no".
 confirm() {
   local reply
   [ -t 0 ] || return 1
@@ -90,7 +90,7 @@ confirm() {
   case "$reply" in [yYjJ]*) return 0 ;; *) return 1 ;; esac
 }
 
-# ── Argument-Parsing ─────────────────────────────────────────────────────────
+# ── Argument parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
     link|setup|unlink|status|clean) CMD="$1"; EXPLICIT_CMD=1 ;;
@@ -98,33 +98,33 @@ while [ $# -gt 0 ]; do
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
     --force)       FORCE=1 ;;
-    -c|--config)   shift; CONFIG="${1:?--config braucht eine Datei}" ;;
+    -c|--config)   shift; CONFIG="${1:?--config needs a file}" ;;
     -h|--help)     usage 0 ;;
-    # ── Schritt-Flags (siehe Registry) ──────────────────────────────────────
+    # ── Step flags (see registry) ───────────────────────────────────────────
     --programs)         SELECTED[programs]=1;        FLAG_STEPS_GIVEN=1 ;;
     --remove-programs)  SELECTED[remove-programs]=1; FLAG_STEPS_GIVEN=1 ;;
     --systemd)          SELECTED[systemd]=1;         FLAG_STEPS_GIVEN=1 ;;
     --remove-systemd)   SELECTED[remove-systemd]=1;  FLAG_STEPS_GIVEN=1 ;;
     --groups)           SELECTED[groups]=1;          FLAG_STEPS_GIVEN=1 ;;
-    --timezone)         shift; TIMEZONE="${1:?--timezone braucht eine Zone (Region/Stadt)}"
+    --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
     --locale)           SELECTED[locale]=1;          FLAG_STEPS_GIVEN=1 ;;
     --ly-dropin)        SELECTED[ly-dropin]=1;       FLAG_STEPS_GIVEN=1 ;;
     --sudoers)          SELECTED[sudoers]=1;         FLAG_STEPS_GIVEN=1 ;;
     --initramfs)        SELECTED[initramfs]=1;       FLAG_STEPS_GIVEN=1 ;;
-    *) warn "unbekanntes Argument: $1"; usage 1 ;;
+    *) warn "unknown argument: $1"; usage 1 ;;
   esac
   shift
 done
 
-# Ohne explizites Subkommando, aber mit Schritt-Flags → nur diese Schritte
-# ausführen (skriptbar, kein Verlinken, kein Menü).
+# No explicit subcommand but step flags given -> run only those steps
+# (scriptable, no linking, no menu).
 if [ "$EXPLICIT_CMD" = 0 ] && [ "$FLAG_STEPS_GIVEN" = 1 ]; then CMD="run-steps"; fi
 
-[ -f "$BASEDIR/$CONFIG" ] || { warn "Mapping-Datei nicht gefunden: $CONFIG"; exit 1; }
+[ -f "$BASEDIR/$CONFIG" ] || { warn "mapping file not found: $CONFIG"; exit 1; }
 
-# ── Pfad-Helfer ──────────────────────────────────────────────────────────────
-# `~` → Home des Nutzers.
+# ── Path helpers ─────────────────────────────────────────────────────────────
+# `~` -> the user's home.
 expand_target() {
   case "$1" in
     "~")    printf '%s\n' "$HOME" ;;
@@ -132,10 +132,10 @@ expand_target() {
     *)      printf '%s\n' "$1" ;;
   esac
 }
-# Ziel außerhalb von $HOME → braucht root.
+# Target outside $HOME -> needs root.
 needs_root() { case "$1" in "$HOME"/*|"$HOME") return 1 ;; *) return 0 ;; esac; }
 
-# `run <root?> cmd…` — führt ein Kommando (ggf. per sudo) aus, respektiert Dry-Run.
+# `run <root?> cmd…` — run a command (via sudo if needed), honouring dry-run.
 run() {
   local root="$1"; shift
   if [ "$DRYRUN" = 1 ]; then
@@ -145,35 +145,34 @@ run() {
   if [ "$root" = 1 ]; then sudo "$@"; else "$@"; fi
 }
 
-# ── Aktionen pro Eintrag ─────────────────────────────────────────────────────
+# ── Per-entry actions ────────────────────────────────────────────────────────
 link_one() {
   local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
   local root=0; needs_root "$target" && root=1
   { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
-  if [ ! -e "$src" ]; then warn "Quelle fehlt, übersprungen: $rel"; return 0; fi
+  if [ ! -e "$src" ]; then warn "source missing, skipped: $rel"; return 0; fi
   if [ -e "$target" ] && [ ! -L "$target" ]; then
     if [ "$FORCE" = 1 ]; then
       local bak="$target.bak"
       if [ -e "$bak" ]; then bak="$target.bak.$(date +%s)"; fi
-      run "$root" mv "$target" "$bak"; ok "gesichert: $target → $bak"
+      run "$root" mv "$target" "$bak"; ok "backed up: $target -> $bak"
     else
-      warn "reale Datei/Verzeichnis, übersprungen (mit --force sichern & ersetzen): $target"
+      warn "real file/directory, skipped (use --force to back up & replace): $target"
       SKIPPED_REAL=$((SKIPPED_REAL + 1)); return 0
     fi
   fi
   local parent; parent="$(dirname "$target")"
-  # Ein toter (kaputter) Symlink als Eltern-Pfad — z. B. Rest aus einem alten
-  # Setup — bringt sonst `mkdir -p` mit „File exists" zu Fall und beendet unter
-  # `set -e` den ganzen Lauf. Ein toter Symlink hat keinen Inhalt → gefahrlos
-  # entfernen (nur echte, ins Leere zeigende Symlinks; reale Dateien/Ordner
-  # bleiben unberührt).
+  # A dead (broken) symlink as the parent path — e.g. left over from an old
+  # setup — would otherwise make `mkdir -p` fail with "File exists" and abort the
+  # whole run under `set -e`. A dead symlink has no content -> safe to remove
+  # (only real, dangling symlinks; real files/dirs are left untouched).
   if [ -L "$parent" ] && [ ! -e "$parent" ]; then run "$root" rm -f "$parent"; fi
   if [ ! -d "$parent" ]; then
     run "$root" mkdir -p "$parent" \
-      || { warn "Eltern-Pfad nicht anlegbar, übersprungen: $parent"; return 0; }
+      || { warn "parent path not creatable, skipped: $parent"; return 0; }
   fi
   run "$root" ln -sfn "$src" "$target"
-  ok "$2 → $rel"
+  ok "$2 -> $rel"
 }
 
 unlink_one() {
@@ -182,12 +181,12 @@ unlink_one() {
   { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
   if [ -L "$target" ]; then
     if [ "$(readlink "$target")" = "$src" ]; then
-      run "$root" rm "$target"; ok "entfernt: $2"
+      run "$root" rm "$target"; ok "removed: $2"
     else
-      warn "Symlink zeigt woanders hin (behalten): $target"
+      warn "symlink points elsewhere (kept): $target"
     fi
   elif [ -e "$target" ]; then
-    warn "kein Symlink (behalten): $target"
+    warn "not a symlink (kept): $target"
   fi
 }
 
@@ -196,9 +195,9 @@ status_one() {
   local state
   if [ -L "$target" ]; then
     if [ "$(readlink "$target")" = "$src" ]; then state="${C_OK}ok${C_RST}"
-    else state="${C_WARN}link→$(readlink "$target")${C_RST}"; fi
-  elif [ -e "$target" ]; then state="${C_WARN}echte Datei${C_RST}"
-  else state="fehlt"; fi
+    else state="${C_WARN}link->$(readlink "$target")${C_RST}"; fi
+  elif [ -e "$target" ]; then state="${C_WARN}real file${C_RST}"
+  else state="missing"; fi
   printf '  %-46s %s\n' "$2" "$state"
 }
 
@@ -210,76 +209,75 @@ clean_one() {
   shopt -s nullglob
   for b in "$target.bak" "$target".bak.[0-9]*; do
     { [ -e "$b" ] || [ -L "$b" ]; } || continue
-    run "$root" rm -rf "$b"; ok "gelöscht: $b"
+    run "$root" rm -rf "$b"; ok "deleted: $b"
   done
   shopt -u nullglob
 }
 
-# ── Optionale Schritt-Funktionen ─────────────────────────────────────────────
-# Pakete aus setup/programs.txt installieren. Delegiert an setup/install-programs
-# (bootstrappt yay aus dem AUR, falls nötig; überspringt bereits installierte
-# Pakete). Läuft VOR dem Verlinken, damit danach reaktivierte Units existieren.
+# ── Optional step functions ──────────────────────────────────────────────────
+# Install packages from setup/programs.txt. Delegates to setup/install-programs
+# (bootstraps yay from the AUR if needed; skips already-installed packages). Runs
+# BEFORE linking so the units reactivated afterwards exist.
 do_programs_install() {
   local script="$BASEDIR/setup/install-programs"
-  [ -x "$script" ] || { warn "setup/install-programs fehlt/nicht ausführbar: $script"; return 0; }
-  info "Pakete aus setup/programs.txt installieren (yay)"
+  [ -x "$script" ] || { warn "setup/install-programs missing/not executable: $script"; return 0; }
+  info "Installing packages from setup/programs.txt (yay)"
   if [ "$DRYRUN" = 1 ]; then printf '    [dry] %s\n' "$script"; return 0; fi
-  "$script" || warn "Paket-Installation nicht (vollständig) erfolgreich"
+  "$script" || warn "package installation not (fully) successful"
 }
-register_step programs do_programs_install "Pakete aus programs.txt installieren"
+register_step programs do_programs_install "Install packages from programs.txt"
 
-# Explizit installierte Pakete entfernen, die NICHT im Manifest (programs.txt)
-# stehen — zieht das System auf die getrackte Paketliste. Bewusst mit Rückfrage
-# und Default „nein" (aggressive Operation); yay -Rns räumt auch Abhängigkeiten
-# und Config-Reste weg.
+# Remove explicitly installed packages that are NOT in the manifest
+# (programs.txt) — pulls the system onto the tracked package list. Deliberately
+# asks first and defaults to "no" (aggressive operation); pacman -Rns also
+# removes dependencies and config leftovers.
 do_programs_remove() {
-  command -v pacman >/dev/null 2>&1 || { warn "pacman fehlt — Paket-Entfernung übersprungen"; return 0; }
+  command -v pacman >/dev/null 2>&1 || { warn "pacman missing — package removal skipped"; return 0; }
   local manifest="$BASEDIR/setup/programs.txt"
-  [ -f "$manifest" ] || { warn "programs.txt fehlt — nichts zu entfernen"; return 0; }
-  info "Nicht getrackte Pakete ermitteln (explizit installiert, aber nicht in programs.txt)"
+  [ -f "$manifest" ] || { warn "programs.txt missing — nothing to remove"; return 0; }
+  info "Finding untracked packages (explicitly installed but not in programs.txt)"
   local extras
   extras="$(comm -23 <(pacman -Qqe | sort -u) <(awk 'NF{print $1}' "$manifest" | sort -u))"
-  if [ -z "$extras" ]; then ok "keine ungetrackten Pakete — nichts zu entfernen"; return 0; fi
-  printf '  Zu entfernen:\n'; printf '    %s\n' $extras
+  if [ -z "$extras" ]; then ok "no untracked packages — nothing to remove"; return 0; fi
+  printf '  To remove:\n'; printf '    %s\n' $extras
   if [ "$DRYRUN" = 1 ]; then printf '    [dry] sudo pacman -Rns %s\n' "$extras"; return 0; fi
-  if confirm "  Diese Pakete wirklich entfernen (yay -Rns)?"; then
+  if confirm "  Really remove these packages (pacman -Rns)?"; then
     # shellcheck disable=SC2086
-    run 1 pacman -Rns $extras || warn "Paket-Entfernung nicht (vollständig) erfolgreich"
+    run 1 pacman -Rns $extras || warn "package removal not (fully) successful"
   else
-    info "Paket-Entfernung übersprungen"
+    info "package removal skipped"
   fi
 }
-register_step remove-programs do_programs_remove "Nicht getrackte Pakete entfernen (Prune)"
+register_step remove-programs do_programs_remove "Remove untracked packages (prune)"
 
-# Schlusshinweis nach dem Verlinken: übersprungene reale Ziele prominent melden
-# und den Nutzer daran erinnern, die frisch verlinkte Shell-Config anzuwenden.
-# (Ein Skript kann die interaktive Eltern-Shell nicht selbst neu laden — daher
-# der explizite Hinweis statt eines wirkungslosen `source` im Skript.)
+# Closing hint after linking: report skipped real targets prominently and remind
+# the user to apply the freshly linked shell config. (A script cannot reload the
+# interactive parent shell itself — hence the explicit hint instead of a useless
+# `source` inside the script.)
 next_steps() {
   if [ "$SKIPPED_REAL" -gt 0 ]; then
-    warn "$SKIPPED_REAL reale(s) Ziel(e) übersprungen — mit './install --force' nach .bak sichern und ersetzen."
+    warn "$SKIPPED_REAL real target(s) skipped — use './install --force' to back up to .bak and replace."
   fi
   [ "$DRYRUN" = 1 ] && return 0
-  info "Nächste Schritte"
-  printf '  • %ssource ~/.bashrc%s  — Shell-Config sofort anwenden (lädt auch ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
-  printf '  • für die .bash_profile-Env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*) einmal neu einloggen\n'
+  info "Next steps"
+  printf '  • %ssource ~/.bashrc%s  — apply the shell config now (also loads ~/.nix-profile via nix.sh)\n' "$C_OK" "$C_RST"
+  printf '  • log in again once for the .bash_profile env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*)\n'
 }
 
-# Die frisch verlinkten Locales (/etc/locale.gen) generieren (idempotent).
+# Generate the freshly linked locales (/etc/locale.gen), idempotent.
 do_locale() {
-  if [ "$USER_ONLY" = 1 ]; then warn "--user-only: locale-gen übersprungen"; return 0; fi
-  info "Locales generieren (locale-gen)"
-  run 1 locale-gen || warn "locale-gen fehlgeschlagen"
+  if [ "$USER_ONLY" = 1 ]; then warn "--user-only: locale-gen skipped"; return 0; fi
+  info "Generating locales (locale-gen)"
+  run 1 locale-gen || warn "locale-gen failed"
 }
-register_step locale do_locale "Locales generieren (locale-gen)"
+register_step locale do_locale "Generate locales (locale-gen)"
 
-# Interaktives Menü: optionale Schritte auswählen. Bei per Flag vorgewählten
-# Schritten (FLAG_STEPS_GIVEN) übernimmt es diese unverändert; ohne TTY greifen
-# die DEFAULT_STEPS.
+# Interactive menu: pick optional steps. With steps preselected via flags
+# (FLAG_STEPS_GIVEN) it takes them as-is; without a TTY the DEFAULT_STEPS apply.
 choose_steps() {
   [ "$FLAG_STEPS_GIVEN" = 1 ] && return 0
   if [ ! -t 0 ]; then for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; return 0; fi
-  info "Optionale Schritte auswählen (Nummern per Leerzeichen; Enter = Defaults)"
+  info "Select optional steps (numbers separated by spaces; Enter = defaults)"
   local i=1 idx=() def
   for s in "${STEP_ORDER[@]}"; do
     def=""; for d in "${DEFAULT_STEPS[@]}"; do [ "$d" = "$s" ] && def=" (default)"; done
@@ -290,133 +288,133 @@ choose_steps() {
   for n in $line; do [ -n "${idx[$n]:-}" ] && SELECTED[${idx[$n]}]=1; done
 }
 
-# Verlinken-Kern (nur Symlinks). Paket-/Unit-Schritte laufen separat.
+# Linking core (symlinks only). Package/unit steps run separately.
 do_symlinks() {
-  info "Symlinks anlegen (${#SRCS[@]} Einträge)"
+  info "Creating symlinks (${#SRCS[@]} entries)"
   for i in "${!SRCS[@]}"; do link_one "${SRCS[$i]}" "${TGTS[$i]}"; done
 }
 
 reactivate_units() {
   [ "$NO_UNITS" = 1 ] && return 0
-  # Bewusst `enable`, nicht `reenable`: unsere Unit-Dateien sind Symlinks
-  # (linked units); `reenable` würde beim internen `disable` genau diesen
-  # Unit-Symlink löschen. `enable` ist idempotent und legt nur den fehlenden
-  # Enablement-Link (…​.wants/) an — überlebt auch den Repo-Umzug, weil der
-  # Unit-Symlink am Standardpfad liegt.
-  info "systemd User-Units aktivieren"
-  run 0 systemctl --user daemon-reload || warn "daemon-reload fehlgeschlagen"
+  # Deliberately `enable`, not `reenable`: our unit files are symlinks (linked
+  # units); `reenable` would delete exactly that unit symlink during its internal
+  # `disable`. `enable` is idempotent and only creates the missing enablement
+  # link (…​.wants/) — it also survives a repo move because the unit symlink sits
+  # at the standard path.
+  info "Activating systemd user units"
+  run 0 systemctl --user daemon-reload || warn "daemon-reload failed"
   for u in "${USER_UNITS[@]}"; do
     if [ "$DRYRUN" = 1 ]; then run 0 systemctl --user enable "$u"
-    else run 0 systemctl --user enable "$u" >/dev/null 2>&1 || warn "User-Unit nicht aktiviert: $u"; fi
+    else run 0 systemctl --user enable "$u" >/dev/null 2>&1 || warn "user unit not activated: $u"; fi
   done
   [ "$USER_ONLY" = 1 ] && return 0
-  info "systemd System-Units aktivieren (sudo)"
+  info "Activating systemd system units (sudo)"
   for u in "${SYSTEM_UNITS[@]}"; do
     if [ "$DRYRUN" = 1 ]; then run 1 systemctl enable "$u"
-    else run 1 systemctl enable "$u" >/dev/null 2>&1 || warn "System-Unit nicht aktiviert: $u"; fi
+    else run 1 systemctl enable "$u" >/dev/null 2>&1 || warn "system unit not activated: $u"; fi
   done
 }
-register_step systemd reactivate_units "systemd-Units aktivieren (enable)"
+register_step systemd reactivate_units "Activate systemd units (enable)"
 
-# Gegenstück zu reactivate_units: dieselben Units wieder deaktivieren. Hinweis:
-# unsere Unit-Dateien sind linked units (Symlinks am Standardpfad) — `disable`
-# entfernt bei solchen Units auch diesen Symlink, die Unit ist danach ganz weg
-# (Neu-Verlinken via `./install` legt sie wieder an). Daher mit Rückfrage.
+# Counterpart to reactivate_units: deactivate those same units. Note: our unit
+# files are linked units (symlinks at the standard path) — for such units
+# `disable` also removes that symlink, so the unit is gone entirely afterwards
+# (re-linking via `./install` recreates it). Hence the confirmation.
 do_systemd_disable() {
-  [ "$DRYRUN" = 0 ] && ! confirm "  systemd-Units wirklich deaktivieren?" && { info "übersprungen"; return 0; }
-  info "systemd User-Units deaktivieren"
+  [ "$DRYRUN" = 0 ] && ! confirm "  Really deactivate the systemd units?" && { info "skipped"; return 0; }
+  info "Deactivating systemd user units"
   for u in "${USER_UNITS[@]}"; do
-    run 0 systemctl --user disable "$u" >/dev/null 2>&1 || warn "User-Unit nicht deaktiviert: $u"
+    run 0 systemctl --user disable "$u" >/dev/null 2>&1 || warn "user unit not deactivated: $u"
   done
   [ "$USER_ONLY" = 1 ] && return 0
-  info "systemd System-Units deaktivieren (sudo)"
+  info "Deactivating systemd system units (sudo)"
   for u in "${SYSTEM_UNITS[@]}"; do
-    run 1 systemctl disable "$u" >/dev/null 2>&1 || warn "System-Unit nicht deaktiviert: $u"
+    run 1 systemctl disable "$u" >/dev/null 2>&1 || warn "system unit not deactivated: $u"
   done
 }
-register_step remove-systemd do_systemd_disable "systemd-Units deaktivieren (disable)"
+register_step remove-systemd do_systemd_disable "Deactivate systemd units (disable)"
 
-# Benutzer zu den Gruppen der getrackten Tools hinzufügen. `GROUPS` ist in Bash
-# reserviert (aktuelle GIDs) — daher GROUP_LIST. docker/wireshark bewusst nicht
-# dabei (nur nötig, wenn man diese Pakete auch installiert).
+# Add the user to the groups the tracked tools need. `GROUPS` is reserved in Bash
+# (current GIDs) — hence GROUP_LIST. docker/wireshark deliberately excluded (only
+# needed if you also install those packages).
 GROUP_LIST="wheel,input,kvm,libvirt,uucp,disk,lock"
 do_groups() {
   local user="${SUDO_USER:-${USER:-}}"
-  [ -n "$user" ] || { warn "kein Benutzer ermittelbar — Gruppen übersprungen"; return 0; }
-  info "Benutzer '$user' zu Gruppen hinzufügen: $GROUP_LIST"
-  run 1 usermod -aG "$GROUP_LIST" "$user" || warn "usermod fehlgeschlagen"
-  info "(Gruppenänderung wirkt erst nach erneutem Login)"
+  [ -n "$user" ] || { warn "no user determinable — groups skipped"; return 0; }
+  info "Adding user '$user' to groups: $GROUP_LIST"
+  run 1 usermod -aG "$GROUP_LIST" "$user" || warn "usermod failed"
+  info "(group change takes effect after re-login)"
 }
-register_step groups do_groups "Benutzer zu Gruppen hinzufügen ($GROUP_LIST)"
+register_step groups do_groups "Add user to groups ($GROUP_LIST)"
 
-# Zeitzone per Symlink /etc/localtime → /usr/share/zoneinfo/<Zone> setzen. Zone
-# aus --timezone oder (im Menü) interaktiv erfragt.
+# Set the timezone via the symlink /etc/localtime -> /usr/share/zoneinfo/<zone>.
+# Zone from --timezone or (in the menu) asked interactively.
 do_timezone() {
   local tz="$TIMEZONE"
   if [ -z "$tz" ] && [ -t 0 ]; then
-    printf '  Zeitzone (Region/Stadt, z. B. Europe/Vienna): ' >&2; read -r tz || tz=""
+    printf '  Timezone (Region/City, e.g. Europe/Vienna): ' >&2; read -r tz || tz=""
   fi
-  [ -n "$tz" ] || { warn "keine Zeitzone angegeben — übersprungen"; return 0; }
-  if [ ! -e "/usr/share/zoneinfo/$tz" ]; then warn "unbekannte Zeitzone: $tz — übersprungen"; return 0; fi
-  info "Zeitzone setzen: $tz"
-  run 1 ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime || warn "Zeitzone setzen fehlgeschlagen"
+  [ -n "$tz" ] || { warn "no timezone given — skipped"; return 0; }
+  if [ ! -e "/usr/share/zoneinfo/$tz" ]; then warn "unknown timezone: $tz — skipped"; return 0; fi
+  info "Setting timezone: $tz"
+  run 1 ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime || warn "setting timezone failed"
 }
-register_step timezone do_timezone "Zeitzone setzen (/etc/localtime)"
+register_step timezone do_timezone "Set timezone (/etc/localtime)"
 
-# ly@tty2-Drop-ins als REALE Kopien auf die Root-Partition legen (nicht per
-# links.conf symlinken): systemd liest Unit-Drop-ins früh beim Manager-Start,
-# wenn ein /home-Symlink noch ein toter Link wäre. Danach daemon-reload.
+# Deploy the ly@tty2 drop-ins as REAL copies onto the root partition (not
+# symlinked via links.conf): systemd reads unit drop-ins early at manager start,
+# when a /home symlink would still be a dead link. Then daemon-reload.
 LY_DROPIN_DIR="/etc/systemd/system/ly@tty2.service.d"
 do_ly_dropin() {
   local src="$BASEDIR/config/systemd-system/ly@tty2.service.d"
-  [ -d "$src" ] || { warn "ly@tty2-Drop-in-Quelle fehlt: $src"; return 0; }
-  info "ly@tty2-Drop-ins nach $LY_DROPIN_DIR kopieren"
-  run 1 install -d -m755 "$LY_DROPIN_DIR" || { warn "Verzeichnis nicht anlegbar"; return 0; }
+  [ -d "$src" ] || { warn "ly@tty2 drop-in source missing: $src"; return 0; }
+  info "Copying ly@tty2 drop-ins to $LY_DROPIN_DIR"
+  run 1 install -d -m755 "$LY_DROPIN_DIR" || { warn "directory not creatable"; return 0; }
   run 1 install -m644 "$src"/wait-home.conf "$src"/keymap.conf "$LY_DROPIN_DIR"/ \
-    || warn "Drop-in-Kopie fehlgeschlagen"
-  run 1 systemctl daemon-reload || warn "daemon-reload fehlgeschlagen"
+    || warn "drop-in copy failed"
+  run 1 systemctl daemon-reload || warn "daemon-reload failed"
 }
-register_step ly-dropin do_ly_dropin "ly@tty2-Drop-ins deployen (reale Kopien)"
+register_step ly-dropin do_ly_dropin "Deploy ly@tty2 drop-ins (real copies)"
 
-# Passwortloses sudo für die wheel-Gruppe — bewusste Komfort-Entscheidung dieses
-# Setups. Als Drop-in in /etc/sudoers.d/ (0440), vorher mit `visudo -c` auf einer
-# Temp-Datei geprüft, damit keine kaputte sudoers-Syntax das System aussperrt.
+# Passwordless sudo for the wheel group — a deliberate convenience choice of this
+# setup. As a drop-in in /etc/sudoers.d/ (0440), first checked with `visudo -c`
+# on a temp file so broken sudoers syntax cannot lock you out of the system.
 do_sudoers() {
   local file="/etc/sudoers.d/10-wheel-nopasswd"
   local rule="%wheel ALL=(ALL:ALL) NOPASSWD: ALL"
-  info "Passwortloses sudo für wheel einrichten: $file"
+  info "Setting up passwordless sudo for wheel: $file"
   if [ "$DRYRUN" = 1 ]; then
-    printf "    [dry] printf '%s' | visudo -c && sudo install -m0440 → %s\n" "$rule" "$file"; return 0
+    printf "    [dry] printf '%s' | visudo -c && sudo install -m0440 -> %s\n" "$rule" "$file"; return 0
   fi
   local tmp; tmp="$(mktemp)"; printf '%s\n' "$rule" > "$tmp"
   if ! visudo -cf "$tmp" >/dev/null 2>&1; then
-    warn "sudoers-Syntax ungültig — übersprungen"; rm -f "$tmp"; return 0
+    warn "sudoers syntax invalid — skipped"; rm -f "$tmp"; return 0
   fi
-  run 1 install -m0440 -o root -g root "$tmp" "$file" || warn "sudoers-Datei nicht installiert"
+  run 1 install -m0440 -o root -g root "$tmp" "$file" || warn "sudoers file not installed"
   rm -f "$tmp"
 }
-register_step sudoers do_sudoers "Passwortloses sudo für wheel (sudoers.d)"
+register_step sudoers do_sudoers "Passwordless sudo for wheel (sudoers.d)"
 
-# Initramfs neu bauen (mkinitcpio -P) — nötig nach Änderungen an
-# /etc/mkinitcpio.conf (via links.conf verlinkt).
+# Rebuild the initramfs (mkinitcpio -P) — needed after changes to
+# /etc/mkinitcpio.conf (linked via links.conf).
 do_initramfs() {
-  command -v mkinitcpio >/dev/null 2>&1 || { warn "mkinitcpio fehlt — übersprungen"; return 0; }
-  info "Initramfs neu generieren (mkinitcpio -P)"
-  run 1 mkinitcpio -P || warn "mkinitcpio fehlgeschlagen"
+  command -v mkinitcpio >/dev/null 2>&1 || { warn "mkinitcpio missing — skipped"; return 0; }
+  info "Regenerating initramfs (mkinitcpio -P)"
+  run 1 mkinitcpio -P || warn "mkinitcpio failed"
 }
-register_step initramfs do_initramfs "Initramfs neu generieren (mkinitcpio -P)"
+register_step initramfs do_initramfs "Regenerate initramfs (mkinitcpio -P)"
 
-# ── Mapping-Datei einlesen (erst komplett, dann iterieren — sonst kollidiert
-#    ein sudo-Passwort-Prompt mit dem stdin der Lese-Schleife) ────────────────
+# ── Read the mapping file (fully first, then iterate — otherwise a sudo password
+#    prompt collides with the read loop's stdin) ──────────────────────────────
 SRCS=(); TGTS=()
 while IFS= read -r line || [ -n "$line" ]; do
-  line="${line%%#*}"                 # Kommentar ab # abschneiden
-  read -r s t _ <<<"$line" || true   # erste zwei Felder (trimmt/kollabiert Leerraum)
+  line="${line%%#*}"                 # strip the comment from # onwards
+  read -r s t _ <<<"$line" || true   # first two fields (trims/collapses whitespace)
   [ -z "${s:-}" ] && continue
-  if [ -z "${t:-}" ]; then warn "ungültige Zeile (kein Ziel): $line"; continue; fi
-  # Glob in der Quelle (z. B. `config/usrbin/*`): jeden Treffer einzeln in das
-  # Ziel-Verzeichnis verlinken (Ziel/<basename>). So bleibt das Ziel-Verzeichnis
-  # real und fremde Einträge darin bleiben unangetastet.
+  if [ -z "${t:-}" ]; then warn "invalid line (no target): $line"; continue; fi
+  # Glob in the source (e.g. `config/usrbin/*`): link every match individually
+  # into the target directory (target/<basename>). That way the target directory
+  # stays real and foreign entries in it are left untouched.
   if [[ "$s" == *"*"* ]]; then
     matched=0
     shopt -s nullglob
@@ -424,16 +422,16 @@ while IFS= read -r line || [ -n "$line" ]; do
       SRCS+=("${m#"$BASEDIR"/}"); TGTS+=("${t%/}/${m##*/}"); matched=1
     done
     shopt -u nullglob
-    [ "$matched" = 0 ] && warn "Glob ohne Treffer: $s"
+    [ "$matched" = 0 ] && warn "glob with no match: $s"
     continue
   fi
   SRCS+=("$s"); TGTS+=("$t")
 done < "$BASEDIR/$CONFIG"
 
-[ "${#SRCS[@]}" -gt 0 ] || { warn "keine Einträge in $CONFIG"; exit 1; }
+[ "${#SRCS[@]}" -gt 0 ] || { warn "no entries in $CONFIG"; exit 1; }
 
-# ── Ausführung ───────────────────────────────────────────────────────────────
-[ "$DRYRUN" = 1 ] && info "— Dry-Run: es wird nichts verändert —"
+# ── Execution ────────────────────────────────────────────────────────────────
+[ "$DRYRUN" = 1 ] && info "— Dry run: nothing is changed —"
 case "$CMD" in
   link)
     do_symlinks
@@ -441,9 +439,9 @@ case "$CMD" in
     next_steps
     ;;
   setup)
-    # Ein-Kommando-Bootstrap für eine frische Maschine.
+    # One-command bootstrap for a fresh machine.
     FORCE=1
-    info "Setup: optionale Schritte → verlinken (--force) → Units → Rest-Checkliste"
+    info "Setup: optional steps -> link (--force) -> units"
     choose_steps
     is_selected programs && do_programs_install
     do_symlinks
@@ -459,23 +457,23 @@ case "$CMD" in
     next_steps
     ;;
   run-steps)
-    # Nur die per Flag gewählten optionalen Schritte (skriptbar), in
-    # kanonischer Reihenfolge (STEP_ORDER).
+    # Only the optional steps chosen via flags (scriptable), in canonical order
+    # (STEP_ORDER).
     for s in "${STEP_ORDER[@]}"; do
       is_selected "$s" && "${STEP_FN[$s]}"
     done
     ;;
   unlink)
-    info "Symlinks entfernen"
+    info "Removing symlinks"
     for i in "${!SRCS[@]}"; do unlink_one "${SRCS[$i]}" "${TGTS[$i]}"; done
-    warn "Hinweis: systemd-Units werden nicht deaktiviert — bei Bedarf manuell 'systemctl [--user] disable …'."
+    warn "Note: systemd units are not deactivated — do it manually if needed via 'systemctl [--user] disable …'."
     ;;
   status)
-    info "Status (${#SRCS[@]} Einträge)"
+    info "Status (${#SRCS[@]} entries)"
     for i in "${!SRCS[@]}"; do status_one "${SRCS[$i]}" "${TGTS[$i]}"; done
     ;;
   clean)
-    info "Backups (.bak) der verwalteten Ziele löschen"
+    info "Deleting .bak backups of the managed targets"
     for i in "${!SRCS[@]}"; do clean_one "${SRCS[$i]}" "${TGTS[$i]}"; done
     ;;
 esac

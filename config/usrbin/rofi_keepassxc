@@ -172,8 +172,8 @@ done
 [ ! "$timeout" ] && timeout=15
 CACHE=$HOME/.cache/rofi-keepassxc/
 mkdir -p "$CACHE"
-# Entschluesseltes Eintrags-Listing landet in $CACHE/tmp. Auch bei jedem fruehen
-# exit (Escape etc.) sicher aufraeumen, damit keine Klartext-Metadaten liegen bleiben.
+# The decrypted entry listing ends up in $CACHE/tmp. Clean it up safely on every
+# early exit (Escape etc.) too, so no plaintext metadata is left behind.
 trap 'rm -f "$CACHE/tmp"' EXIT
 
 dbpass=$(m -p "Enter your database password" -l 0 -password -width 500)

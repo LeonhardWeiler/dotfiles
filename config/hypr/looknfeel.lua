@@ -1,4 +1,4 @@
--- Look & Feel, Layout und Eingabe (ein gebuendelter hl.config-Aufruf).
+-- Look & feel, layout and input (one bundled hl.config call).
 -- See https://wiki.hypr.land/Configuring/Basics/Variables/
 
 hl.config({
@@ -6,14 +6,14 @@ hl.config({
 		gaps_in = 3,
 		gaps_out = 6,
 		border_size = 0,
-		-- https://wiki.hypr.land/Configuring/Variables/#variable-types fuer Farben
+		-- https://wiki.hypr.land/Configuring/Variables/#variable-types for colors
 		col = {
 			active_border = "rgb(dddddd)",
 			inactive_border = "rgb(595959)",
 		},
-		-- Fenster durch Ziehen an Rand/Gaps groessen
+		-- Resize windows by dragging on the border/gaps
 		resize_on_border = true,
-		-- Siehe https://wiki.hypr.land/Configuring/Tearing/ vor dem Aktivieren
+		-- See https://wiki.hypr.land/Configuring/Tearing/ before enabling
 		allow_tearing = false,
 		layout = "master",
 	},
@@ -25,8 +25,8 @@ hl.config({
 		rounding = 0,
 		rounding_power = 0,
 	},
-	-- Animationen global deaktiviert (Kurven/Leaves in animations.lua bleiben aber
-	-- definiert und werden bei enabled = true sofort wirksam).
+	-- Animations disabled globally (curves/leaves in animations.lua stay defined
+	-- though and take effect immediately when enabled = true).
 	animations = {
 		enabled = false,
 	},
@@ -47,7 +47,7 @@ hl.config({
 		kb_options = "caps:swapescape",
 		repeat_delay = 300,
 		follow_mouse = 1,
-		sensitivity = 0, -- -1.0 - 1.0, 0 = keine Aenderung
+		sensitivity = 0, -- -1.0 - 1.0, 0 = no change
 		touchpad = {
 			natural_scroll = false,
 		},

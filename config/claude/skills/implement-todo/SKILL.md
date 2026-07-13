@@ -1,98 +1,94 @@
 ---
 name: implement-todo
-description: Arbeite die Punkte aus AGENT/TODO.md der Reihe nach ab und committe nach jedem Punkt. Nutze diesen Skill, wenn der User die TODO-Liste umsetzen/abarbeiten will ("arbeite die todos ab", "setze die punkte aus todo.md um", "implement todo"). Projekt-unabhängig; Pfade sind relativ zum Repo-Root.
+description: Work through the items in AGENT/TODO.md in order and commit after each item. Use this skill when the user wants to implement/work through the TODO list ("work through the todos", "implement the items from todo.md", "implement todo"). Project-independent; paths are relative to the repo root.
 user-invocable: true
 ---
 
-# TODO-Punkte abarbeiten & einzeln committen
+# Work through TODO items & commit them one by one
 
-**Zweck:** Arbeite die Punkte aus `AGENT/TODO.md` der Reihe nach ab und setze
-jeden im Code um. Nach **jedem** Punkt folgt ein eigener Commit.
+**Purpose:** Work through the items in `AGENT/TODO.md` in order and implement each
+one in code. After **every** item a separate commit follows.
 
-Dieser Skill ist **projekt-unabhängig**: Er funktioniert in jedem Repository,
-das eine `AGENT/TODO.md` verwendet. Alle Pfade sind relativ zum Repo-Root;
-führe den Skill aus dem Wurzelverzeichnis des jeweiligen Projekts aus.
+This skill is **project-independent**: it works in any repository that uses an
+`AGENT/TODO.md`. All paths are relative to the repo root; run the skill from the
+root directory of the respective project.
 
-**Kontext:** Die Punkte in `TODO.md` sind häufig die Reaktionen/Entscheidungen des
-Users zu den Findings im Health-Report `AGENT/project-health-report.html`
-(z. B. „ux-2 fix", „cq-1 fix"). Eine ID wie `UX-2` verweist auf die gleichnamige
-Finding-Karte im Report — lies dort Beschreibung + Empfehlung, wenn ein Punkt
-darauf Bezug nimmt.
+**Context:** The items in `TODO.md` are often the user's reactions/decisions to
+the findings in the health report `AGENT/project-health-report.html` (e.g. "ux-2
+fix", "cq-1 fix"). An ID like `UX-2` refers to the finding card of the same name
+in the report — read its description + recommendation there when an item refers to
+it.
 
 ---
 
-## Projekt-Setup & Verifikation (falls du die Codebase noch nicht kennst)
+## Project setup & verification (if you don't know the codebase yet)
 
-Verschaff dir zuerst ein Bild vom Projekt, statt Annahmen zu treffen:
+Get a picture of the project first instead of making assumptions:
 
-- Lies vorhandene Anleitungen wie `README.md`, `CLAUDE.md`, `AGENTS.md` oder
-  `CONTRIBUTING.md` — besonders Abschnitte zu Entwicklung/Tests/Build.
-- Ermittle **die projekteigenen Verifikations-Befehle** aus den Projektdateien
-  (z. B. `package.json`-Scripts, `Makefile`, `justfile`, `Cargo.toml`,
-  `go.mod`, `pyproject.toml`, CI-Konfiguration). Nutze **den im Projekt
-  vorgesehenen Package-Manager/Toolchain** — rate nicht, sondern leite ihn aus
-  Lockfiles/Config ab (z. B. `bun.lock` → Bun, `pnpm-lock.yaml` → pnpm,
-  `package-lock.json` → npm).
-- Typische Verifikations-Schritte, sofern im Projekt vorhanden: **Formatierung/
-  Lint**, **Typecheck**, **Tests**, **Build**. Führe jeweils nur die für die
-  geänderte Seite/Sprache relevanten aus.
-- Beachte projektspezifische Konsistenz-Regeln (z. B. Gespiegelte Logik, die an
-  mehreren Stellen synchron gehalten werden muss) — solche Hinweise stehen meist
-  in `CLAUDE.md`/`README.md`.
+- Read existing guides like `README.md`, `CLAUDE.md`, `AGENTS.md` or
+  `CONTRIBUTING.md` — especially sections on development/tests/build.
+- Determine **the project's own verification commands** from the project files
+  (e.g. `package.json` scripts, `Makefile`, `justfile`, `Cargo.toml`, `go.mod`,
+  `pyproject.toml`, CI config). Use **the package manager/toolchain the project
+  intends** — do not guess, derive it from lockfiles/config (e.g. `bun.lock` ->
+  Bun, `pnpm-lock.yaml` -> pnpm, `package-lock.json` -> npm).
+- Typical verification steps, if present in the project: **formatting/lint**,
+  **typecheck**, **tests**, **build**. Run only those relevant to the
+  changed side/language each time.
+- Note project-specific consistency rules (e.g. mirrored logic that has to be
+  kept in sync in several places) — such hints are usually in
+  `CLAUDE.md`/`README.md`.
 
-## Bevor du startest
+## Before you start
 
-> **Fehlende Dateien/Ordner anlegen:** Existiert eine in diesem Skill genannte
-> Datei oder ein Ordner noch nicht (z. B. Der `AGENT/`-Ordner, `AGENT/TODO.md`
-> oder `AGENT/project-health-report.html`), **lege sie an**, statt abzubrechen.
-> Ist `AGENT/TODO.md` neu oder leer, gibt es nichts abzuarbeiten — sag das kurz,
-> statt zu raten.
+> **Create missing files/folders:** If a file or folder named in this skill does
+> not exist yet (e.g. the `AGENT/` folder, `AGENT/TODO.md` or
+> `AGENT/project-health-report.html`), **create it** instead of aborting. If
+> `AGENT/TODO.md` is new or empty there is nothing to work through — say so
+> briefly instead of guessing.
 
-1. Lies `AGENT/TODO.md` vollständig und ordne jedem Punkt zu, was konkret zu tun
-   ist (ziehe bei Bedarf die passende Finding-Karte im Health-Report heran).
-2. **Erstelle zuerst einen kurzen Plan** (ein Commit pro Punkt) und nenne ihn.
-3. **Stelle Rückfragen**, wenn ein Punkt mehrdeutig ist oder eine echte
-   Design-Entscheidung nötig ist — bevor du anfängst, nicht mittendrin.
+1. Read `AGENT/TODO.md` fully and map to each item what concretely needs doing
+   (pull in the matching finding card in the health report if needed).
+2. **Create a short plan first** (one commit per item) and state it.
+3. **Ask questions** if an item is ambiguous or a real design decision is needed
+   — before you start, not midway.
 
-## Pro Punkt (in Reihenfolge)
+## Per item (in order)
 
-1. **Umsetzen** — nimm die nötigen Code-Änderungen vor. Bleib beim Scope des Punkts;
-   fasse keine unabhängigen Änderungen mit an.
-2. **Verifizieren** — vor dem Commit lokal grün machen (projekteigene Befehle, siehe
-   oben; nur die betroffene Seite/Sprache prüfen). Wenn ein Verhalten neu/geändert
-   ist, ergänze oder aktualisiere einen Test, sofern das Projekt Tests hat.
-3. **Committen** — ein eigener, fokussierter Commit **nur** mit den Dateien dieses
-   Punkts und einer aussagekräftigen Commit-Message (kurzer Präfix, der den Punkt
-   benennt, z. B. `ux-2 fix: …`). Committe **auf dem aktuellen Branch** — lege
-   **nicht** ungefragt einen neuen Branch an (außer der User bittet ausdrücklich
-   darum).
+1. **Implement** — make the necessary code changes. Stay within the item's scope;
+   do not bundle in unrelated changes.
+2. **Verify** — make it green locally before the commit (the project's own
+   commands, see above; check only the affected side/language). If a behaviour is
+   new/changed, add or update a test if the project has tests.
+3. **Commit** — a separate, focused commit with **only** the files of this item
+   and a meaningful commit message (a short prefix naming the item, e.g.
+   `ux-2 fix: …`). Commit **on the current branch** — do **not** create a new
+   branch unasked (unless the user explicitly asks for it).
 
-## README/Doku pflegen
+## Maintain README/docs
 
-Wenn ein Punkt dokumentiertes Verhalten in der Projekt-Dokumentation ändert
-(`README.md` o. Ä.: Features, Sicherheits-/Header-Details, Protokoll, bewusste
-Entscheidungen), aktualisiere die Doku und committe diese Änderung **separat
-danach**.
+If an item changes documented behaviour in the project documentation (`README.md`
+etc.: features, security/header details, protocol, deliberate decisions), update
+the docs and commit that change **separately afterwards**.
 
-## CLAUDE.md pflegen
+## Maintain CLAUDE.md
 
-Genauso wie beim README: Wenn ein Punkt eine Funktion, ein Verhalten, einen
-Befehl (Build/Test/Lint), die Projektstruktur oder eine Konvention ändert, die in
-`CLAUDE.md` dokumentiert ist, **aktualisiere die `CLAUDE.md` entsprechend** und
-committe diese Änderung **separat danach**. Existiert (noch) keine `CLAUDE.md`,
-lege hier keine an — dafür ist der Skill `create-claude-md` zuständig.
+Just like the README: if an item changes a function, a behaviour, a command
+(build/test/lint), the project structure or a convention documented in
+`CLAUDE.md`, **update the `CLAUDE.md` accordingly** and commit that change
+**separately afterwards**. If no `CLAUDE.md` exists (yet), do not create one here
+— the `create-claude-md` skill is responsible for that.
 
-## Health-Report pflegen
+## Maintain the health report
 
-Wenn ein umgesetzter Punkt ein Finding in
-`AGENT/project-health-report.html` behebt oder dessen Bewertung ändert,
-aktualisiere den Report entsprechend: gelöste Findings **entfernen** (nicht
-abhaken), Zähler/Inhaltsverzeichnis konsistent halten. Neu entdeckte Probleme, die
-du nicht umsetzt, dürfen als Finding im Report ergänzt werden.
+If an implemented item fixes a finding in `AGENT/project-health-report.html` or
+changes its assessment, update the report accordingly: **remove** solved findings
+(do not tick them off), keep counters/table of contents consistent. Newly
+discovered problems you do not implement may be added as a finding in the report.
 
-## Grundregeln
+## Ground rules
 
-- **Ein Commit pro TODO-Punkt.** Vermische keine Punkte in einem Commit.
-- Fasse Dateien, die nicht zum aktuellen Punkt gehören, nicht an (insb. Andere
-  Arbeitsdateien im `AGENT/`-Ordner nicht ungefragt committen).
-- Melde am Ende knapp, was pro Punkt geändert und in welchem Commit es gelandet ist.
+- **One commit per TODO item.** Do not mix items in one commit.
+- Do not touch files that do not belong to the current item (in particular do not
+  commit other work files in the `AGENT/` folder unasked).
+- At the end, report briefly what changed per item and in which commit it landed.

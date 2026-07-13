@@ -13,18 +13,18 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 vim.keymap.set("x", "<leader>r", '"_dp')
 
--- <leader>S (nicht <leader>s), damit <leader>s… als Telescope-Präfix kollisionsfrei bleibt
+-- <leader>S (not <leader>s), so <leader>s… stays collision-free as the Telescope prefix
 vim.keymap.set(
   "n",
   "<leader>S",
   [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
-  { desc = "Wort unter Cursor suchen & ersetzen" }
+  { desc = "Search & replace word under cursor" }
 )
 
--- Diagnosen in die Quickfix-Liste schreiben (Anzeige dann per <leader>sq)
+-- Write diagnostics into the quickfix list (then shown via <leader>sq)
 vim.keymap.set("n", "<leader>sd", function()
   vim.diagnostic.setqflist({ open = false })
-end, { desc = "Diagnosen → Quickfix-Liste" })
+end, { desc = "Diagnostics → quickfix list" })
 
 vim.keymap.set("n", "<Backspace>", "<Nop>")
 vim.keymap.set("n", "<F1>", "<Nop>")
