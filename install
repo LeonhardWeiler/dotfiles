@@ -22,6 +22,7 @@
 #   --groups                  Benutzer zu den benötigten Gruppen hinzufügen (usermod -aG)
 #   --timezone ZONE           Zeitzone setzen (z. B. --timezone Europe/Vienna);
 #                             ohne ZONE fragt das Menü interaktiv nach
+#   --locale                  Locales aus /etc/locale.gen generieren (locale-gen)
 #
 # Optionen:
 #   -n, --dry-run             nur zeigen, was passieren würde — nichts ändern
@@ -72,7 +73,7 @@ usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "
 STEP_ORDER=()
 declare -A STEP_DESC STEP_FN SELECTED
 # Im `setup` vorausgewählte Schritte (Menü-Enter / kein TTY = diese Defaults).
-DEFAULT_STEPS=(programs systemd)
+DEFAULT_STEPS=(programs systemd locale)
 register_step() { STEP_ORDER+=("$1"); STEP_FN[$1]="$2"; STEP_DESC[$1]="$3"; }
 is_selected()   { [ -n "${SELECTED[$1]:-}" ]; }
 
@@ -103,6 +104,7 @@ while [ $# -gt 0 ]; do
     --groups)           SELECTED[groups]=1;          FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone braucht eine Zone (Region/Stadt)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
+    --locale)           SELECTED[locale]=1;          FLAG_STEPS_GIVEN=1 ;;
     *) warn "unbekanntes Argument: $1"; usage 1 ;;
   esac
   shift
@@ -256,15 +258,13 @@ next_steps() {
   printf '  • für die .bash_profile-Env (GTK_THEME, QT_QPA_PLATFORMTHEME, XDG_*) einmal neu einloggen\n'
 }
 
-# Nur beim `setup`: die frisch verlinkten Locales generieren (idempotent) und die
-# nicht sicher automatisierbaren, personen-/maschinenspezifischen Rest-Schritte
-# als konkrete Kommandos ausgeben (Details: README »Manual system state«).
-post_setup() {
-  if [ "$USER_ONLY" = 0 ]; then
-    info "Locales generieren (locale-gen)"
-    run 1 locale-gen || warn "locale-gen fehlgeschlagen"
-  fi
+# Die frisch verlinkten Locales (/etc/locale.gen) generieren (idempotent).
+do_locale() {
+  if [ "$USER_ONLY" = 1 ]; then warn "--user-only: locale-gen übersprungen"; return 0; fi
+  info "Locales generieren (locale-gen)"
+  run 1 locale-gen || warn "locale-gen fehlgeschlagen"
 }
+register_step locale do_locale "Locales generieren (locale-gen)"
 
 # Interaktives Menü: optionale Schritte auswählen. Bei per Flag vorgewählten
 # Schritten (FLAG_STEPS_GIVEN) übernimmt es diese unverändert; ohne TTY greifen
@@ -401,7 +401,7 @@ case "$CMD" in
     is_selected remove-systemd && do_systemd_disable
     is_selected groups && do_groups
     is_selected timezone && do_timezone
-    post_setup
+    is_selected locale && do_locale
     is_selected remove-programs && do_programs_remove
     next_steps
     ;;
