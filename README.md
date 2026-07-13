@@ -55,6 +55,7 @@ The optional steps (menu entries; each also has a flag, see below):
 | Deploy the ly@tty2 drop-ins as real copies | `--ly-dropin` | |
 | Passwordless sudo for `wheel` (`/etc/sudoers.d/`) | `--sudoers` | |
 | Rebuild the initramfs (`mkinitcpio -P`) | `--initramfs` | |
+| Install fonts + refresh the font cache (`fc-cache`) | `--fonts` | |
 
 Each step is also runnable on its own for automation: `./install --<step>` runs
 just those steps (no linking, no menu), e.g. `./install --timezone Europe/Vienna`

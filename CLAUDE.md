@@ -47,6 +47,9 @@ scripts). The source->target mapping is stated explicitly in
   - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
   - `--initramfs` - `mkinitcpio -P`.
+  - `--fonts` - install the font packages (`FONT_PACKAGES`: noto-fonts{,-cjk,
+    -emoji}, ttf-jetbrains-mono-nerd) and rebuild the fontconfig cache
+    (`fc-cache -f`).
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file
