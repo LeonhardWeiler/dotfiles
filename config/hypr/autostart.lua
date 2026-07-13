@@ -4,5 +4,5 @@
 hl.on("hyprland.start", function()
 	hl.exec_cmd("mako") -- notification daemon
 	hl.exec_cmd('gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"')
-	hl.exec_cmd("~/files/projects/wallpaper/change-wallpaper.sh")
+	hl.exec_cmd("~/.local/bin/change-wallpaper")
 end)
