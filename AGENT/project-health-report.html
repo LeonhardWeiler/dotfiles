@@ -314,13 +314,14 @@
         <code>.gitignore</code>/<code>.claudeignore</code>) and third-party mpv
         Lua scripts only checked superficially.<br />
         Since the last snapshot the repo became markedly more portable: the
-        battery is now auto-detected (no more fixed <code>BAT0</code>), the
-        hardcoded GPU PCI path is gone (wlroots auto-detects), the personal SLF
-        workspace launcher was removed, and a non-owner <code>--scrub</code>
-        step now strips the git identity/signing and the restic backup host
-        before linking. One <b>low</b> finding remains (the non-TTY
-        <code>setup</code> default scrubs). Section 3 lists what is still
-        hardcoded to this machine/user for a foreign Arch install.
+        battery is now auto-detected (no more fixed <code>BAT0</code>), most
+        scripts were made POSIX <code>#!/bin/sh</code>, the personal SLF
+        workspace launcher was removed, and a non-owner scrub
+        (<code>--scrub</code> / owner prompt) strips the git identity/signing,
+        the restic backup host and the <code>WLR_DRM_DEVICES</code> iGPU pin
+        before linking (non-interactively only when explicitly asked). <b>No
+        open findings.</b> Section 3 lists what is still hardcoded to this
+        machine/user for a foreign Arch install.
       </div>
 
       <div class="summary">
@@ -334,7 +335,7 @@
           <span class="n">0</span><span class="l">Medium</span>
         </div>
         <div class="stat low">
-          <span class="n">1</span><span class="l">Low</span>
+          <span class="n">0</span><span class="l">Low</span>
         </div>
       </div>
 
@@ -356,36 +357,22 @@
       <section id="open">
         <h2>1 · Open findings</h2>
 
-        <div class="card low">
+        <div class="card good">
           <div class="card-head">
-            <span class="badge low">low</span>
-            <span class="id">SCRUB-1</span>
-            <span class="loc"
-              ><code>install</code> · <code>setup</code> owner prompt /
-              <code>do_scrub</code></span
-            >
+            <span class="badge good">no open findings</span>
+            <span class="loc">nothing to do</span>
           </div>
           <p>
-            The owner prompt uses <code>confirm()</code>, which returns "no"
-            whenever there is <b>no TTY</b>. So a non-interactive
-            <code>./install setup</code> (piped, CI, provisioning) is treated as
-            a non-owner and <b>scrubs the working copy</b> - it blanks the git
-            identity in <code>config/git/.gitconfig</code> and rewrites the
-            restic host in <code>config/usrbin/restic-backup</code>. For a
-            foreign clone that default is exactly right, but the <em>owner</em>
-            running setup non-interactively would silently lose their identity
-            in the working tree (recoverable via <code>git checkout</code>, but
-            surprising). The scrub only edits tracked files, not <code>~</code>.
+            This full scan surfaced no open problems - no
+            correctness/robustness, security, structure or docs findings. Shell
+            scripts are syntactically green (<code>bash -n</code> /
+            <code>sh -n</code>), the Hyprland Lua modules parse, the live linking
+            is complete (40/40) and README as well as CLAUDE.md match the code.
+            The earlier non-TTY scrub concern is resolved: <code>setup</code> now
+            keeps personal data non-interactively unless <code>--scrub</code> is
+            passed explicitly. What makes the repo particularly solid, or is
+            deliberately chosen that way, is in the sections below.
           </p>
-          <div class="rec">
-            <b>Recommendation:</b> if a safer default is wanted, gate the
-            non-TTY branch so it does <em>not</em> scrub unless
-            <code>--scrub</code> is passed explicitly, or print a clear notice
-            when scrubbing non-interactively. Otherwise document that
-            <code>setup</code> must be run on a TTY (as the owner) - the current
-            behaviour is defensible and consistent with the script's
-            "non-TTY = no" convention elsewhere.
-          </div>
         </div>
       </section>
 
@@ -432,13 +419,16 @@
             The non-owner path is a clean addition: the <code>setup</code>
             command asks "Are you the repository owner?" and, on "no", runs an
             <b>idempotent</b> scrub over the working copy <em>before</em>
-            linking - blanking the git identity and removing commit signing, and
+            linking - blanking the git identity and removing commit signing,
             replacing the restic backup host with a showcase placeholder
-            (<code>sftp:user@ip:drive/path/to/your/backup</code>). It reuses the
-            existing step registry (also runnable standalone via
-            <code>--scrub</code>) and honours <code>-n/--dry-run</code>. This
-            closes the biggest portability gap - a foreign clone no longer
-            deploys the owner's identity or a broken signing key.
+            (<code>sftp:user@ip:drive/path/to/your/backup</code>) and dropping
+            the <code>WLR_DRM_DEVICES</code> iGPU pin so wlroots auto-detects the
+            GPU. It is a tri-state (<code>--scrub</code> /
+            <code>--no-scrub</code>, also runnable standalone) that honours
+            <code>-n/--dry-run</code> and <b>never scrubs silently</b> in a
+            non-interactive run. This closes the biggest portability gap - a
+            foreign clone no longer deploys the owner's identity, a broken
+            signing key or a wrong GPU path.
           </p>
         </div>
 
@@ -541,21 +531,27 @@
         <div class="card low">
           <div class="card-head">
             <span class="badge low">machine-specific</span>
-            <span class="loc"><code>config/hypr/monitors.lua</code></span>
+            <span class="loc"
+              ><code>config/hypr/monitors.lua</code> ·
+              <code>config/hypr/env.lua</code></span
+            >
           </div>
           <p>
             The monitors are fixed outputs (<code>HDMI-A-1</code> at
             <code>2560x0</code>, <code>eDP-1</code> at
             <code>2560x1600@60</code>, scale <code>1.6</code>) with specific
             positions/scales. On different hardware the outputs are named
-            differently, so <b>monitors may be left unconfigured</b>. (The
-            previously hardcoded <code>WLR_DRM_DEVICES</code> PCI GPU path has
-            been removed - wlroots now auto-detects the GPU, so that part is no
-            longer machine-specific.)
+            differently, so <b>monitors may be left unconfigured</b>.
+            <code>env.lua</code> also pins <code>WLR_DRM_DEVICES</code> to this
+            machine's integrated GPU (<code>pci-0000:34:00.0</code>) - but that
+            line is <b>auto-removed by the non-owner scrub</b> (owner prompt /
+            <code>--scrub</code>), so on foreign hardware wlroots falls back to
+            auto-detection. Only <code>monitors.lua</code> still needs a manual
+            edit.
           </p>
           <div class="rec">
             <b>Adjust:</b> rewrite <code>monitors.lua</code> for your outputs
-            (<code>hyprctl monitors</code>).
+            (<code>hyprctl monitors</code>); the GPU pin is handled by the scrub.
           </div>
         </div>
 
