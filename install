@@ -92,6 +92,24 @@ read_services() {
 }
 read_services "$BASEDIR/setup/services.txt"
 
+# Generic list reader: one value per line (`#` comments / blanks ignored) into
+# the named array (Bash nameref).
+read_list() {
+  local file="$1"; local -n __out="$2"; local line val
+  __out=()
+  [ -f "$file" ] || { warn "list file missing: $file"; return 0; }
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%%#*}"; read -r val _ <<<"$line" || true
+    [ -z "${val:-}" ] && continue
+    __out+=("$val")
+  done < "$file"
+}
+
+# Groups for --groups, joined into a comma list for `usermod -aG`.
+GROUP_ARR=()
+read_list "$BASEDIR/setup/groups.txt" GROUP_ARR
+GROUP_LIST="$(IFS=,; printf '%s' "${GROUP_ARR[*]}")"
+
 # ── Optional setup steps (registry) ──────────────────────────────────────────
 # Each step has a do_<name> function, a `--<name>` flag and a menu line in
 # `setup`. New steps are added below via register_step. SELECTED holds the
@@ -369,13 +387,12 @@ do_systemd_disable() {
 }
 register_step remove-systemd do_systemd_disable "Deactivate systemd units (disable)"
 
-# Add the user to the groups the tracked tools need. `GROUPS` is reserved in Bash
-# (current GIDs) - hence GROUP_LIST. docker/wireshark deliberately excluded (only
-# needed if you also install those packages).
-GROUP_LIST="wheel,input,kvm,libvirt,uucp,disk,lock"
+# Add the user to the groups the tracked tools need. GROUP_LIST is loaded from
+# setup/groups.txt near the top (Bash reserves `GROUPS` for the current GIDs).
 do_groups() {
   local user="${SUDO_USER:-${USER:-}}"
   [ -n "$user" ] || { warn "no user determinable - groups skipped"; return 0; }
+  [ -n "$GROUP_LIST" ] || { warn "no groups configured (setup/groups.txt) - skipped"; return 0; }
   info "Adding user '$user' to groups: $GROUP_LIST"
   run 1 usermod -aG "$GROUP_LIST" "$user" || warn "usermod failed"
   info "(group change takes effect after re-login)"
