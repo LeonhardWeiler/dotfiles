@@ -35,7 +35,6 @@ export BROWSER=zen-browser
 # render the same regardless of how they were launched (terminal vs. rofi).
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
-export TYPST_PACKAGE_PATH="$HOME/.config/typst/packages"
 eval "$(dircolors "${XDG_CONFIG_HOME:-$HOME/.config}/dircolors")"
 
 alias open='xdg-open'
