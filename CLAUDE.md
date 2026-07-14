@@ -56,7 +56,7 @@ scripts). The source->target mapping is stated explicitly in
     `FONT_PACKAGES`) and rebuild the fontconfig cache (`fc-cache -f`).
   - `--scrub` / `--no-scrub` - replace the owner's personal data in the **working
     copy** with generic placeholders: git identity/signing in
-    `config/git/.gitconfig` -> blank name/email, signing removed; the restic
+    `config/git/config` -> blank name/email, signing removed; the restic
     backup host in `config/usrbin/restic-backup` ->
     `sftp:user@ip:drive/path/to/your/backup`; the `WLR_DRM_DEVICES` iGPU pin in
     `config/hypr/env.lua` -> removed (so wlroots auto-detects the GPU). Idempotent
@@ -108,13 +108,16 @@ scripts). The source->target mapping is stated explicitly in
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `systemd-user`, `typst`, `usrbin`, `vconsole`, `wallpaper`.
   Whole directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
-  mako, mpv, git, typst, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
+  mako, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `systemd-user`/`/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
   are preserved. `claude` does **not** track
-  `.claude.json`/sessions/history/cache (auth/state/secrets).
+  `.claude.json`/sessions/history/cache (auth/state/secrets). `typst` is data,
+  not config: only `config/typst/packages` is linked, as a dir symlink into
+  `~/.local/share/typst/packages` (typst's native `$XDG_DATA_HOME` location for
+  `@local` packages).
 - **`setup/`** = deployment machinery: `links.conf` (link map, default config of
   `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
   script, without a `.sh` extension), and the **data lists the installer reads
@@ -186,7 +189,7 @@ scripts). The source->target mapping is stated explicitly in
   was done with `hyprlang2lua`.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
-- Commits are SSH-signed (`config/git/.gitconfig`).
+- Commits are SSH-signed (`config/git/config`).
 - Two health/workflow skills write into `AGENT/`: `review-and-update-report`
   (health report) and `implement-todo` (work through `TODO.md`, one commit per
   item).
