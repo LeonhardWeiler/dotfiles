@@ -112,10 +112,10 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `alacritty`, `bash`, `btop`, `claude`,
   `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `systemd-user`, `typst`, `usrbin`, `vconsole`, `wallpaper`.
+  `systemd-system`, `typst`, `usrbin`, `vconsole`, `wallpaper`.
   Whole directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
   mako, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
-  `claude` and `systemd-user`/`/etc` targets deliberately **only the single file**
+  `claude` and `/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
@@ -140,11 +140,13 @@ scripts). The source->target mapping is stated explicitly in
   `locale/locale.conf`, `locale/locale.gen` (-> `/etc/locale.gen`),
   `pacman/pacman.conf` (-> `/etc/pacman.conf`),
   `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
-- **System/user services**: activated by the `install` script after linking via
-  `systemctl enable` (system) or `systemctl --user enable` (user:
-  `battery-check.timer`, `dotfiles-sync.service`) - the unit lists live in
-  `setup/services.txt` (loaded into `USER_UNITS` / `SYSTEM_UNITS`). Deliberately
-  `enable`, **not**
+- **System services**: activated by the `install` script after linking via
+  `systemctl enable` - the unit lists live in `setup/services.txt` (loaded into
+  `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the
+  battery-level check and the config sync run as plain commands from the Hyprland
+  autostart (`config/hypr/autostart.lua`) instead of systemd user units (a `while`
+  loop calling `bat_check` every 2 min, and `dotfiles_sync` once on login).
+  Deliberately `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
   only contains system units that really exist - pipewire/wireplumber (user

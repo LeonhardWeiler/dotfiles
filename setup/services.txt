@@ -11,9 +11,10 @@
 # have no enable-able bare <name>.service. iptables loads the (default) rules
 # from /etc/iptables/; fstrim.timer does periodic SSD TRIM; timesyncd = NTP;
 # power-profiles-daemon = power profiles (laptop).
-
-user    battery-check.timer
-user    dotfiles-sync.service
+#
+# There are currently no `user` units: the battery check and the config sync run
+# as plain commands from the Hyprland autostart (config/hypr/autostart.lua)
+# instead of systemd user units.
 
 system  NetworkManager.service
 system  ly@tty2.service

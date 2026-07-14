@@ -153,29 +153,24 @@ Check status:
 sudo systemctl status <name>.service
 ```
 
-### User Services
+### Login-time helpers (no user units)
 
-`./install` reactivates the user units (the `USER_UNITS` list in the script:
-`systemctl --user enable battery-check.timer dotfiles-sync.service`).
-PipeWire/WirePlumber/figma-agent are enabled by their own package presets and are
-**not** managed here. To do it by hand:
+There are **no systemd user units**. Two things that would otherwise want a
+`.timer`/`.service` run as plain commands from the Hyprland autostart
+(`config/hypr/autostart.lua`), so nothing needs to be enabled:
 
-```bash
-systemctl --user enable --now battery-check.timer
-# Sync `programs.txt` (and further configs) on every login: commit + push
-systemctl --user enable --now dotfiles-sync.service
-```
+- **Battery warning** - a shell loop calls `bat_check` every 2 minutes:
+  `while true; do ~/.local/bin/bat_check; sleep 120; done`.
+- **Config sync** - `dotfiles_sync` runs once on login to commit + push
+  `programs.txt` (and further tracked configs).
 
-> `dotfiles-sync.service` commits and **pushes** automatically. That requires an
-> SSH key usable without interaction (passphrase-less or provided via `ssh-agent`
-> at login); otherwise only the push fails (best effort, login is not blocked).
+> `dotfiles_sync` commits and **pushes** automatically. That requires an SSH key
+> usable without interaction (passphrase-less or provided via `ssh-agent` at
+> login); otherwise only the push fails (best effort, login is not blocked).
 > Extensible via `GENERATORS`/`PATHS` in `~/.local/bin/dotfiles_sync`.
 
-Check status:
-
-```bash
-systemctl --user status <name>.service
-```
+PipeWire/WirePlumber/figma-agent are enabled by their own package presets and are
+**not** managed here.
 
 ## Contents
 
@@ -199,14 +194,13 @@ systemctl --user status <name>.service
 | qt5ct          | `~/.config/qt5ct`                  |
 | Rofi           | `~/.config/rofi`                   |
 | Scripts        | `~/.local/bin`                     |
-| Systemd User   | `~/.config/systemd/`               |
 | Systemd System | `/etc/systemd/system/`             |
 | Typst          | `~/.config/typst`                  |
 | Wallpapers     | `~/.local/share/wallpapers`        |
 
 ## My Setup
 
-I use Arch GNU/Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles-sync.service` commits and pushes it on login. You can still refresh it manually while installing via the install script.
+I use Arch GNU/Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles_sync` (run from the Hyprland autostart) commits and pushes it on login. You can still refresh it manually while installing via the install script.
 
 > Note: This setup has been primarily tested on Arch GNU/Linux. Other distributions may require adjustments.
 

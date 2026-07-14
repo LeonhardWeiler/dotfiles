@@ -1,9 +1,0 @@
-[Unit]
-Description=Battery level check
-
-[Service]
-Type=oneshot
-ExecStart=%h/.local/bin/bat_check
-
-[Install]
-WantedBy=default.target

@@ -18,12 +18,19 @@ Versions before `1.0.0` are pre-release: anything may still change.
 
 - Documentation now says **GNU/Linux** where the whole operating system is meant
   (README, `CLAUDE.md`); "Linux" is kept for the kernel.
+- The battery-level check and the login config sync no longer use systemd user
+  units. They run as plain commands from the Hyprland autostart
+  (`config/hypr/autostart.lua`): a `while` loop calling `bat_check` every 2
+  minutes, and `dotfiles_sync` once on login.
 
 ### Removed
 
 - The hidden `./install selftest` command and the GitHub Actions CI workflow
   (`.github/workflows/validate.yml`) it fed. `./install validate` is still
   available to check `links.conf` on demand.
+- The systemd user units `battery-check.timer`, `battery-check.service` and
+  `dotfiles-sync.service` (and their `links.conf`/`services.txt` entries) -
+  replaced by the Hyprland autostart commands above.
 
 ## [0.7.0] - 2026-07-14
 
