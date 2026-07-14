@@ -6,6 +6,5 @@ return {
 	menu = "rofi -show drun",
 	browser = "zen-browser",
 	lock = "hyprlock",
-	pass = "~/.local/bin/rofi_keepassxc -d ~/.config/keepassxc/Passwords.kdbx",
 	files = "rofi -show filebrowser",
 }

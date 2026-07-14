@@ -31,6 +31,8 @@ Versions before `1.0.0` are pre-release: anything may still change.
 - The systemd user units `battery-check.timer`, `battery-check.service` and
   `dotfiles-sync.service` (and their `links.conf`/`services.txt` entries) -
   replaced by the Hyprland autostart commands above.
+- The `rofi_keepassxc` launcher script, its `pass` entry in
+  `config/hypr/programs.lua` and the `ALT+SHIFT+o` keybind - no longer used.
 
 ## [0.7.0] - 2026-07-14
 
