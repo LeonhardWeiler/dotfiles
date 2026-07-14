@@ -528,12 +528,17 @@ parse_links() {
 # Report a validation problem at a specific links.conf line.
 verr() { printf '  %s✗%s %s:%s: %s\n' "$C_WARN" "$C_RST" "$CONFIG" "$1" "$2" >&2; }
 
+# Target prefix allowlist: a target must live under one of these (add a prefix
+# here to opt one in). Keeps a stray `/tmp/...`, `/usr/...` or `/` target - which
+# would write outside the intended user/system config areas - out of the config.
+ALLOWED_TARGET_PREFIXES=("$HOME" "/etc" "/usr/local")
+
 # Phase 2 - validate: check the raw entries and collect ALL problems (no
 # filesystem mutation). Returns non-zero if anything is wrong. Every command runs
 # this before touching the filesystem, so a broken config aborts the whole run
 # instead of silently skipping lines.
 validate_links() {
-  local i s t opt ln tgt m et errs=0
+  local i s t opt ln tgt m et ok p errs=0
   local -A seen_src seen_tgt
   if [ "${#RAW_SRC[@]}" -eq 0 ]; then warn "$CONFIG: no entries"; return 1; fi
   for i in "${!RAW_SRC[@]}"; do
@@ -547,9 +552,17 @@ validate_links() {
     if [ -n "${seen_src[$s]:-}" ]; then
       verr "$ln" "duplicate source '$s' (first seen at line ${seen_src[$s]})"; errs=1
     else seen_src[$s]="$ln"; fi
+    tgt="$(expand_target "$t")"
+    # Target must sit under an allowed prefix (~ / /etc / /usr/local).
+    ok=0
+    for p in "${ALLOWED_TARGET_PREFIXES[@]}"; do
+      case "$tgt/" in "$p"/*) ok=1; break ;; esac
+    done
+    if [ "$ok" != 1 ]; then
+      verr "$ln" "target prefix not allowed: '$t' (allowed: ~ /etc /usr/local)"; errs=1
+    fi
     # Duplicate target: compare the FINAL (expanded) targets so two entries never
     # fight over the same path. Globs are expanded per match here.
-    tgt="$(expand_target "$t")"
     if [[ "$s" == *"*"* ]]; then
       shopt -s nullglob
       for m in "$BASEDIR"/$s; do
