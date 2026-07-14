@@ -533,7 +533,8 @@ verr() { printf '  %s✗%s %s:%s: %s\n' "$C_WARN" "$C_RST" "$CONFIG" "$1" "$2" >
 # this before touching the filesystem, so a broken config aborts the whole run
 # instead of silently skipping lines.
 validate_links() {
-  local i s t opt ln errs=0
+  local i s t opt ln tgt m et errs=0
+  local -A seen_src seen_tgt
   if [ "${#RAW_SRC[@]}" -eq 0 ]; then warn "$CONFIG: no entries"; return 1; fi
   for i in "${!RAW_SRC[@]}"; do
     s="${RAW_SRC[$i]}"; t="${RAW_TGT[$i]}"; opt="${RAW_OPT[$i]}"; ln="${RAW_LN[$i]}"
@@ -541,6 +542,27 @@ validate_links() {
     if [ -z "$t" ]; then verr "$ln" "missing target for source '$s'"; errs=1; continue; fi
     if [ -n "$opt" ]; then
       verr "$ln" "unexpected extra field(s) '$opt' (expected: <source> <target>)"; errs=1
+    fi
+    # Duplicate source (same line effectively repeated).
+    if [ -n "${seen_src[$s]:-}" ]; then
+      verr "$ln" "duplicate source '$s' (first seen at line ${seen_src[$s]})"; errs=1
+    else seen_src[$s]="$ln"; fi
+    # Duplicate target: compare the FINAL (expanded) targets so two entries never
+    # fight over the same path. Globs are expanded per match here.
+    tgt="$(expand_target "$t")"
+    if [[ "$s" == *"*"* ]]; then
+      shopt -s nullglob
+      for m in "$BASEDIR"/$s; do
+        et="${tgt%/}/${m##*/}"
+        if [ -n "${seen_tgt[$et]:-}" ]; then
+          verr "$ln" "duplicate target '$et' (first seen at line ${seen_tgt[$et]})"; errs=1
+        else seen_tgt[$et]="$ln"; fi
+      done
+      shopt -u nullglob
+    else
+      if [ -n "${seen_tgt[$tgt]:-}" ]; then
+        verr "$ln" "duplicate target '$tgt' (first seen at line ${seen_tgt[$tgt]})"; errs=1
+      else seen_tgt[$tgt]="$ln"; fi
     fi
   done
   return "$errs"
