@@ -33,6 +33,9 @@ Versions before `1.0.0` are pre-release: anything may still change.
   replaced by the Hyprland autostart commands above.
 - The `rofi_keepassxc` launcher script, its `pass` entry in
   `config/hypr/programs.lua` and the `ALT+SHIFT+o` keybind - no longer used.
+- The tracked Typst `@local` packages (`config/typst/`, the `school-theme`
+  template), its `links.conf` entry and the `~/.local/share/typst/packages`
+  symlink. The `typst` package itself stays installed.
 
 ## [0.7.0] - 2026-07-14
 

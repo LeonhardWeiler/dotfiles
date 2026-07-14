@@ -195,7 +195,6 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | Rofi           | `~/.config/rofi`                   |
 | Scripts        | `~/.local/bin`                     |
 | Systemd System | `/etc/systemd/system/`             |
-| Typst          | `~/.config/typst`                  |
 | Wallpapers     | `~/.local/share/wallpapers`        |
 
 ## My Setup

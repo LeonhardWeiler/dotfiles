@@ -112,7 +112,7 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `alacritty`, `bash`, `btop`, `claude`,
   `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `typst`, `usrbin`, `vconsole`, `wallpaper`.
+  `systemd-system`, `usrbin`, `vconsole`, `wallpaper`.
   Whole directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
   mako, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `/etc` targets deliberately **only the single file**
@@ -120,10 +120,7 @@ scripts). The source->target mapping is stated explicitly in
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
   are preserved. `claude` does **not** track
-  `.claude.json`/sessions/history/cache (auth/state/secrets). `typst` is data,
-  not config: only `config/typst/packages` is linked, as a dir symlink into
-  `~/.local/share/typst/packages` (typst's native `$XDG_DATA_HOME` location for
-  `@local` packages).
+  `.claude.json`/sessions/history/cache (auth/state/secrets).
 - **`setup/`** = deployment machinery: `links.conf` (link map, default config of
   `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
   script, without a `.sh` extension), and the **data lists the installer reads
