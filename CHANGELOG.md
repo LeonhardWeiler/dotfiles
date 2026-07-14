@@ -37,6 +37,14 @@ Versions before `1.0.0` are pre-release: anything may still change.
   template), its `links.conf` entry and the `~/.local/share/typst/packages`
   symlink. The `typst` package itself stays installed.
 
+### Fixed
+
+- `./install prune` (and the prune step inside `link`/`setup`) aborted before
+  writing the `linked-targets` snapshot - and, for `link`, before reactivating
+  the systemd units and printing the next steps - whenever it actually pruned a
+  stale link, because `prune_stale` returned non-zero under `set -e`. It now
+  always returns 0.
+
 ## [0.7.0] - 2026-07-14
 
 ### Added

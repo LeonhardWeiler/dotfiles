@@ -309,7 +309,11 @@ prune_stale() {
     { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && continue
     run "$root" rm "$old"; ok "pruned stale link: $old"; removed=$((removed + 1))
   done < "$STATE_FILE"
-  [ "$removed" -eq 0 ] && ok "no stale links to prune"
+  # Note: keep this the last statement returning 0. Under `set -e` a non-zero
+  # return here (e.g. from a bare `[ "$removed" -eq 0 ] && …` when removed>0)
+  # would abort the caller before save_linked_state/reactivate_units run.
+  if [ "$removed" -eq 0 ]; then ok "no stale links to prune"; fi
+  return 0
 }
 
 # Record the current desired targets so the next run can detect the ones that
