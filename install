@@ -538,15 +538,17 @@ ALLOWED_TARGET_PREFIXES=("$HOME" "/etc" "/usr/local")
 # this before touching the filesystem, so a broken config aborts the whole run
 # instead of silently skipping lines.
 validate_links() {
-  local i s t opt ln tgt m et ok p errs=0
+  local i s t opt ln tgt m et ok p matched errs=0
   local -A seen_src seen_tgt
   if [ "${#RAW_SRC[@]}" -eq 0 ]; then warn "$CONFIG: no entries"; return 1; fi
   for i in "${!RAW_SRC[@]}"; do
     s="${RAW_SRC[$i]}"; t="${RAW_TGT[$i]}"; opt="${RAW_OPT[$i]}"; ln="${RAW_LN[$i]}"
     # A well-formed line is exactly `<source> <target>`.
     if [ -z "$t" ]; then verr "$ln" "missing target for source '$s'"; errs=1; continue; fi
-    if [ -n "$opt" ]; then
-      verr "$ln" "unexpected extra field(s) '$opt' (expected: <source> <target>)"; errs=1
+    # The only allowed 3rd field is the `optional` keyword (marks a source - a
+    # glob in particular - that may legitimately match nothing).
+    if [ -n "$opt" ] && [ "$opt" != optional ]; then
+      verr "$ln" "unexpected extra field(s) '$opt' (expected: <source> <target> [optional])"; errs=1
     fi
     # Duplicate source (same line effectively repeated).
     if [ -n "${seen_src[$s]:-}" ]; then
@@ -564,14 +566,20 @@ validate_links() {
     # Duplicate target: compare the FINAL (expanded) targets so two entries never
     # fight over the same path. Globs are expanded per match here.
     if [[ "$s" == *"*"* ]]; then
+      matched=0
       shopt -s nullglob
       for m in "$BASEDIR"/$s; do
+        matched=1
         et="${tgt%/}/${m##*/}"
         if [ -n "${seen_tgt[$et]:-}" ]; then
           verr "$ln" "duplicate target '$et' (first seen at line ${seen_tgt[$et]})"; errs=1
         else seen_tgt[$et]="$ln"; fi
       done
       shopt -u nullglob
+      # An unmatched glob is fatal unless the entry is marked `optional`.
+      if [ "$matched" = 0 ] && [ "$opt" != optional ]; then
+        verr "$ln" "glob matches nothing: '$s' (append 'optional' to allow zero matches)"; errs=1
+      fi
     else
       if [ -n "${seen_tgt[$tgt]:-}" ]; then
         verr "$ln" "duplicate target '$tgt' (first seen at line ${seen_tgt[$tgt]})"; errs=1
