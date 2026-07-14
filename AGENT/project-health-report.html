@@ -316,9 +316,11 @@
         (excluded via <code>.gitignore</code>/<code>.claudeignore</code>) and
         third-party mpv Lua scripts only checked superficially.<br />
         Overall the repo is very clean and in good shape - fresh full scan,
-        <strong>no open findings</strong>. The notes below ("strong" /
-        "deliberate") are verified against the current code (paths and line
-        references match).
+        <strong>no open findings</strong>. The notes below ("strong",
+        "machine-specific", "deliberate") are verified against the current code
+        (paths and line references match). Section 3 lists what is hardcoded to
+        this machine/user and would need adjusting on a fresh Arch install for
+        someone else.
       </div>
 
       <div class="summary">
@@ -341,6 +343,9 @@
         <ol>
           <li><a href="#open">Open findings</a></li>
           <li><a href="#strong">What's already strong</a></li>
+          <li>
+            <a href="#machine">Machine-specific - won't work as-is for others</a>
+          </li>
           <li><a href="#deliberate">Deliberate decisions</a></li>
         </ol>
       </nav>
@@ -474,9 +479,147 @@
         </div>
       </section>
 
+      <!-- ================= MACHINE-SPECIFIC ================= -->
+      <section id="machine">
+        <h2>3 · Machine-specific - won't work as-is for another user</h2>
+
+        <p style="color: var(--fg-dim); font-size: 13px; margin: 0 0 20px">
+          Personal dotfiles: the following values are hardcoded to this exact
+          machine/user (hostname "leo", a specific laptop + LAN). On a fresh Arch
+          install for someone else they are wrong and need adjusting. None of
+          these are bugs - they are listed so a foreign user knows what to change
+          before running <code>./install</code>.
+        </p>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"><code>config/git/.gitconfig</code></span>
+          </div>
+          <p>
+            Hardcoded git identity and signing key:
+            <code>name = Leonhard Weiler</code>,
+            <code>email = leonhard-weiler@hotmail.com</code> and
+            <code>signingkey = /home/leo/.ssh/id_ed25519.pub</code> with
+            <code>commit.gpgsign = true</code>. A foreign user would commit under
+            <em>my</em> name and, worse, <b>every commit fails to sign</b>
+            because that key path does not exist for them.
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> set your own <code>name</code>/<code>email</code> and
+            point <code>signingkey</code> at your own key (or drop
+            <code>commit.gpgsign</code>).
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"
+              ><code>config/hypr/env.lua:7</code> ·
+              <code>config/hypr/monitors.lua</code></span
+            >
+          </div>
+          <p>
+            <code>WLR_DRM_DEVICES</code> is pinned to a fixed PCI GPU path
+            (<code>/dev/dri/by-path/pci-0000:34:00.0-card</code>) and the
+            monitors are fixed outputs (<code>eDP-1</code>,
+            <code>HDMI-A-1</code>) with specific resolutions/positions. On
+            different hardware the PCI path does not exist and the outputs are
+            named differently, so <b>Hyprland may pick the wrong GPU or leave
+            monitors unconfigured</b>.
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> set <code>WLR_DRM_DEVICES</code> to your card (or
+            remove it) and rewrite <code>monitors.lua</code> for your outputs
+            (<code>hyprctl monitors</code>).
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"><code>config/vconsole/vconsole.conf</code></span>
+          </div>
+          <p>
+            The console keymap is <code>KEYMAP=mod-dh-iso-uk</code> (Colemak-DH).
+            A QWERTY user gets a <b>Colemak TTY and ly login</b>, which is
+            unusable until changed (and baked into the initramfs, see the keymap
+            note under "Deliberate decisions").
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> set your layout in <code>vconsole.conf</code>, then
+            <code>sudo mkinitcpio -P</code>.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"
+              ><code>config/usrbin/restic-backup:10</code></span
+            >
+          </div>
+          <p>
+            The restic default repo is
+            <code>sftp:Leo@192.168.178.23:D:\ResticBackup</code> (my LAN NAS,
+            Windows path, user "Leo") and it backs up
+            <code>$HOME/files/projects</code> and
+            <code>$HOME/files/school</code>. For anyone else the target host is
+            unreachable and those source directories don't exist. The repo is
+            overridable via <code>RESTIC_REPOSITORY</code>, but the default and
+            the backed-up paths are mine.
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> set <code>RESTIC_REPOSITORY</code> (env) and change
+            the backup source directories.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"><code>config/usrbin/workspace_slf</code></span>
+          </div>
+          <p>
+            A personal project launcher: it opens the dev layout for
+            <code>$HOME/files/projects/slf</code> (zen browser, nvim, frontend +
+            backend terminals) and <b>aborts if that directory is missing</b>.
+            The whole script is specific to one of my projects and has no meaning
+            on another machine.
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> repurpose or ignore - it only runs when bound to a key
+            and the project path exists.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"
+              ><code>config/bash/.bashrc:7</code> ·
+              <code>config/usrbin/bat_check:3</code></span
+            >
+          </div>
+          <p>
+            The battery indicator reads
+            <code>/sys/class/power_supply/BAT0/capacity</code>. Both the prompt
+            (<code>.bashrc</code>) and the low-battery notifier
+            (<code>bat_check</code>) degrade gracefully when it is absent (empty
+            display / exit 0), but on a laptop whose battery is
+            <code>BAT1</code> the <b>indicator silently shows nothing</b>.
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> point <code>BAT_CAPACITY</code>/<code>CAPACITY</code>
+            at your battery device (desktops need no change).
+          </div>
+        </div>
+      </section>
+
       <!-- ================= DELIBERATE DECISIONS ================= -->
       <section id="deliberate">
-        <h2>3 · Deliberate decisions</h2>
+        <h2>4 · Deliberate decisions</h2>
 
         <div class="card info">
           <div class="card-head">
@@ -540,14 +683,13 @@
         <div class="card info">
           <div class="card-head">
             <span class="badge info">deliberate</span>
-            <span class="loc"><code>config/usrbin/restic-backup:10</code></span>
+            <span class="loc"><code>config/usrbin/restic-backup</code></span>
           </div>
           <p>
-            Restic repo as SFTP to a LAN IP with a Windows path
-            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). The internal
-            IP is no secret; <code>RESTIC_PASSWORD</code> deliberately not in the
-            script - it is prompted interactively. Fine as long as the script is
-            not meant to run non-interactively (e.g. via a timer).
+            <code>RESTIC_PASSWORD</code> is deliberately not in the script - it
+            is prompted interactively. Fine as long as the script is not meant to
+            run non-interactively (e.g. via a timer). (The repo target and backup
+            paths are machine-specific - see section 3.)
           </p>
         </div>
 
@@ -573,22 +715,6 @@
           </p>
         </div>
 
-        <div class="card info">
-          <div class="card-head">
-            <span class="badge info">deliberate</span>
-            <span class="loc"
-              ><code>config/hypr/env.lua:7</code> ·
-              <code>config/hypr/monitors.lua</code></span
-            >
-          </div>
-          <p>
-            Device-specific hardcodes: <code>WLR_DRM_DEVICES</code> to a fixed
-            PCI path (<code>pci-0000:34:00.0-card</code>) and fixed monitor
-            outputs (<code>eDP-1</code>, <code>HDMI-A-1</code>). Fine for a
-            personal single-machine setup - just a portability note: on a
-            hardware change these values must be adjusted.
-          </p>
-        </div>
       </section>
 
       <div class="legend">
