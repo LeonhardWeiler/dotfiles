@@ -210,10 +210,22 @@ run() {
 }
 
 # ── Per-entry actions ────────────────────────────────────────────────────────
+# Resolve one table entry (<source-rel> <target-spec>) into the values every
+# per-entry action needs, published in PT_SRC / PT_TARGET / PT_ROOT. Returns
+# non-zero when the entry must be skipped under --user-only (a root target), so
+# mutating callers can fold the skip in:  prepare_target "$1" "$2" || return 0
+# (status is read-only and shows every entry, so it ignores the skip).
+prepare_target() {
+  PT_SRC="$BASEDIR/$1"
+  PT_TARGET="$(expand_target "$2")"
+  PT_ROOT=0; needs_root "$PT_TARGET" && PT_ROOT=1
+  { [ "$USER_ONLY" = 1 ] && [ "$PT_ROOT" = 1 ]; } && return 1
+  return 0
+}
+
 link_one() {
-  local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
-  local root=0; needs_root "$target" && root=1
-  { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
+  local rel="$1"; prepare_target "$1" "$2" || return 0
+  local src="$PT_SRC" target="$PT_TARGET" root="$PT_ROOT"
   if [ ! -e "$src" ]; then warn "source missing, skipped: $rel"; return 0; fi
   if [ -e "$target" ] && [ ! -L "$target" ]; then
     if [ "$FORCE" = 1 ]; then
@@ -240,9 +252,8 @@ link_one() {
 }
 
 unlink_one() {
-  local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
-  local root=0; needs_root "$target" && root=1
-  { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
+  prepare_target "$1" "$2" || return 0
+  local src="$PT_SRC" target="$PT_TARGET" root="$PT_ROOT"
   if [ -L "$target" ]; then
     if [ "$(readlink "$target")" = "$src" ]; then
       run "$root" rm "$target"; ok "removed: $2"
@@ -255,8 +266,8 @@ unlink_one() {
 }
 
 status_one() {
-  local rel="$1" src="$BASEDIR/$1" target; target="$(expand_target "$2")"
-  local state
+  prepare_target "$1" "$2" || :   # read-only: report every entry, incl. root ones
+  local src="$PT_SRC" target="$PT_TARGET" state
   if [ -L "$target" ]; then
     if [ "$(readlink "$target")" = "$src" ]; then state="${C_OK}ok${C_RST}"
     else state="${C_WARN}link->$(readlink "$target")${C_RST}"; fi
@@ -266,10 +277,8 @@ status_one() {
 }
 
 clean_one() {
-  local target; target="$(expand_target "$2")"
-  local root=0; needs_root "$target" && root=1
-  { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && return 0
-  local b
+  prepare_target "$1" "$2" || return 0
+  local target="$PT_TARGET" root="$PT_ROOT" b
   shopt -s nullglob
   for b in "$target.bak" "$target".bak.[0-9]*; do
     { [ -e "$b" ] || [ -L "$b" ]; } || continue
