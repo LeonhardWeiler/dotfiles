@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 # Find the first real battery (name-independent: BAT0, BAT1, CMB0, ...).
 CAPACITY=
 for bat in /sys/class/power_supply/*; do
-  [ -r "$bat/type" ] && [ "$(<"$bat/type")" = Battery ] && [ -r "$bat/capacity" ] || continue
+  [ -r "$bat/type" ] && [ "$(cat "$bat/type")" = Battery ] && [ -r "$bat/capacity" ] || continue
   CAPACITY="$bat/capacity"; break
 done
 

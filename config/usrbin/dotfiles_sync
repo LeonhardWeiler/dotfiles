@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # dotfiles_sync - updates generated configs, commits changes and pushes them.
 # Run at login via a systemd user service (dotfiles-sync.service) and
 # deliberately extensible:
@@ -7,27 +7,27 @@
 #
 # Robust: runs as a oneshot, tolerates offline/no-upstream (best-effort push)
 # and exits with 0 so login is not blocked.
-set -uo pipefail
+set -u
 
 DOTFILES="${DOTFILES_DIR:-$HOME/dotfiles}"
 SCRIPTS="${SCRIPTS_DIR:-$HOME/.local/bin}"
 cd "$DOTFILES" || exit 0
 
 # --- Generators: create/update versioned artifacts ---------------------------
-GENERATORS=(
-  "$SCRIPTS/update_programs_list"
-)
+# Whitespace-separated list (extend with more entries); paths must not contain
+# spaces - the loop / git add rely on word splitting (intended).
+GENERATORS="$SCRIPTS/update_programs_list"
 
 # --- Paths to version (relative to the repo) ---------------------------------
-PATHS=(
-  "setup/programs.txt"
-)
+PATHS="setup/programs.txt"
 
-for gen in "${GENERATORS[@]}"; do
+# shellcheck disable=SC2086 # word splitting over the whitespace-separated list is intended
+for gen in $GENERATORS; do
   "$gen" || echo "dotfiles_sync: generator '$gen' failed" >&2
 done
 
-git add -- "${PATHS[@]}" 2>/dev/null || true
+# shellcheck disable=SC2086 # word splitting over the whitespace-separated list is intended
+git add -- $PATHS 2>/dev/null || true
 
 # Only commit if something is actually staged.
 if ! git diff --cached --quiet; then

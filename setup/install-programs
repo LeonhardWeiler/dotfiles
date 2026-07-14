@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 # Check whether yay is installed, otherwise install it
-if ! command -v yay &> /dev/null
+if ! command -v yay >/dev/null 2>&1
 then
     echo "yay could not be found, installing yay..."
     # Own mktemp directory instead of a fixed /tmp/yay: no "already exists" abort
@@ -27,7 +27,7 @@ do
 
     # Check whether the package is already installed (exact name match, not a
     # description match like -Qs)
-    if yay -Q "$package" &> /dev/null
+    if yay -Q "$package" >/dev/null 2>&1
     then
         echo "$package is already installed."
     else

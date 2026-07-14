@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
 command -v restic >/dev/null 2>&1 || {
   echo "restic-backup: 'restic' not found" >&2
