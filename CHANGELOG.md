@@ -8,6 +8,11 @@ Versions before `1.0.0` are pre-release: anything may still change.
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation now says **GNU/Linux** where the whole operating system is meant
+  (README, `CLAUDE.md`); "Linux" is kept for the kernel.
+
 ## [0.7.0] - 2026-07-14
 
 ### Added

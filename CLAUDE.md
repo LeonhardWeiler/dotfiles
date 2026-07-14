@@ -4,7 +4,7 @@ Notes for working on this dotfiles repo. Comment/doc language: **English**.
 
 ## Overview
 
-Personal dotfiles for Arch Linux with Hyprland (Wayland), managed via a **custom,
+Personal dotfiles for Arch GNU/Linux with Hyprland (Wayland), managed via a **custom,
 dependency-free symlink script** (`./install`, plain Bash). The repo root
 separates **`config/`** (the config sources, **flat**: `config/<name>/…`) from
 **`setup/`** (deployment machinery: link map, package manifest, bootstrap

@@ -1,10 +1,10 @@
 # My Dotfiles
 
-This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The dotfiles are optimized for a minimal and fast workflow on Linux, specifically Arch Linux with the Hyprland window manager.
+This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The dotfiles are optimized for a minimal and fast workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager.
 
 ## Requirements
 
-- **Linux-based operating system**
+- **GNU/Linux-based operating system**
 - **Git (`git`)** - for cloning the repository
 - **Bash** - the `./install` script is plain Bash, no other dependencies
 - **Sudo privileges** - for the system-wide (`/etc`) configuration
@@ -207,9 +207,9 @@ systemctl --user status <name>.service
 
 ## My Setup
 
-I use Arch Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles-sync.service` commits and pushes it on login. You can still refresh it manually while installing via the install script.
+I use Arch GNU/Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles-sync.service` commits and pushes it on login. You can still refresh it manually while installing via the install script.
 
-> Note: This setup has been primarily tested on Arch Linux. Other distributions may require adjustments.
+> Note: This setup has been primarily tested on Arch GNU/Linux. Other distributions may require adjustments.
 
 ## Manual system state (not symlinked)
 
