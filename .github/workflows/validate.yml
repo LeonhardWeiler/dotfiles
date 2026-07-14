@@ -1,0 +1,25 @@
+name: validate
+
+# Guard the installer on every push / PR: syntax, a strict links.conf check and
+# the self-test (links into a throwaway HOME and verifies the symlinks). All of
+# these are distro-agnostic and touch nothing outside the runner's temp dir, so
+# they run on a plain Ubuntu runner - no Arch/pacman/systemd needed.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bash syntax
+        run: bash -n install
+
+      - name: Validate links.conf
+        run: ./install validate
+
+      - name: Self-test (link into a throwaway HOME)
+        run: ./install selftest
