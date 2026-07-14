@@ -1,0 +1,27 @@
+# services.txt - systemd units (re)activated by `./install` after linking
+# (self-healing), and deactivated by `--remove-systemd`.
+#
+# Format: one unit per line, two columns `<scope> <unit>`.
+#   scope = user    -> `systemctl --user enable <unit>`
+#   scope = system  -> `sudo systemctl enable <unit>`
+# `#` comments and blank lines are ignored.
+#
+# Only system units that really exist are listed. pipewire/wireplumber are user
+# services (package presets, not tracked) and swtpm is socket-activated - those
+# have no enable-able bare <name>.service. iptables loads the (default) rules
+# from /etc/iptables/; fstrim.timer does periodic SSD TRIM; timesyncd = NTP;
+# power-profiles-daemon = power profiles (laptop).
+
+user    battery-check.timer
+user    dotfiles-sync.service
+
+system  NetworkManager.service
+system  ly@tty2.service
+system  dnsmasq.service
+system  sshd.service
+system  libvirtd.service
+system  legion-conservation.service
+system  iptables.service
+system  power-profiles-daemon.service
+system  systemd-timesyncd.service
+system  fstrim.timer

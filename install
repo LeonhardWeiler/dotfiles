@@ -62,16 +62,8 @@ TIMEZONE=""          # optional --timezone value (Region/City)
 SCRUB_CHOICE=""      # personal-data scrub: "" = ask on a TTY / keep otherwise,
                      # 1 = --scrub (force), 0 = --no-scrub (force off)
 
-# systemd units reactivated after linking (self-healing).
-USER_UNITS=(battery-check.timer dotfiles-sync.service)
-# Only system units that really exist. pipewire/wireplumber are user services
-# (package presets, not tracked) and swtpm is socket-activated - those have no
-# enable-able bare <name>.service. iptables loads the (default) rules from
-# /etc/iptables/; fstrim.timer does periodic SSD TRIM; timesyncd = NTP;
-# power-profiles-daemon = power profiles (laptop).
-SYSTEM_UNITS=(NetworkManager.service ly@tty2.service dnsmasq.service sshd.service
-  libvirtd.service legion-conservation.service iptables.service
-  power-profiles-daemon.service systemd-timesyncd.service fstrim.timer)
+# systemd units to (re)activate are kept out of the script in setup/services.txt
+# and loaded into USER_UNITS/SYSTEM_UNITS just below (after the output helpers).
 
 # ── Output helpers ───────────────────────────────────────────────────────────
 if [ -t 1 ]; then C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_INFO=$'\e[36m'; C_RST=$'\e[0m'
@@ -81,6 +73,24 @@ warn() { printf '  %s!%s %s\n' "$C_WARN" "$C_RST" "$*" >&2; }
 info() { printf '%s%s%s\n'     "$C_INFO" "$*" "$C_RST"; }
 
 usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
+
+# ── Data lists (kept out of the script, in setup/*.txt) ──────────────────────
+# systemd units, split by scope (`user`/`system`) -> USER_UNITS / SYSTEM_UNITS.
+USER_UNITS=(); SYSTEM_UNITS=()
+read_services() {
+  local file="$1" line scope unit
+  [ -f "$file" ] || { warn "services list missing: $file"; return 0; }
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%%#*}"; read -r scope unit _ <<<"$line" || true
+    [ -z "${scope:-}" ] && continue
+    case "$scope" in
+      user)   [ -n "${unit:-}" ] && USER_UNITS+=("$unit") ;;
+      system) [ -n "${unit:-}" ] && SYSTEM_UNITS+=("$unit") ;;
+      *) warn "$file: unknown scope '$scope' (expected user|system)" ;;
+    esac
+  done < "$file"
+}
+read_services "$BASEDIR/setup/services.txt"
 
 # ── Optional setup steps (registry) ──────────────────────────────────────────
 # Each step has a do_<name> function, a `--<name>` flag and a menu line in
