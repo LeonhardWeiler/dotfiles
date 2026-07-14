@@ -505,30 +505,68 @@ EOF
   fi
 }
 
-# ── Read the mapping file (fully first, then iterate - otherwise a sudo password
-#    prompt collides with the read loop's stdin) ──────────────────────────────
-SRCS=(); TGTS=()
-while IFS= read -r line || [ -n "$line" ]; do
-  line="${line%%#*}"                 # strip the comment from # onwards
-  read -r s t _ <<<"$line" || true   # first two fields (trims/collapses whitespace)
-  [ -z "${s:-}" ] && continue
-  if [ -z "${t:-}" ]; then warn "invalid line (no target): $line"; continue; fi
-  # Glob in the source (e.g. `config/usrbin/*`): link every match individually
-  # into the target directory (target/<basename>). That way the target directory
-  # stays real and foreign entries in it are left untouched.
-  if [[ "$s" == *"*"* ]]; then
-    matched=0
-    shopt -s nullglob
-    for m in "$BASEDIR"/$s; do
-      SRCS+=("${m#"$BASEDIR"/}"); TGTS+=("${t%/}/${m##*/}"); matched=1
-    done
-    shopt -u nullglob
-    [ "$matched" = 0 ] && warn "glob with no match: $s"
-    continue
-  fi
-  SRCS+=("$s"); TGTS+=("$t")
-done < "$BASEDIR/$CONFIG"
+# ── links.conf pipeline: parse -> validate -> build (globs) -> execute ────────
+# Explicit phases so execution never sees a malformed entry: the raw entries
+# (verbatim from the file, no globbing) are validated first; only then is the
+# work table (SRCS/TGTS) built by expanding globs. Read fully first - otherwise a
+# sudo password prompt collides with the read loop's stdin.
+RAW_SRC=(); RAW_TGT=(); RAW_OPT=(); RAW_LN=()
 
+# Phase 1 - parse: read the file into raw arrays (source, target, 3rd field, line
+# number). No filesystem access and no globbing here.
+parse_links() {
+  local ln=0 line s t extra
+  while IFS= read -r line || [ -n "$line" ]; do
+    ln=$((ln + 1))
+    line="${line%%#*}"                 # strip the comment from # onwards
+    read -r s t extra <<<"$line" || true
+    [ -z "${s:-}" ] && continue        # blank or comment-only line
+    RAW_SRC+=("$s"); RAW_TGT+=("${t:-}"); RAW_OPT+=("${extra:-}"); RAW_LN+=("$ln")
+  done < "$BASEDIR/$CONFIG"
+}
+
+# Report a validation problem at a specific links.conf line.
+verr() { printf '  %s✗%s %s:%s: %s\n' "$C_WARN" "$C_RST" "$CONFIG" "$1" "$2" >&2; }
+
+# Phase 2 - validate: check the raw entries and collect ALL problems (no
+# filesystem mutation). Returns non-zero if anything is wrong. Every command runs
+# this before touching the filesystem, so a broken config aborts the whole run
+# instead of silently skipping lines.
+validate_links() {
+  local i s t ln errs=0
+  if [ "${#RAW_SRC[@]}" -eq 0 ]; then warn "$CONFIG: no entries"; return 1; fi
+  for i in "${!RAW_SRC[@]}"; do
+    s="${RAW_SRC[$i]}"; t="${RAW_TGT[$i]}"; ln="${RAW_LN[$i]}"
+    if [ -z "$t" ]; then verr "$ln" "missing target for source '$s'"; errs=1; fi
+  done
+  return "$errs"
+}
+
+# Phase 3 - build: expand globs into the work table SRCS/TGTS. A glob source
+# (e.g. `config/usrbin/*`) links every match individually into <target>/<name>,
+# so the target directory stays real and foreign entries in it are preserved.
+build_table() {
+  SRCS=(); TGTS=()
+  local i s t m
+  for i in "${!RAW_SRC[@]}"; do
+    s="${RAW_SRC[$i]}"; t="${RAW_TGT[$i]}"
+    if [[ "$s" == *"*"* ]]; then
+      shopt -s nullglob
+      for m in "$BASEDIR"/$s; do SRCS+=("${m#"$BASEDIR"/}"); TGTS+=("${t%/}/${m##*/}"); done
+      shopt -u nullglob
+    else
+      SRCS+=("$s"); TGTS+=("$t")
+    fi
+  done
+}
+
+SRCS=(); TGTS=()
+parse_links
+if ! validate_links; then
+  warn "$CONFIG is invalid - aborting (nothing changed)."
+  exit 1
+fi
+build_table
 [ "${#SRCS[@]}" -gt 0 ] || { warn "no entries in $CONFIG"; exit 1; }
 
 # ── Execution ────────────────────────────────────────────────────────────────
