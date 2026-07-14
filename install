@@ -10,6 +10,7 @@
 #   ./install unlink          remove the symlinks we manage
 #   ./install status          show the current state of every entry
 #   ./install clean           delete the .bak backups created by --force
+#   ./install validate        check links.conf without touching the filesystem
 #
 # Optional setup steps (selectable in the `setup` menu, runnable individually via
 # a flag for automation - e.g. `./install --groups` or
@@ -47,6 +48,7 @@
 set -euo pipefail
 
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_REAL="$(realpath -m -- "$BASEDIR" 2>/dev/null || printf '%s' "$BASEDIR")"  # for source-escape checks
 CONFIG="setup/links.conf"
 CMD="link"
 EXPLICIT_CMD=0       # was a subcommand typed explicitly?
@@ -103,7 +105,7 @@ confirm() {
 # ── Argument parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
-    link|setup|unlink|status|clean) CMD="$1"; EXPLICIT_CMD=1 ;;
+    link|setup|unlink|status|clean|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
     -n|--dry-run)  DRYRUN=1 ;;
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
@@ -538,7 +540,7 @@ ALLOWED_TARGET_PREFIXES=("$HOME" "/etc" "/usr/local")
 # this before touching the filesystem, so a broken config aborts the whole run
 # instead of silently skipping lines.
 validate_links() {
-  local i s t opt ln tgt m et ok p matched errs=0
+  local i s t opt ln tgt m et ok p matched real errs=0
   local -A seen_src seen_tgt
   if [ "${#RAW_SRC[@]}" -eq 0 ]; then warn "$CONFIG: no entries"; return 1; fi
   for i in "${!RAW_SRC[@]}"; do
@@ -549,6 +551,23 @@ validate_links() {
     # glob in particular - that may legitimately match nothing).
     if [ -n "$opt" ] && [ "$opt" != optional ]; then
       verr "$ln" "unexpected extra field(s) '$opt' (expected: <source> <target> [optional])"; errs=1
+    fi
+    # Source must be a repo-relative path that stays inside the repo (no absolute
+    # path, no `../` escape like ../../etc/passwd).
+    case "$s" in
+      /*) verr "$ln" "source must be relative to the repo: '$s'"; errs=1 ;;
+      *)
+        real="$(realpath -m -- "$BASEDIR/$s")"
+        case "$real/" in
+          "$REPO_REAL"/*) : ;;
+          *) verr "$ln" "source escapes the repo: '$s'"; errs=1 ;;
+        esac ;;
+    esac
+    # Source must exist (a glob is checked via its match count below; `optional`
+    # allows a missing non-glob source too). Skipped for absolute sources - those
+    # are already reported above.
+    if [[ "$s" != /* ]] && [[ "$s" != *"*"* ]] && [ ! -e "$BASEDIR/$s" ] && [ "$opt" != optional ]; then
+      verr "$ln" "source does not exist: '$s'"; errs=1
     fi
     # Duplicate source (same line effectively repeated).
     if [ -n "${seen_src[$s]:-}" ]; then
@@ -609,8 +628,16 @@ build_table() {
 
 SRCS=(); TGTS=()
 parse_links
+# `validate` subcommand: report and stop, without building or executing.
+if [ "$CMD" = validate ]; then
+  if validate_links; then
+    info "$CONFIG: valid (${#RAW_SRC[@]} entries)"; exit 0
+  else
+    warn "$CONFIG: validation failed"; exit 1
+  fi
+fi
 if ! validate_links; then
-  warn "$CONFIG is invalid - aborting (nothing changed)."
+  warn "$CONFIG is invalid - aborting (nothing changed). Run './install validate' to list the problems."
   exit 1
 fi
 build_table
