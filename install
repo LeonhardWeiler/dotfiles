@@ -73,9 +73,9 @@ EXCLUDE_NAMES=()     # --exclude <name>: link everything except these
 # ── Output helpers ───────────────────────────────────────────────────────────
 if [ -t 1 ]; then C_OK=$'\e[32m'; C_WARN=$'\e[33m'; C_INFO=$'\e[36m'; C_RST=$'\e[0m'
 else C_OK=; C_WARN=; C_INFO=; C_RST=; fi
-ok()   { printf '  %s✓%s %s\n' "$C_OK"   "$C_RST" "$*"; }
-warn() { printf '  %s!%s %s\n' "$C_WARN" "$C_RST" "$*" >&2; }
-info() { printf '%s%s%s\n'     "$C_INFO" "$*" "$C_RST"; }
+ok()   { printf '  %s✔%s %s\n'  "$C_OK"   "$C_RST" "$*"; }
+warn() { printf '  %s!%s %s\n'  "$C_WARN" "$C_RST" "$*" >&2; }
+info() { printf '%sℹ %s%s\n'    "$C_INFO" "$*"     "$C_RST"; }
 
 usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
 
