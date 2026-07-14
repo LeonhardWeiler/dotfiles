@@ -18,12 +18,31 @@ Versions before `1.0.0` are pre-release: anything may still change.
   the timezone (`--timezone ZONE`), generate locales (`--locale`), deploy the
   ly@tty2 drop-ins (`--ly-dropin`), passwordless sudo for `wheel` (`--sudoers`),
   and rebuild the initramfs (`--initramfs`).
+- Non-owner scrub: `./install setup` asks "Are you the repository owner?" and, on
+  "no", replaces the personal data in the working copy before linking — git
+  identity/signing (`config/git/.gitconfig`), the restic backup host
+  (`config/usrbin/restic-backup`) and the `WLR_DRM_DEVICES` GPU pin
+  (`config/hypr/env.lua`). Tri-state `--scrub` / `--no-scrub` (also runnable
+  standalone); non-interactively it never scrubs unless asked explicitly.
 - This `CHANGELOG.md`.
 
 ### Changed
 
 - `./install setup` now presents a menu of optional steps instead of always
   running a fixed sequence and printing a manual checklist.
+- Converted the helper scripts to POSIX `#!/bin/sh` where feasible (`vol_ctl`,
+  `bright_ctl`, `bat_check`, `restic-backup`, `dotfiles_sync`,
+  `setup/install-programs`); `install` and `update_programs_list` stay Bash on
+  purpose (associative arrays / process substitution).
+- Battery indicator (`.bashrc`, `bat_check`) now auto-detects the battery by
+  type instead of assuming `BAT0` (works for `BAT1`/`CMB0`/…).
+- `WLR_DRM_DEVICES` (`config/hypr/env.lua`) pins the integrated GPU for the owner
+  and is removed by the scrub on other machines (wlroots then auto-detects).
+
+### Removed
+
+- The Rofi workspace launcher (`rofi_workspace_manager`, `workspace_slf`,
+  `lib_hypr.sh`) and its `ALT+W` keybind.
 
 ## [0.6.0] - 2026-07-08
 
