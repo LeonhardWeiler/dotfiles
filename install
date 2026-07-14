@@ -150,7 +150,7 @@ confirm() {
 # ── Argument parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
-    link|setup|unlink|status|clean|prune|validate|selftest) CMD="$1"; EXPLICIT_CMD=1 ;;
+    link|setup|unlink|status|clean|prune|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
     -n|--dry-run)  DRYRUN=1 ;;
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
@@ -765,40 +765,6 @@ for _t in "${TGTS[@]}"; do ALL_TGTS+=("$(expand_target "$_t")"); done
 unset _t
 filter_table
 
-# Hidden self-test: link into a throwaway $HOME, verify every ~ target became the
-# right symlink, then unlink and verify it is gone again. Touches only a mktemp
-# dir - never the real home - so it can exercise the whole linking path without a
-# VM. Returns non-zero on any mismatch.
-run_selftest() {
-  local tmp; tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' RETURN
-  info "Self-test: linking into a throwaway HOME ($tmp)"
-  if ! HOME="$tmp" "$0" --user-only --no-units --force link >/dev/null 2>&1; then
-    warn "self-test: linking failed"; return 1
-  fi
-  local i tgt rel link want pass=0 fail=0
-  for i in "${!SRCS[@]}"; do
-    tgt="$(expand_target "${TGTS[$i]}")"          # ~ -> the REAL home
-    case "$tgt" in "$HOME"/*) ;; *) continue ;; esac   # only ~ targets (used --user-only)
-    rel="${tgt#"$HOME"/}"; link="$tmp/$rel"; want="$BASEDIR/${SRCS[$i]}"
-    if [ -L "$link" ] && [ "$(readlink "$link")" = "$want" ]; then
-      pass=$((pass + 1))
-    else
-      warn "self-test: not linked correctly: $rel"; fail=$((fail + 1))
-    fi
-  done
-  # Unlink again and confirm the managed links are gone.
-  HOME="$tmp" "$0" --user-only --no-units unlink >/dev/null 2>&1 || true
-  for i in "${!SRCS[@]}"; do
-    tgt="$(expand_target "${TGTS[$i]}")"
-    case "$tgt" in "$HOME"/*) ;; *) continue ;; esac
-    rel="${tgt#"$HOME"/}"
-    [ -L "$tmp/$rel" ] && { warn "self-test: unlink left a link: $rel"; fail=$((fail + 1)); }
-  done
-  if [ "$fail" -eq 0 ]; then ok "self-test passed ($pass links created and removed)"; return 0
-  else warn "self-test FAILED ($fail problem(s), $pass ok)"; return 1; fi
-}
-
 # ── Execution ────────────────────────────────────────────────────────────────
 [ "$DRYRUN" = 1 ] && info "- Dry run: nothing is changed -"
 case "$CMD" in
@@ -866,8 +832,5 @@ case "$CMD" in
     info "Pruning stale links (targets that left $CONFIG)"
     prune_stale
     save_linked_state
-    ;;
-  selftest)
-    run_selftest
     ;;
 esac

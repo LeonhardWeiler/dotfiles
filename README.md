@@ -79,7 +79,6 @@ Useful variants:
 ./install clean           # delete the .bak backups that --force created
 ./install prune           # remove links we created whose target left links.conf
 ./install unlink          # remove the symlinks this repo manages
-./install selftest        # (hidden) link into a throwaway HOME and verify - used by CI
 ```
 
 > Every command validates `links.conf` first and **aborts on any problem**

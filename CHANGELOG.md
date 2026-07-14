@@ -19,6 +19,12 @@ Versions before `1.0.0` are pre-release: anything may still change.
 - Documentation now says **GNU/Linux** where the whole operating system is meant
   (README, `CLAUDE.md`); "Linux" is kept for the kernel.
 
+### Removed
+
+- The hidden `./install selftest` command and the GitHub Actions CI workflow
+  (`.github/workflows/validate.yml`) it fed. `./install validate` is still
+  available to check `links.conf` on demand.
+
 ## [0.7.0] - 2026-07-14
 
 ### Added

@@ -98,11 +98,6 @@ scripts). The source->target mapping is stated explicitly in
   dir (`config/<name>/…`), e.g. `./install --only nvim`, `./install --exclude mpv`.
   Filtering happens **after** validation (the whole config is still validated);
   an unknown name warns and an empty result aborts.
-- **Self-test** (hidden): `./install selftest` links the table into a throwaway
-  `mktemp -d` HOME (`--user-only --no-units --force`), verifies every `~` target
-  became the right symlink, unlinks and verifies removal - never touching the real
-  home. Exits non-zero on any mismatch; the CI workflow
-  (`.github/workflows/validate.yml`) runs it together with `validate`.
 - **Update the package list** (without re-linking): `update_programs_list` (from
   `config/usrbin/`, on the PATH; the same script the pacman hook uses).
 - **Install packages from `programs.txt`**: `./setup/install-programs` (uses `yay`).
