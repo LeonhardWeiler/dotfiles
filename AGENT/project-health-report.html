@@ -300,28 +300,32 @@
         <strong>custom, dependency-free symlink manager</strong>
         (<code>./install</code> + <code>setup/links.conf</code>, plain Bash).<br />
         Reviewed: <code>install</code> script &amp;
-        <code>setup/links.conf</code>, the <code>setup</code> bootstrap command
-        with its new <b>owner prompt / <code>--scrub</code></b> step,
-        <code>setup/install-programs</code> and the pacman hook
+        <code>setup/links.conf</code> and its new strict
+        <b>parse → validate → build</b> pipeline (<code>./install validate</code>
+        green, crafted bad configs abort), the data lists now driving it
+        (<code>setup/services.txt</code>/<code>groups.txt</code>/<code>fonts.txt</code>),
+        the <code>setup</code> bootstrap with its <b>owner prompt /
+        <code>--scrub</code></b>, the hidden <code>selftest</code> and the CI
+        workflow, <code>setup/install-programs</code> and the pacman hook
         (<code>update_programs_list</code>, atomic writes), all shell scripts
-        (<code>bash -n</code> green), Hyprland Lua (all
-        <code>luac -p</code> ok), nvim (loads headless), systemd units,
-        Alacritty, Mako, Rofi, Ly, mpv, Typst, git config,
-        <code>setup/programs.txt</code>, README and CLAUDE.md, plus the live
-        linking (<strong>40/40</strong> <code>ok</code>). No accidental secrets,
-        no <code>TODO/FIXME</code> markers; the KeePassXC
+        (<code>bash -n</code> / <code>sh -n</code> green), Hyprland Lua (all
+        <code>luac -p</code> ok), nvim, systemd units, Alacritty, Mako, Rofi, Ly,
+        mpv, Typst, git config, README and CLAUDE.md, plus the live linking
+        (<strong>40/40</strong> <code>ok</code>). No accidental secrets, no
+        <code>TODO/FIXME</code> markers in our own code; the KeePassXC
         <code>.kdbx</code> (excluded via
         <code>.gitignore</code>/<code>.claudeignore</code>) and third-party mpv
         Lua scripts only checked superficially.<br />
-        Since the last snapshot the repo became markedly more portable: the
-        battery is now auto-detected (no more fixed <code>BAT0</code>), most
-        scripts were made POSIX <code>#!/bin/sh</code>, the personal SLF
-        workspace launcher was removed, and a non-owner scrub
-        (<code>--scrub</code> / owner prompt) strips the git identity/signing,
-        the restic backup host and the <code>WLR_DRM_DEVICES</code> iGPU pin
-        before linking (non-interactively only when explicitly asked). <b>No
-        open findings.</b> Section 3 lists what is still hardcoded to this
-        machine/user for a foreign Arch install.
+        Since the last snapshot the installer got markedly more robust and
+        maintainable: a strict validation phase now aborts on any malformed
+        <code>links.conf</code>, the systemd-unit/group/font lists moved out of
+        the script into <code>setup/*.txt</code>, a hidden <code>selftest</code>
+        links into a throwaway HOME and a CI workflow runs syntax +
+        <code>validate</code> + <code>selftest</code> on every push, and
+        <code>--only</code>/<code>--exclude</code> allow selective linking. (Earlier
+        this cycle: POSIX scripts, battery auto-detection, the non-owner scrub and
+        the owner-only GPU pin.) <b>No open findings.</b> Section 3 lists what is
+        still hardcoded to this machine/user for a foreign Arch install.
       </div>
 
       <div class="summary">
@@ -425,8 +429,34 @@
             duplicate sources/targets (expanded), a target outside the allowlist
             (<code>~</code> / <code>/etc</code> / <code>/usr/local</code>) and an
             unmatched glob (<code>optional</code> opts out). A read-only
-            <code>./install validate</code> exposes it for CI. Verified: the real
-            config passes and crafted bad configs abort with the right message.
+            <code>./install validate</code> and a hidden <code>selftest</code>
+            (links into a throwaway <code>mktemp -d</code> HOME, verifies the
+            symlinks, unlinks and verifies removal - never touching the real
+            home) are both wired into a CI workflow
+            (<code>.github/workflows/validate.yml</code>). Verified: the real
+            config passes, crafted bad configs abort with the right message, and
+            <code>selftest</code> creates and removes 30/30 links.
+          </p>
+        </div>
+
+        <div class="card good">
+          <div class="card-head">
+            <span class="badge good">strong</span>
+            <span class="loc"
+              ><code>setup/services.txt</code> · <code>groups.txt</code> ·
+              <code>fonts.txt</code></span
+            >
+          </div>
+          <p>
+            The installer is now almost entirely <b>data-driven</b>: the systemd
+            unit lists (<code>services.txt</code>, <code>&lt;scope&gt; &lt;unit&gt;</code>),
+            the group list (<code>groups.txt</code>) and the font packages
+            (<code>fonts.txt</code>) live in plain <code>setup/*.txt</code> files
+            read by small loaders instead of being hardcoded in the script -
+            matching the existing <code>links.conf</code>/<code>programs.txt</code>
+            pattern. Empty/missing lists degrade gracefully. Combined with
+            <code>--only</code>/<code>--exclude</code> for selective linking, the
+            installer stays generic and easy to retarget.
           </p>
         </div>
 
