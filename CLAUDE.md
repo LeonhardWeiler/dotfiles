@@ -71,6 +71,17 @@ scripts). The source->target mapping is stated explicitly in
 - **Cleaning backups**: `./install clean` - deletes the `.bak` backups of the
   managed targets that `--force` created (incl. `*.bak.<timestamp>`; foreign
   `.bak` are left untouched). Preview with `-n`.
+- **Validating `links.conf`**: `./install validate` - read-only check (no
+  filesystem changes). The `links.conf` pipeline is **parse -> validate -> build
+  (globs) -> execute**, and **every** command validates first, so a broken config
+  aborts the whole run (nothing changed) instead of silently skipping lines.
+  Validation is strict and fatal, reporting `links.conf:<line>: <msg>` for:
+  missing target, stray extra field (only a third `optional` keyword is allowed),
+  absolute source, source escaping the repo (`realpath` vs the repo root),
+  non-existent source, duplicate source, duplicate (expanded) target, a target
+  outside the allowlist (`ALLOWED_TARGET_PREFIXES` = `~` / `/etc` / `/usr/local`),
+  and a glob that matches nothing. Mark a legitimately-empty glob with a third
+  `optional` field: `config/foo/* ~/dir optional`.
 - **Update the package list** (without re-linking): `update_programs_list` (from
   `config/usrbin/`, on the PATH; the same script the pacman hook uses).
 - **Install packages from `programs.txt`**: `./setup/install-programs` (uses `yay`).

@@ -24,12 +24,21 @@ Versions before `1.0.0` are pre-release: anything may still change.
   (`config/usrbin/restic-backup`) and the `WLR_DRM_DEVICES` GPU pin
   (`config/hypr/env.lua`). Tri-state `--scrub` / `--no-scrub` (also runnable
   standalone); non-interactively it never scrubs unless asked explicitly.
+- `./install validate`: a strict, read-only check of `links.conf`. An
+  `optional` third field marks a glob that may legitimately match nothing
+  (`config/foo/* ~/dir optional`).
 - This `CHANGELOG.md`.
 
 ### Changed
 
 - `./install setup` now presents a menu of optional steps instead of always
   running a fixed sequence and printing a manual checklist.
+- `links.conf` handling is now a strict `parse -> validate -> build -> execute`
+  pipeline: every command validates first and **aborts on any problem** (nothing
+  changed) with `links.conf:<line>: <msg>`, instead of warning and continuing.
+  Checks: missing target, stray fields, absolute/escaping/non-existent source,
+  duplicate source or target, a target outside `~` / `/etc` / `/usr/local`, and
+  an unmatched glob.
 - Converted the helper scripts to POSIX `#!/bin/sh` where feasible (`vol_ctl`,
   `bright_ctl`, `bat_check`, `restic-backup`, `dotfiles_sync`,
   `setup/install-programs`); `install` and `update_programs_list` stay Bash on

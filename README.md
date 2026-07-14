@@ -71,12 +71,22 @@ Useful variants:
 
 ```bash
 ./install status          # show state of every entry (ok / foreign link / real file / missing)
+./install validate        # check links.conf (strict, read-only) - no filesystem changes
 ./install --user-only     # only ~ targets, never touch /etc, no sudo
 ./install -n              # dry run: print what would happen, change nothing
 ./install --force         # back up real files/dirs at the target to .bak, then link
 ./install clean           # delete the .bak backups that --force created
 ./install unlink          # remove the symlinks this repo manages
 ```
+
+> Every command validates `links.conf` first and **aborts on any problem**
+> (nothing changed), reporting `links.conf:<line>: <msg>`. It rejects: a missing
+> target, stray extra fields, an absolute source or one that escapes the repo, a
+> non-existent source, duplicate sources/targets, a target outside `~` / `/etc` /
+> `/usr/local`, and a glob that matches nothing. A glob that may legitimately be
+> empty can be marked with a third `optional` field
+> (`config/foo/* ~/dir optional`). Run `./install validate` on its own to check
+> without linking.
 
 > Everyday use is just `./install` (idempotent, never overwrites real files).
 > `setup` is the one-shot fresh-machine bootstrap; to only (re)install packages
