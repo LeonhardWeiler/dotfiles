@@ -1,6 +1,6 @@
 [[ $- != *i* ]] && return
 
-export HISTFILE=~/.config/bash/.bash_history
+export HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/bash/history"
 mkdir -p "$(dirname "$HISTFILE")"
 shopt -s histappend
 
