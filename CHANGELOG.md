@@ -8,6 +8,8 @@ Versions before `1.0.0` are pre-release: anything may still change.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-14
+
 ### Added
 
 - Installer: optional setup steps, selectable from a menu in `./install setup`
@@ -20,7 +22,7 @@ Versions before `1.0.0` are pre-release: anything may still change.
   and rebuild the initramfs (`--initramfs`).
 - Non-owner scrub: `./install setup` asks "Are you the repository owner?" and, on
   "no", replaces the personal data in the working copy before linking — git
-  identity/signing (`config/git/.gitconfig`), the restic backup host
+  identity/signing (`config/git/config`), the restic backup host
   (`config/usrbin/restic-backup`) and the `WLR_DRM_DEVICES` GPU pin
   (`config/hypr/env.lua`). Tri-state `--scrub` / `--no-scrub` (also runnable
   standalone); non-interactively it never scrubs unless asked explicitly.
@@ -29,6 +31,12 @@ Versions before `1.0.0` are pre-release: anything may still change.
   (`config/foo/* ~/dir optional`).
 - `--only NAME` / `--exclude NAME` (repeatable) to link/status/unlink/clean only
   a subset of configs (matched on the config dir name).
+- `./install prune`: removes links we created whose target was removed or
+  retargeted in `links.conf` (e.g. moving `~/.dircolors` to
+  `~/.config/dircolors`), recorded in a
+  `${XDG_STATE_HOME:-~/.local/state}/dotfiles/linked-targets` snapshot. Runs
+  automatically at the end of `link`/`setup`; only symlinks that still resolve
+  into the repo are removed, never real files or foreign links.
 - Hidden `./install selftest`: links the table into a throwaway `mktemp -d` HOME,
   verifies the symlinks, unlinks and verifies removal - never touching the real
   home.
@@ -38,6 +46,13 @@ Versions before `1.0.0` are pre-release: anything may still change.
 
 ### Changed
 
+- XDG Base Directory compliance: bash history moved to
+  `$XDG_STATE_HOME/bash/history` (was `~/.config/bash/.bash_history`), the
+  dircolors config to `~/.config/dircolors` (was the bare `~/.dircolors`), git
+  now reads its native `~/.config/git/config` (renamed from `.gitconfig`,
+  dropping the `GIT_CONFIG_GLOBAL` override in `.bashrc` and the sync service),
+  and typst `@local` packages link into `~/.local/share/typst/packages` (was
+  pinned under `~/.config` via `TYPST_PACKAGE_PATH`).
 - `./install setup` now presents a menu of optional steps instead of always
   running a fixed sequence and printing a manual checklist.
 - `links.conf` handling is now a strict `parse -> validate -> build -> execute`
@@ -145,7 +160,8 @@ Versions before `1.0.0` are pre-release: anything may still change.
 - Initial public dotfiles for Arch Linux with Hyprland: Alacritty, Bash, btop,
   Git, Hyprland, Neovim, Rofi, Mako, MPV, and the personal helper scripts.
 
-[Unreleased]: https://github.com/leonhardweiler/dotfiles/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/leonhardweiler/dotfiles/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/leonhardweiler/dotfiles/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/leonhardweiler/dotfiles/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/leonhardweiler/dotfiles/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/leonhardweiler/dotfiles/compare/v0.3.0...v0.4.0
