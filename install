@@ -533,11 +533,15 @@ verr() { printf '  %s✗%s %s:%s: %s\n' "$C_WARN" "$C_RST" "$CONFIG" "$1" "$2" >
 # this before touching the filesystem, so a broken config aborts the whole run
 # instead of silently skipping lines.
 validate_links() {
-  local i s t ln errs=0
+  local i s t opt ln errs=0
   if [ "${#RAW_SRC[@]}" -eq 0 ]; then warn "$CONFIG: no entries"; return 1; fi
   for i in "${!RAW_SRC[@]}"; do
-    s="${RAW_SRC[$i]}"; t="${RAW_TGT[$i]}"; ln="${RAW_LN[$i]}"
-    if [ -z "$t" ]; then verr "$ln" "missing target for source '$s'"; errs=1; fi
+    s="${RAW_SRC[$i]}"; t="${RAW_TGT[$i]}"; opt="${RAW_OPT[$i]}"; ln="${RAW_LN[$i]}"
+    # A well-formed line is exactly `<source> <target>`.
+    if [ -z "$t" ]; then verr "$ln" "missing target for source '$s'"; errs=1; continue; fi
+    if [ -n "$opt" ]; then
+      verr "$ln" "unexpected extra field(s) '$opt' (expected: <source> <target>)"; errs=1
+    fi
   done
   return "$errs"
 }
