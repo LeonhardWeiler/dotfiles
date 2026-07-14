@@ -110,6 +110,10 @@ GROUP_ARR=()
 read_list "$BASEDIR/setup/groups.txt" GROUP_ARR
 GROUP_LIST="$(IFS=,; printf '%s' "${GROUP_ARR[*]}")"
 
+# Font packages for --fonts.
+FONT_PACKAGES=()
+read_list "$BASEDIR/setup/fonts.txt" FONT_PACKAGES
+
 # ── Optional setup steps (registry) ──────────────────────────────────────────
 # Each step has a do_<name> function, a `--<name>` flag and a menu line in
 # `setup`. New steps are added below via register_step. SELECTED holds the
@@ -456,11 +460,10 @@ do_initramfs() {
 }
 register_step initramfs do_initramfs "Regenerate initramfs (mkinitcpio -P)"
 
-# Install the font packages (also part of programs.txt, but installable on their
-# own here) and rebuild the fontconfig cache so freshly installed fonts are
-# picked up without a re-login.
-FONT_PACKAGES=(noto-fonts noto-fonts-cjk noto-fonts-emoji ttf-jetbrains-mono-nerd)
+# Install the font packages (loaded from setup/fonts.txt near the top) and rebuild
+# the fontconfig cache so freshly installed fonts are picked up without a re-login.
 do_fonts() {
+  [ "${#FONT_PACKAGES[@]}" -gt 0 ] || { warn "no fonts configured (setup/fonts.txt) - skipped"; return 0; }
   info "Installing fonts and refreshing the font cache: ${FONT_PACKAGES[*]}"
   if [ "$DRYRUN" = 1 ]; then
     printf '    [dry] yay -S --needed --noconfirm %s\n' "${FONT_PACKAGES[*]}"
