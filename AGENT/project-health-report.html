@@ -295,32 +295,32 @@
     <div class="wrap">
       <h1>Dotfiles - Health Report</h1>
       <div class="meta">
-        Snapshot · as of <strong>2026-07-05</strong> · branch
+        Snapshot · as of <strong>2026-07-14</strong> · branch
         <code>main</code> · Arch Linux / Hyprland, managed via a
         <strong>custom, dependency-free symlink manager</strong>
-        (<code>./install</code> + <code>setup/links.conf</code>, plain
-        Bash).<br />
+        (<code>./install</code> + <code>setup/links.conf</code>, plain Bash).<br />
         Reviewed: <code>install</code> script &amp;
-        <code>setup/links.conf</code>, the
-        <code>setup</code> bootstrap command,
+        <code>setup/links.conf</code>, the <code>setup</code> bootstrap command
+        with its new <b>owner prompt / <code>--scrub</code></b> step,
         <code>setup/install-programs</code> and the pacman hook
         (<code>update_programs_list</code>, atomic writes), all shell scripts
-        (<code>bash -n</code> green), Hyprland Lua (9 modules, all
+        (<code>bash -n</code> green), Hyprland Lua (all
         <code>luac -p</code> ok), nvim (loads headless), systemd units,
-        Alacritty, Mako, Rofi, Ly (<code>session_log</code> now pinned to
-        <code>.local/state/ly-session.log</code> - keeps home clean), mpv,
-        Typst, git config, <code>setup/programs.txt</code>, README and
-        CLAUDE.md, plus the live linking (<strong>40/40</strong>
-        <code>ok</code>). No accidental secrets, no
-        <code>TODO/FIXME</code> markers; the KeePassXC <code>.kdbx</code>
-        (excluded via <code>.gitignore</code>/<code>.claudeignore</code>) and
-        third-party mpv Lua scripts only checked superficially.<br />
-        Overall the repo is very clean and in good shape - fresh full scan,
-        <strong>no open findings</strong>. The notes below ("strong",
-        "machine-specific", "deliberate") are verified against the current code
-        (paths and line references match). Section 3 lists what is hardcoded to
-        this machine/user and would need adjusting on a fresh Arch install for
-        someone else.
+        Alacritty, Mako, Rofi, Ly, mpv, Typst, git config,
+        <code>setup/programs.txt</code>, README and CLAUDE.md, plus the live
+        linking (<strong>40/40</strong> <code>ok</code>). No accidental secrets,
+        no <code>TODO/FIXME</code> markers; the KeePassXC
+        <code>.kdbx</code> (excluded via
+        <code>.gitignore</code>/<code>.claudeignore</code>) and third-party mpv
+        Lua scripts only checked superficially.<br />
+        Since the last snapshot the repo became markedly more portable: the
+        battery is now auto-detected (no more fixed <code>BAT0</code>), the
+        hardcoded GPU PCI path is gone (wlroots auto-detects), the personal SLF
+        workspace launcher was removed, and a non-owner <code>--scrub</code>
+        step now strips the git identity/signing and the restic backup host
+        before linking. One <b>low</b> finding remains (the non-TTY
+        <code>setup</code> default scrubs). Section 3 lists what is still
+        hardcoded to this machine/user for a foreign Arch install.
       </div>
 
       <div class="summary">
@@ -334,7 +334,7 @@
           <span class="n">0</span><span class="l">Medium</span>
         </div>
         <div class="stat low">
-          <span class="n">0</span><span class="l">Low</span>
+          <span class="n">1</span><span class="l">Low</span>
         </div>
       </div>
 
@@ -344,7 +344,9 @@
           <li><a href="#open">Open findings</a></li>
           <li><a href="#strong">What's already strong</a></li>
           <li>
-            <a href="#machine">Machine-specific - won't work as-is for others</a>
+            <a href="#machine"
+              >Machine-specific - won't work as-is for others</a
+            >
           </li>
           <li><a href="#deliberate">Deliberate decisions</a></li>
         </ol>
@@ -354,19 +356,36 @@
       <section id="open">
         <h2>1 · Open findings</h2>
 
-        <div class="card good">
+        <div class="card low">
           <div class="card-head">
-            <span class="badge good">no open findings</span>
-            <span class="loc">nothing to do</span>
+            <span class="badge low">low</span>
+            <span class="id">SCRUB-1</span>
+            <span class="loc"
+              ><code>install</code> · <code>setup</code> owner prompt /
+              <code>do_scrub</code></span
+            >
           </div>
           <p>
-            This full scan surfaced no open problems - no correctness/robustness,
-            security, structure or docs findings. All shell scripts are
-            syntactically green, the Hyprland Lua modules parse, the live linking
-            is complete (40/40) and README as well as CLAUDE.md match the code.
-            What makes the repo particularly solid, or is deliberately chosen
-            that way, is in the two sections below.
+            The owner prompt uses <code>confirm()</code>, which returns "no"
+            whenever there is <b>no TTY</b>. So a non-interactive
+            <code>./install setup</code> (piped, CI, provisioning) is treated as
+            a non-owner and <b>scrubs the working copy</b> - it blanks the git
+            identity in <code>config/git/.gitconfig</code> and rewrites the
+            restic host in <code>config/usrbin/restic-backup</code>. For a
+            foreign clone that default is exactly right, but the <em>owner</em>
+            running setup non-interactively would silently lose their identity
+            in the working tree (recoverable via <code>git checkout</code>, but
+            surprising). The scrub only edits tracked files, not <code>~</code>.
           </p>
+          <div class="rec">
+            <b>Recommendation:</b> if a safer default is wanted, gate the
+            non-TTY branch so it does <em>not</em> scrub unless
+            <code>--scrub</code> is passed explicitly, or print a clear notice
+            when scrubbing non-interactively. Otherwise document that
+            <code>setup</code> must be run on a TTY (as the owner) - the current
+            behaviour is defensible and consistent with the script's
+            "non-TTY = no" convention elsewhere.
+          </div>
         </div>
       </section>
 
@@ -384,21 +403,20 @@
           <p>
             The custom symlink manager is lean and safe:
             <b>one</b> mapping file (<code>setup/links.conf</code>, two columns)
-            plus plain Bash <b>with no dependencies</b> (no
-            Python/dotbot/Stow). Commands
+            plus plain Bash <b>with no dependencies</b> (no Python/dotbot/Stow).
+            Commands
             <code>link</code
             >/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
             plus <code>-n/--dry-run</code>, <code>--user-only</code> and
             <code>--force</code> (backs up real targets to <code>.bak</code>);
-            the <code>setup</code> command bundles the first-time setup (packages
-            -> link -> units -> <code>locale-gen</code> -> checklist). Real files
-            are never overwritten unasked, <code>unlink</code> only removes
-            symlinks to our own sources, <code>/etc</code> targets run per file
-            via <code>sudo</code>, glob sources
+            the <code>setup</code> command bundles the first-time setup
+            (packages -> link -> units -> <code>locale-gen</code> -> checklist).
+            Real files are never overwritten unasked, <code>unlink</code> only
+            removes symlinks to our own sources, <code>/etc</code> targets run
+            per file via <code>sudo</code>, glob sources
             (<code>config/usrbin/*</code>) link per file so foreign entries in
-            <code>~/.local/bin</code> (e.g.
-            <code>claude</code>) are preserved. Live-verified: 40/40 entries
-            <code>ok</code>.
+            <code>~/.local/bin</code> (e.g. <code>claude</code>) are preserved.
+            Live-verified: 40/40 entries <code>ok</code>.
           </p>
         </div>
 
@@ -406,18 +424,21 @@
           <div class="card-head">
             <span class="badge good">strong</span>
             <span class="loc"
-              ><code>config/usrbin/lib_hypr.sh</code> ·
-              <code>workspace_slf</code></span
+              ><code>install</code> · <code>do_scrub</code> /
+              <code>--scrub</code></span
             >
           </div>
           <p>
-            The workspace automation is remarkably robust: windows are addressed
-            by their stable <em>address</em> instead of fragile titles, new
-            windows detected via an address diff, there is timeout/poll logic
-            (<code>wait_for_new_window</code>), a
-            <code>SELF_GUARD</code> against closing your own terminal,
-            idempotent behaviour and error messages as a Rofi popup. Cleanly
-            documented and modular (lib + runner).
+            The non-owner path is a clean addition: the <code>setup</code>
+            command asks "Are you the repository owner?" and, on "no", runs an
+            <b>idempotent</b> scrub over the working copy <em>before</em>
+            linking - blanking the git identity and removing commit signing, and
+            replacing the restic backup host with a showcase placeholder
+            (<code>sftp:user@ip:drive/path/to/your/backup</code>). It reuses the
+            existing step registry (also runnable standalone via
+            <code>--scrub</code>) and honours <code>-n/--dry-run</code>. This
+            closes the biggest portability gap - a foreign clone no longer
+            deploys the owner's identity or a broken signing key.
           </p>
         </div>
 
@@ -428,9 +449,10 @@
           </div>
           <p>
             The decrypted entry listing is reliably removed via a
-            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> - even on any early abort
-            (Escape, wrong password). So no plaintext metadata of the password DB
-            is left behind. Clean handling of sensitive intermediate data.
+            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> - even on any early
+            abort (Escape, wrong password). So no plaintext metadata of the
+            password DB is left behind. Clean handling of sensitive intermediate
+            data.
           </p>
         </div>
 
@@ -473,8 +495,8 @@
             <b>systemd</b> (battery-check timer, dotfiles-sync),
             <b>pacman</b> hook (minimal trigger). <b>keepassxc</b>: only config
             tracked, the <code>.kdbx</code> is gitignored (present locally).
-            <b>nvim</b> has its own <code>CLAUDE.md</code> and is covered in more
-            depth there.
+            <b>nvim</b> has its own <code>CLAUDE.md</code> and is covered in
+            more depth there.
           </p>
         </div>
       </section>
@@ -485,10 +507,10 @@
 
         <p style="color: var(--fg-dim); font-size: 13px; margin: 0 0 20px">
           Personal dotfiles: the following values are hardcoded to this exact
-          machine/user (hostname "leo", a specific laptop + LAN). On a fresh Arch
-          install for someone else they are wrong and need adjusting. None of
-          these are bugs - they are listed so a foreign user knows what to change
-          before running <code>./install</code>.
+          machine/user (hostname "leo", a specific laptop + LAN). On a fresh
+          Arch install for someone else they are wrong and need adjusting. None
+          of these are bugs - they are listed so a foreign user knows what to
+          change before running <code>./install</code>.
         </p>
 
         <div class="card low">
@@ -501,37 +523,38 @@
             <code>name = Leonhard Weiler</code>,
             <code>email = leonhard-weiler@hotmail.com</code> and
             <code>signingkey = /home/leo/.ssh/id_ed25519.pub</code> with
-            <code>commit.gpgsign = true</code>. A foreign user would commit under
-            <em>my</em> name and, worse, <b>every commit fails to sign</b>
-            because that key path does not exist for them.
+            <code>commit.gpgsign = true</code>. A foreign user would commit
+            under <em>my</em> name and, worse, <b>every commit fails to sign</b>
+            because that key path does not exist for them. This is now handled
+            automatically: answering "no" to the owner prompt (or
+            <code>./install --scrub</code>) blanks the identity and removes the
+            signing block before linking.
           </p>
           <div class="rec">
-            <b>Adjust:</b> set your own <code>name</code>/<code>email</code> and
-            point <code>signingkey</code> at your own key (or drop
-            <code>commit.gpgsign</code>).
+            <b>Adjust:</b> run <code>setup</code> as a non-owner (or
+            <code>--scrub</code>), then set your own
+            <code>name</code>/<code>email</code> and point
+            <code>signingkey</code> at your own key.
           </div>
         </div>
 
         <div class="card low">
           <div class="card-head">
             <span class="badge low">machine-specific</span>
-            <span class="loc"
-              ><code>config/hypr/env.lua:7</code> ·
-              <code>config/hypr/monitors.lua</code></span
-            >
+            <span class="loc"><code>config/hypr/monitors.lua</code></span>
           </div>
           <p>
-            <code>WLR_DRM_DEVICES</code> is pinned to a fixed PCI GPU path
-            (<code>/dev/dri/by-path/pci-0000:34:00.0-card</code>) and the
-            monitors are fixed outputs (<code>eDP-1</code>,
-            <code>HDMI-A-1</code>) with specific resolutions/positions. On
-            different hardware the PCI path does not exist and the outputs are
-            named differently, so <b>Hyprland may pick the wrong GPU or leave
-            monitors unconfigured</b>.
+            The monitors are fixed outputs (<code>HDMI-A-1</code> at
+            <code>2560x0</code>, <code>eDP-1</code> at
+            <code>2560x1600@60</code>, scale <code>1.6</code>) with specific
+            positions/scales. On different hardware the outputs are named
+            differently, so <b>monitors may be left unconfigured</b>. (The
+            previously hardcoded <code>WLR_DRM_DEVICES</code> PCI GPU path has
+            been removed - wlroots now auto-detects the GPU, so that part is no
+            longer machine-specific.)
           </p>
           <div class="rec">
-            <b>Adjust:</b> set <code>WLR_DRM_DEVICES</code> to your card (or
-            remove it) and rewrite <code>monitors.lua</code> for your outputs
+            <b>Adjust:</b> rewrite <code>monitors.lua</code> for your outputs
             (<code>hyprctl monitors</code>).
           </div>
         </div>
@@ -542,10 +565,11 @@
             <span class="loc"><code>config/vconsole/vconsole.conf</code></span>
           </div>
           <p>
-            The console keymap is <code>KEYMAP=mod-dh-iso-uk</code> (Colemak-DH).
-            A QWERTY user gets a <b>Colemak TTY and ly login</b>, which is
-            unusable until changed (and baked into the initramfs, see the keymap
-            note under "Deliberate decisions").
+            The console keymap is
+            <code>KEYMAP=mod-dh-iso-uk</code> (Colemak-DH). A QWERTY user gets a
+            <b>Colemak TTY and ly login</b>, which is unusable until changed
+            (and baked into the initramfs, see the keymap note under "Deliberate
+            decisions").
           </p>
           <div class="rec">
             <b>Adjust:</b> set your layout in <code>vconsole.conf</code>, then
@@ -556,9 +580,7 @@
         <div class="card low">
           <div class="card-head">
             <span class="badge low">machine-specific</span>
-            <span class="loc"
-              ><code>config/usrbin/restic-backup:10</code></span
-            >
+            <span class="loc"><code>config/usrbin/restic-backup:10</code></span>
           </div>
           <p>
             The restic default repo is
@@ -568,51 +590,15 @@
             <code>$HOME/files/school</code>. For anyone else the target host is
             unreachable and those source directories don't exist. The repo is
             overridable via <code>RESTIC_REPOSITORY</code>, but the default and
-            the backed-up paths are mine.
+            the backed-up paths are mine. The host default is scrubbed to a
+            showcase placeholder for non-owners (owner prompt /
+            <code>--scrub</code>); the backup <em>source</em> paths
+            (<code>$HOME/files/projects</code>, <code>$HOME/files/school</code>)
+            are not scrubbed and stay mine.
           </p>
           <div class="rec">
             <b>Adjust:</b> set <code>RESTIC_REPOSITORY</code> (env) and change
             the backup source directories.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="badge low">machine-specific</span>
-            <span class="loc"><code>config/usrbin/workspace_slf</code></span>
-          </div>
-          <p>
-            A personal project launcher: it opens the dev layout for
-            <code>$HOME/files/projects/slf</code> (zen browser, nvim, frontend +
-            backend terminals) and <b>aborts if that directory is missing</b>.
-            The whole script is specific to one of my projects and has no meaning
-            on another machine.
-          </p>
-          <div class="rec">
-            <b>Adjust:</b> repurpose or ignore - it only runs when bound to a key
-            and the project path exists.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="badge low">machine-specific</span>
-            <span class="loc"
-              ><code>config/bash/.bashrc:7</code> ·
-              <code>config/usrbin/bat_check:3</code></span
-            >
-          </div>
-          <p>
-            The battery indicator reads
-            <code>/sys/class/power_supply/BAT0/capacity</code>. Both the prompt
-            (<code>.bashrc</code>) and the low-battery notifier
-            (<code>bat_check</code>) degrade gracefully when it is absent (empty
-            display / exit 0), but on a laptop whose battery is
-            <code>BAT1</code> the <b>indicator silently shows nothing</b>.
-          </p>
-          <div class="rec">
-            <b>Adjust:</b> point <code>BAT_CAPACITY</code>/<code>CAPACITY</code>
-            at your battery device (desktops need no change).
           </div>
         </div>
       </section>
@@ -640,19 +626,6 @@
         <div class="card info">
           <div class="card-head">
             <span class="badge info">deliberate</span>
-            <span class="loc"><code>config/usrbin/workspace_slf:75</code></span>
-          </div>
-          <p>
-            <code>workspace_slf</code> starts Claude with
-            <code>--dangerously-skip-permissions</code> (bypass-all mode) -
-            deliberate workflow decision for fast work. Note: runs without
-            permission prompts, only sensible in trusted project directories.
-          </p>
-        </div>
-
-        <div class="card info">
-          <div class="card-head">
-            <span class="badge info">deliberate</span>
             <span class="loc"
               ><code>config/hypr/looknfeel.lua:31</code> ·
               <code>config/nvim/lua/config/options.lua:3</code></span
@@ -674,9 +647,9 @@
             <span class="loc"><code>config/mpv/mpv.conf</code></span>
           </div>
           <p>
-            Very large demuxer caches (several GB readahead) - deliberate per the
-            comment, "plenty of RAM available". Legitimate for a desktop setup
-            with ample memory.
+            Very large demuxer caches (several GB readahead) - deliberate per
+            the comment, "plenty of RAM available". Legitimate for a desktop
+            setup with ample memory.
           </p>
         </div>
 
@@ -687,9 +660,9 @@
           </div>
           <p>
             <code>RESTIC_PASSWORD</code> is deliberately not in the script - it
-            is prompted interactively. Fine as long as the script is not meant to
-            run non-interactively (e.g. via a timer). (The repo target and backup
-            paths are machine-specific - see section 3.)
+            is prompted interactively. Fine as long as the script is not meant
+            to run non-interactively (e.g. via a timer). (The repo target and
+            backup paths are machine-specific - see section 3.)
           </p>
         </div>
 
@@ -702,19 +675,17 @@
             >
           </div>
           <p>
-            The console keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH) is
-            loaded via the initramfs <code>keymap</code> hook (in
+            The console keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH)
+            is loaded via the initramfs <code>keymap</code> hook (in
             <code>HOOKS=(… keyboard keymap consolefont …)</code>), not (only)
             via <code>systemd-vconsole-setup</code> - the latter skips the first
             VT on boot ("Configuration of first virtual console was skipped").
             The <code>keymap</code> hook bakes the keymap in at initramfs
             <strong>build time</strong>. Note: after every change to
-            <code>vconsole.conf</code> run
-            <code>sudo mkinitcpio -P</code> once, otherwise the old keymap keeps
-            applying at the ly / TTY login.
+            <code>vconsole.conf</code> run <code>sudo mkinitcpio -P</code> once,
+            otherwise the old keymap keeps applying at the ly / TTY login.
           </p>
         </div>
-
       </section>
 
       <div class="legend">
@@ -722,14 +693,12 @@
         <span><span class="dot high"></span> high - fix soon</span>
         <span><span class="dot med"></span> medium - schedule it</span>
         <span><span class="dot low"></span> low - when convenient</span>
-        <span
-          ><span class="dot info"></span> info / deliberate decision</span
-        >
+        <span><span class="dot info"></span> info / deliberate decision</span>
       </div>
 
       <footer>
-        Health report - pure snapshot, no history. Generated from a fresh scan of
-        the repo.
+        Health report - pure snapshot, no history. Generated from a fresh scan
+        of the repo.
       </footer>
     </div>
   </body>
