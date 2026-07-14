@@ -67,8 +67,11 @@ scripts). The source->target mapping is stated explicitly in
 - **Update the package list** (without re-linking): `update_programs_list` (from
   `config/usrbin/`, on the PATH; the same script the pacman hook uses).
 - **Install packages from `programs.txt`**: `./setup/install-programs` (uses `yay`).
-- **Check shell scripts** (no test framework): `bash -n <script>`; where
-  available `shellcheck <script>`.
+- **Check shell scripts** (no test framework): syntax with `bash -n <script>`
+  (or `sh -n` for the `#!/bin/sh` scripts); where available `shellcheck
+  <script>`. Most scripts are POSIX `#!/bin/sh`; only `install` and
+  `config/usrbin/update_programs_list` are intentionally `bash` (associative
+  arrays / process substitution) - keep new bashisms out of the `sh` scripts.
 
 ## Structure
 
