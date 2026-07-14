@@ -52,7 +52,7 @@
 set -euo pipefail
 
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_REAL="$(realpath -m -- "$BASEDIR" 2>/dev/null || printf '%s' "$BASEDIR")"  # for source-escape checks
+REPO_REAL="$(realpath -m -- "$BASEDIR")"   # canonical repo root, for source-escape checks
 CONFIG="setup/links.conf"
 # Snapshot of the targets the last link created - used by prune to detect links
 # whose target was removed/retargeted in links.conf (they would otherwise be
@@ -381,19 +381,22 @@ do_locale() {
 }
 register_step locale do_locale "Generate locales (locale-gen)"
 
+# Apply the menu preselection (DEFAULT_STEPS) - used without a TTY or on empty input.
+select_defaults() { local s; for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; }
+
 # Interactive menu: pick optional steps. With steps preselected via flags
 # (FLAG_STEPS_GIVEN) it takes them as-is; without a TTY the DEFAULT_STEPS apply.
 choose_steps() {
   [ "$FLAG_STEPS_GIVEN" = 1 ] && return 0
-  if [ ! -t 0 ]; then for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; return 0; fi
+  if [ ! -t 0 ]; then select_defaults; return 0; fi
   info "Select optional steps (numbers separated by spaces; Enter = defaults)"
   local i=1 idx=() def
   for s in "${STEP_ORDER[@]}"; do
-    def=""; for d in "${DEFAULT_STEPS[@]}"; do [ "$d" = "$s" ] && def=" (default)"; done
+    in_array "$s" "${DEFAULT_STEPS[@]}" && def=" (default)" || def=""
     printf '  [%d] %s%s\n' "$i" "${STEP_DESC[$s]}" "$def"; idx[$i]="$s"; i=$((i+1))
   done
   printf '> '; local line n; read -r line || line=""
-  if [ -z "$line" ]; then for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; return 0; fi
+  if [ -z "$line" ]; then select_defaults; return 0; fi
   for n in $line; do [ -n "${idx[$n]:-}" ] && SELECTED[${idx[$n]}]=1; done
 }
 
