@@ -301,16 +301,19 @@
         (<code>./install</code> + <code>setup/links.conf</code>, plain Bash).<br />
         Reviewed: <code>install</code> script &amp;
         <code>setup/links.conf</code> and its new strict
-        <b>parse → validate → build</b> pipeline (<code>./install validate</code>
+        <b>parse → validate → build</b> pipeline (<code
+          >./install validate</code
+        >
         green, crafted bad configs abort), the data lists now driving it
         (<code>setup/services.txt</code>/<code>groups.txt</code>/<code>fonts.txt</code>),
-        the <code>setup</code> bootstrap with its <b>owner prompt /
-        <code>--scrub</code></b>, the hidden <code>selftest</code> and the CI
-        workflow, <code>setup/install-programs</code> and the pacman hook
+        the <code>setup</code> bootstrap with its
+        <b>owner prompt / <code>--scrub</code></b
+        >, the hidden <code>selftest</code> and the CI workflow,
+        <code>setup/install-programs</code> and the pacman hook
         (<code>update_programs_list</code>, atomic writes), all shell scripts
         (<code>bash -n</code> / <code>sh -n</code> green), Hyprland Lua (all
-        <code>luac -p</code> ok), nvim, systemd units, Alacritty, Mako, Rofi, Ly,
-        mpv, Typst, git config, README and CLAUDE.md, plus the live linking
+        <code>luac -p</code> ok), nvim, systemd units, Alacritty, Mako, Rofi,
+        Ly, mpv, Typst, git config, README and CLAUDE.md, plus the live linking
         (<strong>40/40</strong> <code>ok</code>). No accidental secrets, no
         <code>TODO/FIXME</code> markers in our own code; the KeePassXC
         <code>.kdbx</code> (excluded via
@@ -322,10 +325,11 @@
         the script into <code>setup/*.txt</code>, a hidden <code>selftest</code>
         links into a throwaway HOME and a CI workflow runs syntax +
         <code>validate</code> + <code>selftest</code> on every push, and
-        <code>--only</code>/<code>--exclude</code> allow selective linking. (Earlier
-        this cycle: POSIX scripts, battery auto-detection, the non-owner scrub and
-        the owner-only GPU pin.) <b>No open findings.</b> Section 3 lists what is
-        still hardcoded to this machine/user for a foreign Arch install.
+        <code>--only</code>/<code>--exclude</code> allow selective linking.
+        (Earlier this cycle: POSIX scripts, battery auto-detection, the
+        non-owner scrub and the owner-only GPU pin.)
+        <b>No open findings.</b> Section 3 lists what is still hardcoded to this
+        machine/user for a foreign Arch install.
       </div>
 
       <div class="summary">
@@ -370,12 +374,13 @@
             This full scan surfaced no open problems - no
             correctness/robustness, security, structure or docs findings. Shell
             scripts are syntactically green (<code>bash -n</code> /
-            <code>sh -n</code>), the Hyprland Lua modules parse, the live linking
-            is complete (40/40) and README as well as CLAUDE.md match the code.
-            The earlier non-TTY scrub concern is resolved: <code>setup</code> now
-            keeps personal data non-interactively unless <code>--scrub</code> is
-            passed explicitly. What makes the repo particularly solid, or is
-            deliberately chosen that way, is in the sections below.
+            <code>sh -n</code>), the Hyprland Lua modules parse, the live
+            linking is complete (40/40) and README as well as CLAUDE.md match
+            the code. The earlier non-TTY scrub concern is resolved:
+            <code>setup</code> now keeps personal data non-interactively unless
+            <code>--scrub</code> is passed explicitly. What makes the repo
+            particularly solid, or is deliberately chosen that way, is in the
+            sections below.
           </p>
         </div>
       </section>
@@ -423,19 +428,22 @@
             The <code>links.conf</code> handling is a strict
             <b>parse → validate → build → execute</b> pipeline: every command
             validates first and <b>aborts on any problem</b> (nothing changed),
-            reporting <code>links.conf:&lt;line&gt;: &lt;msg&gt;</code>. It rejects
-            a missing target, stray fields, an absolute or repo-escaping source
-            (<code>realpath</code> vs the repo root), a non-existent source,
-            duplicate sources/targets (expanded), a target outside the allowlist
-            (<code>~</code> / <code>/etc</code> / <code>/usr/local</code>) and an
-            unmatched glob (<code>optional</code> opts out). A read-only
-            <code>./install validate</code> and a hidden <code>selftest</code>
-            (links into a throwaway <code>mktemp -d</code> HOME, verifies the
-            symlinks, unlinks and verifies removal - never touching the real
-            home) are both wired into a CI workflow
-            (<code>.github/workflows/validate.yml</code>). Verified: the real
-            config passes, crafted bad configs abort with the right message, and
-            <code>selftest</code> creates and removes 30/30 links.
+            reporting <code>links.conf:&lt;line&gt;: &lt;msg&gt;</code>. It
+            rejects a missing target, stray fields, an absolute or repo-escaping
+            source (<code>realpath</code> vs the repo root), a non-existent
+            source, duplicate sources/targets (expanded), a target outside the
+            allowlist (<code>~</code> / <code>/etc</code> /
+            <code>/usr/local</code>) and an unmatched glob (<code
+              >optional</code
+            >
+            opts out). A read-only <code>./install validate</code> and a hidden
+            <code>selftest</code> (links into a throwaway
+            <code>mktemp -d</code> HOME, verifies the symlinks, unlinks and
+            verifies removal - never touching the real home) are both wired into
+            a CI workflow (<code>.github/workflows/validate.yml</code>).
+            Verified: the real config passes, crafted bad configs abort with the
+            right message, and <code>selftest</code> creates and removes 30/30
+            links.
           </p>
         </div>
 
@@ -449,14 +457,16 @@
           </div>
           <p>
             The installer is now almost entirely <b>data-driven</b>: the systemd
-            unit lists (<code>services.txt</code>, <code>&lt;scope&gt; &lt;unit&gt;</code>),
-            the group list (<code>groups.txt</code>) and the font packages
-            (<code>fonts.txt</code>) live in plain <code>setup/*.txt</code> files
-            read by small loaders instead of being hardcoded in the script -
-            matching the existing <code>links.conf</code>/<code>programs.txt</code>
+            unit lists (<code>services.txt</code>,
+            <code>&lt;scope&gt; &lt;unit&gt;</code>), the group list
+            (<code>groups.txt</code>) and the font packages
+            (<code>fonts.txt</code>) live in plain
+            <code>setup/*.txt</code> files read by small loaders instead of
+            being hardcoded in the script - matching the existing
+            <code>links.conf</code>/<code>programs.txt</code>
             pattern. Empty/missing lists degrade gracefully. Combined with
-            <code>--only</code>/<code>--exclude</code> for selective linking, the
-            installer stays generic and easy to retarget.
+            <code>--only</code>/<code>--exclude</code> for selective linking,
+            the installer stays generic and easy to retarget.
           </p>
         </div>
 
@@ -471,12 +481,12 @@
           <p>
             The non-owner path is a clean addition: the <code>setup</code>
             command asks "Are you the repository owner?" and, on "no", runs an
-            <b>idempotent</b> scrub over the working copy <em>before</em>
-            linking - blanking the git identity and removing commit signing,
-            replacing the restic backup host with a showcase placeholder
-            (<code>sftp:user@ip:drive/path/to/your/backup</code>) and dropping
-            the <code>WLR_DRM_DEVICES</code> iGPU pin so wlroots auto-detects the
-            GPU. It is a tri-state (<code>--scrub</code> /
+            <b>idempotent</b> scrub over the working copy
+            <em>before</em> linking - blanking the git identity and removing
+            commit signing, replacing the restic backup host with a showcase
+            placeholder (<code>sftp:user@ip:drive/path/to/your/backup</code>)
+            and dropping the <code>WLR_DRM_DEVICES</code> iGPU pin so wlroots
+            auto-detects the GPU. It is a tri-state (<code>--scrub</code> /
             <code>--no-scrub</code>, also runnable standalone) that honours
             <code>-n/--dry-run</code> and <b>never scrubs silently</b> in a
             non-interactive run. This closes the biggest portability gap - a
@@ -575,9 +585,10 @@
           </p>
           <div class="rec">
             <b>Adjust:</b> run <code>setup</code> as a non-owner (or
-            <code>--scrub</code>), then set your own
-            <code>name</code>/<code>email</code> and point
-            <code>signingkey</code> at your own key.
+            <code>--scrub</code>), then set your own <code>name</code>/<code
+              >email</code
+            >
+            and point <code>signingkey</code> at your own key.
           </div>
         </div>
 
@@ -604,7 +615,8 @@
           </p>
           <div class="rec">
             <b>Adjust:</b> rewrite <code>monitors.lua</code> for your outputs
-            (<code>hyprctl monitors</code>); the GPU pin is handled by the scrub.
+            (<code>hyprctl monitors</code>); the GPU pin is handled by the
+            scrub.
           </div>
         </div>
 
