@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,14 +13,14 @@
         --fg-dim: #9c9a9a;
         --border: #595959;
         --accent: #768e84;
-        --krit: #ff8888;
-        --krit-bg: #301010;
-        --hoch: #e8a06a;
-        --hoch-bg: #2e1f10;
-        --mittel: #d8c56a;
-        --mittel-bg: #2b2810;
-        --niedrig: #7fa8c9;
-        --niedrig-bg: #14203a;
+        --crit: #ff8888;
+        --crit-bg: #301010;
+        --high: #e8a06a;
+        --high-bg: #2e1f10;
+        --med: #d8c56a;
+        --med-bg: #2b2810;
+        --low: #7fa8c9;
+        --low-bg: #14203a;
         --info: #9c9a9a;
         --info-bg: #232323;
         --good: #8fbf8f;
@@ -82,17 +82,17 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-      .stat.krit .n {
-        color: var(--krit);
+      .stat.crit .n {
+        color: var(--crit);
       }
-      .stat.hoch .n {
-        color: var(--hoch);
+      .stat.high .n {
+        color: var(--high);
       }
-      .stat.mittel .n {
-        color: var(--mittel);
+      .stat.med .n {
+        color: var(--med);
       }
-      .stat.niedrig .n {
-        color: var(--niedrig);
+      .stat.low .n {
+        color: var(--low);
       }
 
       nav.toc {
@@ -140,17 +140,17 @@
         padding: 16px 20px;
         margin-bottom: 16px;
       }
-      .card.krit {
-        border-left-color: var(--krit);
+      .card.crit {
+        border-left-color: var(--crit);
       }
-      .card.hoch {
-        border-left-color: var(--hoch);
+      .card.high {
+        border-left-color: var(--high);
       }
-      .card.mittel {
-        border-left-color: var(--mittel);
+      .card.med {
+        border-left-color: var(--med);
       }
-      .card.niedrig {
-        border-left-color: var(--niedrig);
+      .card.low {
+        border-left-color: var(--low);
       }
       .card.info {
         border-left-color: var(--info);
@@ -178,21 +178,21 @@
         border-radius: 4px;
         font-weight: 700;
       }
-      .badge.krit {
-        color: var(--krit);
-        background: var(--krit-bg);
+      .badge.crit {
+        color: var(--crit);
+        background: var(--crit-bg);
       }
-      .badge.hoch {
-        color: var(--hoch);
-        background: var(--hoch-bg);
+      .badge.high {
+        color: var(--high);
+        background: var(--high-bg);
       }
-      .badge.mittel {
-        color: var(--mittel);
-        background: var(--mittel-bg);
+      .badge.med {
+        color: var(--med);
+        background: var(--med-bg);
       }
-      .badge.niedrig {
-        color: var(--niedrig);
-        background: var(--niedrig-bg);
+      .badge.low {
+        color: var(--low);
+        background: var(--low-bg);
       }
       .badge.info {
         color: var(--info);
@@ -268,17 +268,17 @@
         border-radius: 50%;
         display: inline-block;
       }
-      .dot.krit {
-        background: var(--krit);
+      .dot.crit {
+        background: var(--crit);
       }
-      .dot.hoch {
-        background: var(--hoch);
+      .dot.high {
+        background: var(--high);
       }
-      .dot.mittel {
-        background: var(--mittel);
+      .dot.med {
+        background: var(--med);
       }
-      .dot.niedrig {
-        background: var(--niedrig);
+      .dot.low {
+        background: var(--low);
       }
       .dot.info {
         background: var(--info);
@@ -295,317 +295,315 @@
     <div class="wrap">
       <h1>Dotfiles - Health Report</h1>
       <div class="meta">
-        Momentaufnahme · Stand <strong>2026-07-05</strong> · Branch
-        <code>main</code> · Arch Linux / Hyprland, verwaltet über einen
-        <strong>eigenen, abhängigkeitsfreien Symlink-Manager</strong>
-        (<code>./install</code> + <code>setup/links.conf</code>, reines
+        Snapshot · as of <strong>2026-07-05</strong> · branch
+        <code>main</code> · Arch Linux / Hyprland, managed via a
+        <strong>custom, dependency-free symlink manager</strong>
+        (<code>./install</code> + <code>setup/links.conf</code>, plain
         Bash).<br />
-        Geprüft: <code>install</code>-Skript &amp;
-        <code>setup/links.conf</code>, das
-        <code>setup</code>-Bootstrap-Kommando,
-        <code>setup/install-programs</code> und der pacman-Hook
-        (<code>update_programs_list</code>, atomares Schreiben), alle
-        Shell-Skripte (<code>bash -n</code> grün), Hyprland-Lua (9 Module, alle
-        <code>luac -p</code> ok), nvim (lädt headless), systemd-Units,
-        Alacritty, Mako, Rofi, Ly (<code>session_log</code> jetzt auf
-        <code>.local/state/ly-session.log</code> gepinnt - Home bleibt sauber),
-        mpv, Typst, git-config, <code>setup/programs.txt</code>, README und
-        CLAUDE.md sowie die Live-Verlinkung (<strong>40/40</strong>
-        <code>ok</code>). Keine versehentlichen Secrets, keine
-        <code>TODO/FIXME</code>-Marker; KeePassXC-<code>.kdbx</code> (per
-        <code>.gitignore</code>/<code>.claudeignore</code> ausgeschlossen) und
-        fremde mpv-Lua-Scripts nur oberflächlich.<br />
-        Das Repo ist insgesamt sehr sauber und in gutem Zustand - frischer
-        Voll-Scan, <strong>keine offenen Findings</strong>. Die Notizen unten
-        ("stark" / "bewusst entschieden") sind gegen den aktuellen Code
-        verifiziert (Pfade und Zeilenreferenzen stimmen).
+        Reviewed: <code>install</code> script &amp;
+        <code>setup/links.conf</code>, the
+        <code>setup</code> bootstrap command,
+        <code>setup/install-programs</code> and the pacman hook
+        (<code>update_programs_list</code>, atomic writes), all shell scripts
+        (<code>bash -n</code> green), Hyprland Lua (9 modules, all
+        <code>luac -p</code> ok), nvim (loads headless), systemd units,
+        Alacritty, Mako, Rofi, Ly (<code>session_log</code> now pinned to
+        <code>.local/state/ly-session.log</code> - keeps home clean), mpv,
+        Typst, git config, <code>setup/programs.txt</code>, README and
+        CLAUDE.md, plus the live linking (<strong>40/40</strong>
+        <code>ok</code>). No accidental secrets, no
+        <code>TODO/FIXME</code> markers; the KeePassXC <code>.kdbx</code>
+        (excluded via <code>.gitignore</code>/<code>.claudeignore</code>) and
+        third-party mpv Lua scripts only checked superficially.<br />
+        Overall the repo is very clean and in good shape - fresh full scan,
+        <strong>no open findings</strong>. The notes below ("strong" /
+        "deliberate") are verified against the current code (paths and line
+        references match).
       </div>
 
       <div class="summary">
-        <div class="stat krit">
-          <span class="n">0</span><span class="l">Kritisch</span>
+        <div class="stat crit">
+          <span class="n">0</span><span class="l">Critical</span>
         </div>
-        <div class="stat hoch">
-          <span class="n">0</span><span class="l">Hoch</span>
+        <div class="stat high">
+          <span class="n">0</span><span class="l">High</span>
         </div>
-        <div class="stat mittel">
-          <span class="n">0</span><span class="l">Mittel</span>
+        <div class="stat med">
+          <span class="n">0</span><span class="l">Medium</span>
         </div>
-        <div class="stat niedrig">
-          <span class="n">0</span><span class="l">Niedrig</span>
+        <div class="stat low">
+          <span class="n">0</span><span class="l">Low</span>
         </div>
       </div>
 
       <nav class="toc">
-        <h2>Inhalt</h2>
+        <h2>Contents</h2>
         <ol>
-          <li><a href="#offen">Offene Findings</a></li>
-          <li><a href="#stark">Was schon stark ist</a></li>
-          <li><a href="#bewusst">Bewusst entschieden</a></li>
+          <li><a href="#open">Open findings</a></li>
+          <li><a href="#strong">What's already strong</a></li>
+          <li><a href="#deliberate">Deliberate decisions</a></li>
         </ol>
       </nav>
 
-      <!-- ================= OFFENE FINDINGS ================= -->
-      <section id="offen">
-        <h2>1 · Offene Findings</h2>
+      <!-- ================= OPEN FINDINGS ================= -->
+      <section id="open">
+        <h2>1 · Open findings</h2>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">keine offenen Findings</span>
-            <span class="loc">nichts zu tun</span>
+            <span class="badge good">no open findings</span>
+            <span class="loc">nothing to do</span>
           </div>
           <p>
-            Dieser Voll-Scan hat keine offenen Probleme ergeben - weder
-            Korrektheits-/Robustheits-, Security-, Struktur- noch Doku-Findings.
-            Alle Shell-Skripte sind syntaktisch grün, die Hyprland-Lua-Module
-            parsen, die Live-Verlinkung ist vollständig (40/40) und README wie
-            CLAUDE.md decken sich mit dem Code. Was das Repo besonders solide
-            macht bzw. bewusst so gewählt ist, steht in den beiden Abschnitten
-            unten.
+            This full scan surfaced no open problems - no correctness/robustness,
+            security, structure or docs findings. All shell scripts are
+            syntactically green, the Hyprland Lua modules parse, the live linking
+            is complete (40/40) and README as well as CLAUDE.md match the code.
+            What makes the repo particularly solid, or is deliberately chosen
+            that way, is in the two sections below.
           </p>
         </div>
       </section>
 
-      <!-- ================= WAS STARK IST ================= -->
-      <section id="stark">
-        <h2>2 · Was schon stark ist</h2>
+      <!-- ================= WHAT'S STRONG ================= -->
+      <section id="strong">
+        <h2>2 · What's already strong</h2>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">stark</span>
+            <span class="badge good">strong</span>
             <span class="loc"
               ><code>install</code> · <code>setup/links.conf</code></span
             >
           </div>
           <p>
-            Der eigene Symlink-Manager ist schlank und sicher:
-            <b>eine</b> Mapping-Datei (<code>setup/links.conf</code>, zwei
-            Spalten) plus reines Bash <b>ohne Abhängigkeiten</b> (kein
-            Python/dotbot/Stow). Kommandos
+            The custom symlink manager is lean and safe:
+            <b>one</b> mapping file (<code>setup/links.conf</code>, two columns)
+            plus plain Bash <b>with no dependencies</b> (no
+            Python/dotbot/Stow). Commands
             <code>link</code
             >/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
-            dazu <code>-n/--dry-run</code>, <code>--user-only</code> und
-            <code>--force</code> (sichert reale Ziele nach <code>.bak</code>);
-            das <code>setup</code>-Kommando bündelt den Erst-Setup (Pakete ->
-            Link -> Units -> <code>locale-gen</code> -> Checkliste). Reale Dateien
-            werden nie ungefragt überschrieben, <code>unlink</code> entfernt nur
-            Symlinks auf eigene Quellen, <code>/etc</code>-Ziele laufen
-            dateiweise per <code>sudo</code>, Glob-Quellen
-            (<code>config/usrbin/*</code>) verlinken dateiweise, damit
-            Fremd-Einträge in <code>~/.local/bin</code> (z.&nbsp;B.
-            <code>claude</code>) erhalten bleiben. Live verifiziert: 40/40
-            Einträge <code>ok</code>.
+            plus <code>-n/--dry-run</code>, <code>--user-only</code> and
+            <code>--force</code> (backs up real targets to <code>.bak</code>);
+            the <code>setup</code> command bundles the first-time setup (packages
+            -> link -> units -> <code>locale-gen</code> -> checklist). Real files
+            are never overwritten unasked, <code>unlink</code> only removes
+            symlinks to our own sources, <code>/etc</code> targets run per file
+            via <code>sudo</code>, glob sources
+            (<code>config/usrbin/*</code>) link per file so foreign entries in
+            <code>~/.local/bin</code> (e.g.
+            <code>claude</code>) are preserved. Live-verified: 40/40 entries
+            <code>ok</code>.
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">stark</span>
+            <span class="badge good">strong</span>
             <span class="loc"
               ><code>config/usrbin/lib_hypr.sh</code> ·
               <code>workspace_slf</code></span
             >
           </div>
           <p>
-            Die Workspace-Automatisierung ist bemerkenswert robust: Fenster
-            werden über ihre stabile <em>Adresse</em> statt über fragile Titel
-            angesprochen, neue Fenster via Adress-Diff erkannt, es gibt
-            Timeout/Poll-Logik (<code>wait_for_new_window</code>), einen
-            <code>SELF_GUARD</code> gegen das Schließen des eigenen Terminals,
-            idempotentes Verhalten und Fehlermeldungen als Rofi-Popup. Sauber
-            dokumentiert und modular (Lib + Runner).
+            The workspace automation is remarkably robust: windows are addressed
+            by their stable <em>address</em> instead of fragile titles, new
+            windows detected via an address diff, there is timeout/poll logic
+            (<code>wait_for_new_window</code>), a
+            <code>SELF_GUARD</code> against closing your own terminal,
+            idempotent behaviour and error messages as a Rofi popup. Cleanly
+            documented and modular (lib + runner).
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">stark</span>
+            <span class="badge good">strong</span>
             <span class="loc"><code>config/usrbin/rofi_keepassxc</code></span>
           </div>
           <p>
-            Das entschlüsselte Eintrags-Listing wird über einen
-            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> zuverlässig entfernt -
-            auch bei jedem frühen Abbruch (Escape, falsches Passwort). So
-            bleiben keine Klartext-Metadaten der Passwort-DB liegen. Sauberer
-            Umgang mit sensiblen Zwischendaten.
+            The decrypted entry listing is reliably removed via a
+            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> - even on any early abort
+            (Escape, wrong password). So no plaintext metadata of the password DB
+            is left behind. Clean handling of sensitive intermediate data.
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">stark</span>
+            <span class="badge good">strong</span>
             <span class="loc"><code>config/git/.gitconfig</code></span>
           </div>
           <p>
-            SSH-basiertes Commit-Signing (<code>gpg.format = ssh</code>,
-            <code>commit.gpgsign = true</code>, <code>signingkey</code> als
-            <code>id_ed25519.pub</code>) ist eingerichtet - gute
-            Sicherheitshygiene für die Commit-Authentizität.
+            SSH-based commit signing (<code>gpg.format = ssh</code>,
+            <code>commit.gpgsign = true</code>, <code>signingkey</code> as
+            <code>id_ed25519.pub</code>) is set up - good security hygiene for
+            commit authenticity.
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">stark</span>
+            <span class="badge good">strong</span>
             <span class="loc">alacritty · mako · rofi · hyprland.lua</span>
           </div>
           <p>
-            Durchgängig konsistentes, dunkles Farbschema (<code>#141414</code> /
-            <code>#dddddd</code> / Akzent <code>#768e84</code>) über alle
-            UI-Komponenten hinweg - wirkt wie aus einem Guss. Auch der
-            Health-Report selbst nutzt dasselbe Schema.
+            A consistently dark colour scheme throughout (<code>#141414</code> /
+            <code>#dddddd</code> / accent <code>#768e84</code>) across all UI
+            components - feels all of a piece. The health report itself uses the
+            same scheme.
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
-            <span class="badge good">behalten</span>
-            <span class="loc">schlanke, bewusste Configs</span>
+            <span class="badge good">keep</span>
+            <span class="loc">lean, deliberate configs</span>
           </div>
           <p>
-            Ohne Änderungsbedarf (jede Option trägt): <b>alacritty</b>,
-            <b>mako</b>, <b>rofi</b>, <b>mpv</b> (bewusste Cache-/Screenshot-
-            Profile, fremde Lua-Scripts unangetastet), <b>typst</b> (lokales
-            Paket <code>school-theme</code>),
-            <b>systemd</b> (battery-check-Timer, dotfiles-sync),
-            <b>pacman</b>-Hook (minimaler Trigger). <b>keepassxc</b>: nur Config
-            getrackt, die <code>.kdbx</code> ist gitignored (lokal vorhanden).
-            <b>nvim</b> hat eine eigene <code>CLAUDE.md</code> und wird dort
-            vertieft.
+            Without any need for change (every option earns its place):
+            <b>alacritty</b>, <b>mako</b>, <b>rofi</b>, <b>mpv</b> (deliberate
+            cache/screenshot profiles, third-party Lua scripts untouched),
+            <b>typst</b> (local package <code>school-theme</code>),
+            <b>systemd</b> (battery-check timer, dotfiles-sync),
+            <b>pacman</b> hook (minimal trigger). <b>keepassxc</b>: only config
+            tracked, the <code>.kdbx</code> is gitignored (present locally).
+            <b>nvim</b> has its own <code>CLAUDE.md</code> and is covered in more
+            depth there.
           </p>
         </div>
       </section>
 
-      <!-- ================= BEWUSST ENTSCHIEDEN ================= -->
-      <section id="bewusst">
-        <h2>3 · Bewusst entschieden</h2>
+      <!-- ================= DELIBERATE DECISIONS ================= -->
+      <section id="deliberate">
+        <h2>3 · Deliberate decisions</h2>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"
               ><code>/etc/sudoers</code> · <code>%wheel</code></span
             >
           </div>
           <p>
-            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> - passwortloses sudo
-            für die <code>wheel</code>-Gruppe. Bewusste Bequemlichkeits-
-            Entscheidung (im README unter "Manual system state" festgehalten).
-            Zur Kenntnis: jeder Prozess des Users wird damit ohne weitere Hürde
-            root; die sudo-Datei bleibt auf Wunsch unverändert.
+            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> - passwordless sudo
+            for the <code>wheel</code> group. Deliberate convenience decision
+            (recorded in the README under "Manual system state"). Note: every
+            process of the user thereby becomes root without any further hurdle;
+            the sudo file stays unchanged on purpose.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"><code>config/usrbin/workspace_slf:75</code></span>
           </div>
           <p>
-            <code>workspace_slf</code> startet Claude mit
-            <code>--dangerously-skip-permissions</code> (Bypass-All-Modus) -
-            bewusste Workflow-Entscheidung für schnelles Arbeiten. Zur Kenntnis:
-            läuft ohne Permission-Prompts, nur in vertrauenswürdigen
-            Projektverzeichnissen sinnvoll.
+            <code>workspace_slf</code> starts Claude with
+            <code>--dangerously-skip-permissions</code> (bypass-all mode) -
+            deliberate workflow decision for fast work. Note: runs without
+            permission prompts, only sensible in trusted project directories.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"
               ><code>config/hypr/looknfeel.lua:31</code> ·
               <code>config/nvim/lua/config/options.lua:3</code></span
             >
           </div>
           <p>
-            Animationen in Hyprland deaktiviert (<code>enabled = false</code> in
-            <code>looknfeel.lua</code>) und Maus in nvim ausgeschaltet (<code
+            Animations disabled in Hyprland (<code>enabled = false</code> in
+            <code>looknfeel.lua</code>) and the mouse turned off in nvim (<code
               >vim.opt.mouse = ""</code
-            >) - bewusst minimalistischer, tastaturzentrierter Workflow. Die
-            Animations-Kurven bleiben in <code>animations.lua</code> definiert,
-            sodass ein Aktivieren nur das Umschalten des Flags erfordert.
+            >) - deliberately minimalist, keyboard-centric workflow. The
+            animation curves stay defined in <code>animations.lua</code>, so
+            enabling only requires flipping the flag.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"><code>config/mpv/mpv.conf</code></span>
           </div>
           <p>
-            Sehr große Demuxer-Caches (mehrere GB Readahead) - laut Kommentar
-            bewusst, "viel RAM vorhanden". Legitim für ein Desktop-Setup mit
-            reichlich Speicher.
+            Very large demuxer caches (several GB readahead) - deliberate per the
+            comment, "plenty of RAM available". Legitimate for a desktop setup
+            with ample memory.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"><code>config/usrbin/restic-backup:10</code></span>
           </div>
           <p>
-            Restic-Repo als SFTP zu einer LAN-IP mit Windows-Pfad
-            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). Interne IP
-            ist kein Geheimnis; <code>RESTIC_PASSWORD</code> bewusst nicht im
-            Skript - wird interaktiv abgefragt. In Ordnung, solange das Skript
-            nicht non-interaktiv (z.&nbsp;B. per Timer) laufen soll.
+            Restic repo as SFTP to a LAN IP with a Windows path
+            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>). The internal
+            IP is no secret; <code>RESTIC_PASSWORD</code> deliberately not in the
+            script - it is prompted interactively. Fine as long as the script is
+            not meant to run non-interactively (e.g. via a timer).
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"
               ><code>config/mkinitcpio/mkinitcpio.conf:55</code> ·
               <code>config/vconsole/vconsole.conf</code></span
             >
           </div>
           <p>
-            Die Console-Keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH)
-            wird über den initramfs-<code>keymap</code>-Hook geladen (in
-            <code>HOOKS=(… keyboard keymap consolefont …)</code>), nicht (nur)
-            über <code>systemd-vconsole-setup</code> - Letzteres überspringt
-            beim Boot die erste VT ("Configuration of first virtual console was
-            skipped"). Der <code>keymap</code>-Hook backt die Keymap zur
-            initramfs-<strong>Bauzeit</strong> ein. Zur Kenntnis: nach jeder
-            Änderung an <code>vconsole.conf</code> einmal
-            <code>sudo mkinitcpio -P</code> laufen lassen, sonst greift beim
-            ly-/ TTY-Login weiter die alte Keymap.
+            The console keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH) is
+            loaded via the initramfs <code>keymap</code> hook (in
+            <code>HOOKS=(… keyboard keymap consolefont …)</code>), not (only)
+            via <code>systemd-vconsole-setup</code> - the latter skips the first
+            VT on boot ("Configuration of first virtual console was skipped").
+            The <code>keymap</code> hook bakes the keymap in at initramfs
+            <strong>build time</strong>. Note: after every change to
+            <code>vconsole.conf</code> run
+            <code>sudo mkinitcpio -P</code> once, otherwise the old keymap keeps
+            applying at the ly / TTY login.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
-            <span class="badge info">bewusst</span>
+            <span class="badge info">deliberate</span>
             <span class="loc"
               ><code>config/hypr/env.lua:7</code> ·
               <code>config/hypr/monitors.lua</code></span
             >
           </div>
           <p>
-            Gerätespezifische Hardcodes: <code>WLR_DRM_DEVICES</code> auf einen
-            festen PCI-Pfad (<code>pci-0000:34:00.0-card</code>) sowie feste
-            Monitor-Outputs (<code>eDP-1</code>, <code>HDMI-A-1</code>). Für ein
-            persönliches Single-Machine-Setup in Ordnung - nur als
-            Portabilitäts-Hinweis: bei Hardware-Wechsel müssen diese Werte
-            angepasst werden.
+            Device-specific hardcodes: <code>WLR_DRM_DEVICES</code> to a fixed
+            PCI path (<code>pci-0000:34:00.0-card</code>) and fixed monitor
+            outputs (<code>eDP-1</code>, <code>HDMI-A-1</code>). Fine for a
+            personal single-machine setup - just a portability note: on a
+            hardware change these values must be adjusted.
           </p>
         </div>
       </section>
 
       <div class="legend">
-        <span><span class="dot krit"></span> kritisch - sofort handeln</span>
-        <span><span class="dot hoch"></span> hoch - zeitnah beheben</span>
-        <span><span class="dot mittel"></span> mittel - einplanen</span>
-        <span><span class="dot niedrig"></span> niedrig - bei Gelegenheit</span>
-        <span><span class="dot info"></span> info / bewusst entschieden</span>
+        <span><span class="dot crit"></span> critical - act immediately</span>
+        <span><span class="dot high"></span> high - fix soon</span>
+        <span><span class="dot med"></span> medium - schedule it</span>
+        <span><span class="dot low"></span> low - when convenient</span>
+        <span
+          ><span class="dot info"></span> info / deliberate decision</span
+        >
       </div>
 
       <footer>
-        Health-Report - reine Momentaufnahme, keine Historie. Erzeugt aus einem
-        frischen Scan des Repos.
+        Health report - pure snapshot, no history. Generated from a fresh scan of
+        the repo.
       </footer>
     </div>
   </body>
