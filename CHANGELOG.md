@@ -27,6 +27,13 @@ Versions before `1.0.0` are pre-release: anything may still change.
 - `./install validate`: a strict, read-only check of `links.conf`. An
   `optional` third field marks a glob that may legitimately match nothing
   (`config/foo/* ~/dir optional`).
+- `--only NAME` / `--exclude NAME` (repeatable) to link/status/unlink/clean only
+  a subset of configs (matched on the config dir name).
+- Hidden `./install selftest`: links the table into a throwaway `mktemp -d` HOME,
+  verifies the symlinks, unlinks and verifies removal - never touching the real
+  home.
+- CI workflow (`.github/workflows/validate.yml`) running the installer's syntax
+  check, `validate` and `selftest` on every push / PR.
 - This `CHANGELOG.md`.
 
 ### Changed
@@ -47,6 +54,9 @@ Versions before `1.0.0` are pre-release: anything may still change.
   type instead of assuming `BAT0` (works for `BAT1`/`CMB0`/…).
 - `WLR_DRM_DEVICES` (`config/hypr/env.lua`) pins the integrated GPU for the owner
   and is removed by the scrub on other machines (wlroots then auto-detects).
+- The systemd unit lists, the group list and the font packages are now read from
+  `setup/services.txt`, `setup/groups.txt` and `setup/fonts.txt` instead of being
+  hardcoded in `install`.
 
 ### Removed
 

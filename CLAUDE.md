@@ -44,16 +44,16 @@ scripts). The source->target mapping is stated explicitly in
   - `--systemd` - activate user/system units (`reactivate_units`). *Default.*
   - `--remove-systemd` - deactivate those same units (prompt; note: linked units
     are removed in the process).
-  - `--groups` - add the user to `GROUP_LIST` via `usermod -aG`.
+  - `--groups` - add the user to the groups from `setup/groups.txt` (loaded into
+    `GROUP_LIST`) via `usermod -aG`.
   - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).
   - `--locale` - `locale-gen`. *Default.*
   - `--ly-dropin` - deploy the ly@tty2 drop-ins as **real copies** to `/etc`.
   - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
   - `--initramfs` - `mkinitcpio -P`.
-  - `--fonts` - install the font packages (`FONT_PACKAGES`: noto-fonts{,-cjk,
-    -emoji}, ttf-jetbrains-mono-nerd) and rebuild the fontconfig cache
-    (`fc-cache -f`).
+  - `--fonts` - install the font packages from `setup/fonts.txt` (loaded into
+    `FONT_PACKAGES`) and rebuild the fontconfig cache (`fc-cache -f`).
   - `--scrub` / `--no-scrub` - replace the owner's personal data in the **working
     copy** with generic placeholders: git identity/signing in
     `config/git/.gitconfig` -> blank name/email, signing removed; the restic
@@ -82,6 +82,16 @@ scripts). The source->target mapping is stated explicitly in
   outside the allowlist (`ALLOWED_TARGET_PREFIXES` = `~` / `/etc` / `/usr/local`),
   and a glob that matches nothing. Mark a legitimately-empty glob with a third
   `optional` field: `config/foo/* ~/dir optional`.
+- **Selective linking**: `--only NAME` / `--exclude NAME` (both repeatable) narrow
+  every table command (link/status/unlink/clean) to a subset. `NAME` is the config
+  dir (`config/<name>/…`), e.g. `./install --only nvim`, `./install --exclude mpv`.
+  Filtering happens **after** validation (the whole config is still validated);
+  an unknown name warns and an empty result aborts.
+- **Self-test** (hidden): `./install selftest` links the table into a throwaway
+  `mktemp -d` HOME (`--user-only --no-units --force`), verifies every `~` target
+  became the right symlink, unlinks and verifies removal - never touching the real
+  home. Exits non-zero on any mismatch; the CI workflow
+  (`.github/workflows/validate.yml`) runs it together with `validate`.
 - **Update the package list** (without re-linking): `update_programs_list` (from
   `config/usrbin/`, on the PATH; the same script the pacman hook uses).
 - **Install packages from `programs.txt`**: `./setup/install-programs` (uses `yay`).
@@ -107,10 +117,13 @@ scripts). The source->target mapping is stated explicitly in
   `.claude.json`/sessions/history/cache (auth/state/secrets).
 - **`setup/`** = deployment machinery: `links.conf` (link map, default config of
   `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
-  script, without a `.sh` extension). The old `install.sh`/`migrate.sh` is
-  replaced by `./install` + `setup/links.conf`. The package list itself is
-  written by `config/usrbin/update_programs_list` (the single source, also used
-  by the pacman hook).
+  script, without a `.sh` extension), and the **data lists the installer reads
+  instead of hardcoding them**: `services.txt` (systemd units, `<scope> <unit>`
+  -> `USER_UNITS`/`SYSTEM_UNITS`), `groups.txt` (-> `GROUP_LIST`) and `fonts.txt`
+  (-> `FONT_PACKAGES`). The old `install.sh`/`migrate.sh` is replaced by
+  `./install` + `setup/links.conf`. The package list itself is written by
+  `config/usrbin/update_programs_list` (the single source, also used by the
+  pacman hook).
 - **`/etc` targets** (in `links.conf`, per file, `/etc/…` target path):
   `ly/config.ini`, `mkinitcpio.conf`,
   `systemd-system/legion-conservation.service`,
@@ -120,8 +133,9 @@ scripts). The source->target mapping is stated explicitly in
   `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
 - **System/user services**: activated by the `install` script after linking via
   `systemctl enable` (system) or `systemctl --user enable` (user:
-  `battery-check.timer`, `dotfiles-sync.service`) - the unit lists are at the top
-  of the script (`USER_UNITS` / `SYSTEM_UNITS`). Deliberately `enable`, **not**
+  `battery-check.timer`, `dotfiles-sync.service`) - the unit lists live in
+  `setup/services.txt` (loaded into `USER_UNITS` / `SYSTEM_UNITS`). Deliberately
+  `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
   only contains system units that really exist - pipewire/wireplumber (user
