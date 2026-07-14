@@ -411,6 +411,29 @@
           <div class="card-head">
             <span class="badge good">strong</span>
             <span class="loc"
+              ><code>install</code> · <code>validate_links</code> /
+              <code>./install validate</code></span
+            >
+          </div>
+          <p>
+            The <code>links.conf</code> handling is a strict
+            <b>parse → validate → build → execute</b> pipeline: every command
+            validates first and <b>aborts on any problem</b> (nothing changed),
+            reporting <code>links.conf:&lt;line&gt;: &lt;msg&gt;</code>. It rejects
+            a missing target, stray fields, an absolute or repo-escaping source
+            (<code>realpath</code> vs the repo root), a non-existent source,
+            duplicate sources/targets (expanded), a target outside the allowlist
+            (<code>~</code> / <code>/etc</code> / <code>/usr/local</code>) and an
+            unmatched glob (<code>optional</code> opts out). A read-only
+            <code>./install validate</code> exposes it for CI. Verified: the real
+            config passes and crafted bad configs abort with the right message.
+          </p>
+        </div>
+
+        <div class="card good">
+          <div class="card-head">
+            <span class="badge good">strong</span>
+            <span class="loc"
               ><code>install</code> · <code>do_scrub</code> /
               <code>--scrub</code></span
             >
