@@ -26,6 +26,8 @@ scripts). The source->target mapping is stated explicitly in
   symlinks are replaced anyway).
 - **New machine (bootstrap, one command)**: `./install setup` - shows a **menu of
   optional steps** (on a TTY; Enter = defaults, without a TTY the defaults run),
+  then asks **"Are you the repository owner? [y/N]"** and (on "no", also the
+  non-TTY default) scrubs the personal data before linking (see `--scrub`),
   then links the configs (implies `--force`) and runs the chosen steps. `link`
   stays the idempotent everyday refresh; `setup` wraps the first-time setup flow.
 - **Optional setup steps** (selectable in the `setup` menu, **runnable
@@ -50,6 +52,11 @@ scripts). The source->target mapping is stated explicitly in
   - `--fonts` - install the font packages (`FONT_PACKAGES`: noto-fonts{,-cjk,
     -emoji}, ttf-jetbrains-mono-nerd) and rebuild the fontconfig cache
     (`fc-cache -f`).
+  - `--scrub` - replace the owner's personal data in the **working copy** with
+    generic placeholders (git identity/signing in `config/git/.gitconfig` -> blank
+    name/email, signing removed; the restic backup host in `config/usrbin/
+    restic-backup` -> `sftp:user@ip:drive/path/to/your/backup`). Idempotent. Not
+    shown in the menu - driven by the owner prompt in `setup`, or run standalone.
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file
@@ -102,8 +109,7 @@ scripts). The source->target mapping is stated explicitly in
   **not** tracked (formerly `*.wants` links in the repo - now removed).
 - **Not linked**: `AGENT/` (work/workflow files) stays in the repo root.
 - Custom scripts: **`config/usrbin/*`** -> `~/.local/bin` (per file, on the
-  `PATH` via `.bashrc`). `lib_hypr.sh` is a helper lib sourced via `source`
-  (`workspace_slf`, `rofi_workspace_manager`). `dotfiles_sync` versions
+  `PATH` via `.bashrc`). `dotfiles_sync` versions
   `setup/programs.txt`; `update_programs_list` writes there.
   `update_programs_list` is **additionally** linked to the fixed system path
   `/usr/local/bin/update_programs_list` (its own `links.conf` line), because the

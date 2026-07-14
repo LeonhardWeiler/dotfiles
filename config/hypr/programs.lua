@@ -8,5 +8,4 @@ return {
 	lock = "hyprlock",
 	pass = "~/.local/bin/rofi_keepassxc -d ~/.config/keepassxc/Passwords.kdbx",
 	files = "rofi -show filebrowser",
-	wsmgr = "~/.local/bin/rofi_workspace_manager",
 }

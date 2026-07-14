@@ -4,11 +4,18 @@ export HISTFILE=~/.config/bash/.bash_history
 mkdir -p "$(dirname "$HISTFILE")"
 shopt -s histappend
 
-BAT_CAPACITY=/sys/class/power_supply/BAT0/capacity
+# Detect the battery once at startup: the first power supply whose type is
+# "Battery" (name-independent - BAT0, BAT1, CMB0, ...). Empty on a desktop.
+BAT_CAPACITY=
+for _bat in /sys/class/power_supply/*; do
+  [ -r "$_bat/type" ] && [ "$(<"$_bat/type")" = Battery ] && [ -r "$_bat/capacity" ] || continue
+  BAT_CAPACITY="$_bat/capacity"; break
+done
+unset _bat
 # Read the battery level before every prompt from sysfs (bash builtin, no acpi subprocess).
 # Without a battery (desktop) the display stays empty instead of a bare "%".
 update_battery() {
-  if [ -r "$BAT_CAPACITY" ]; then
+  if [ -n "$BAT_CAPACITY" ] && [ -r "$BAT_CAPACITY" ]; then
     battery="$(<"$BAT_CAPACITY")% "
   else
     battery=""

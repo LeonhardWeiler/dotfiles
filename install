@@ -28,6 +28,10 @@
 #                             (/etc/sudoers.d/, validated with visudo)
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
 #   --fonts                   install the font packages and refresh the font cache
+#   --scrub                   replace personal data (git identity/signing, restic
+#                             backup host) with generic placeholders in the working
+#                             copy - for non-owner clones (see the owner prompt in
+#                             `setup`)
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -114,6 +118,7 @@ while [ $# -gt 0 ]; do
     --sudoers)          SELECTED[sudoers]=1;         FLAG_STEPS_GIVEN=1 ;;
     --initramfs)        SELECTED[initramfs]=1;       FLAG_STEPS_GIVEN=1 ;;
     --fonts)            SELECTED[fonts]=1;           FLAG_STEPS_GIVEN=1 ;;
+    --scrub)            SELECTED[scrub]=1;           FLAG_STEPS_GIVEN=1 ;;
     *) warn "unknown argument: $1"; usage 1 ;;
   esac
   shift
@@ -287,6 +292,7 @@ choose_steps() {
   info "Select optional steps (numbers separated by spaces; Enter = defaults)"
   local i=1 idx=() def
   for s in "${STEP_ORDER[@]}"; do
+    [ "$s" = scrub ] && continue   # driven by the owner prompt, not the menu
     def=""; for d in "${DEFAULT_STEPS[@]}"; do [ "$d" = "$s" ] && def=" (default)"; done
     printf '  [%d] %s%s\n' "$i" "${STEP_DESC[$s]}" "$def"; idx[$i]="$s"; i=$((i+1))
   done
@@ -433,6 +439,49 @@ do_fonts() {
 }
 register_step fonts do_fonts "Install fonts + refresh font cache (fc-cache)"
 
+# Non-owner scrub: replace personal data in the WORKING COPY with generic
+# placeholders BEFORE it is linked, so a foreign user never deploys the owner's
+# git identity/signing key or backup host. Idempotent. Triggered by answering
+# "no" to the owner question in `setup`, or standalone via `--scrub`. Not shown
+# in the interactive menu (the owner prompt covers it) - see choose_steps.
+do_scrub() {
+  info "Scrubbing personal data from the working copy (non-owner)"
+  local gc="$BASEDIR/config/git/.gitconfig"
+  local rb="$BASEDIR/config/usrbin/restic-backup"
+  if [ "$DRYRUN" = 1 ]; then
+    [ -f "$gc" ] && printf '    [dry] reset git identity/signing in config/git/.gitconfig\n'
+    [ -f "$rb" ] && printf '    [dry] replace restic backup host in config/usrbin/restic-backup\n'
+    return 0
+  fi
+  # git: drop the owner's name/email/signing key, keep the functional editor
+  # setting. Signing is removed on purpose - a bogus signingkey would make every
+  # commit fail for a foreign user.
+  if [ -f "$gc" ]; then
+    cat > "$gc" <<'EOF'
+[user]
+	email =
+	name =
+[core]
+	editor = nvim
+EOF
+    ok "reset git identity/signing: config/git/.gitconfig"
+  else
+    warn "config/git/.gitconfig missing - git scrub skipped"
+  fi
+  # restic: replace whatever backup host is set as the default with a showcase
+  # placeholder (matches everything between `RESTIC_REPOSITORY:-` and `}`).
+  if [ -f "$rb" ]; then
+    if sed -i 's#\(RESTIC_REPOSITORY:-\)[^}]*#\1sftp:user@ip:drive/path/to/your/backup#' "$rb"; then
+      ok "restic backup host -> showcase placeholder: config/usrbin/restic-backup"
+    else
+      warn "restic scrub failed"
+    fi
+  else
+    warn "config/usrbin/restic-backup missing - restic scrub skipped"
+  fi
+}
+register_step scrub do_scrub "Scrub personal data (git identity/signing, restic host)"
+
 # ── Read the mapping file (fully first, then iterate - otherwise a sudo password
 #    prompt collides with the read loop's stdin) ──────────────────────────────
 SRCS=(); TGTS=()
@@ -472,7 +521,14 @@ case "$CMD" in
     FORCE=1
     info "Setup: optional steps -> link (--force) -> units"
     choose_steps
+    # Owner check: only the repository owner should deploy the personal identity
+    # data. Answering "no" (also the non-TTY default) scrubs it from the working
+    # copy BEFORE linking. An explicit --scrub flag already selected it.
+    if [ "$FLAG_STEPS_GIVEN" = 0 ] && ! confirm "  Are you the repository owner?"; then
+      SELECTED[scrub]=1
+    fi
     is_selected programs && do_programs_install
+    is_selected scrub && do_scrub
     do_symlinks
     is_selected systemd && reactivate_units
     is_selected remove-systemd && do_systemd_disable

@@ -14,7 +14,6 @@ hl.bind(mainMod .. " + SHIFT + o", hl.dsp.exec_cmd(p.pass))
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd(p.files))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd(p.browser))
 hl.bind("SUPER + L", hl.dsp.exec_cmd(p.lock))
-hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(p.wsmgr))
 
 -- Switch focus in the master layout
 hl.bind(mainMod .. " + J", hl.dsp.layout("cyclenext"))

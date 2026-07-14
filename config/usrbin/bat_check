@@ -1,9 +1,14 @@
 #!/bin/bash
 
-CAPACITY=/sys/class/power_supply/BAT0/capacity
+# Find the first real battery (name-independent: BAT0, BAT1, CMB0, ...).
+CAPACITY=
+for bat in /sys/class/power_supply/*; do
+  [ -r "$bat/type" ] && [ "$(<"$bat/type")" = Battery ] && [ -r "$bat/capacity" ] || continue
+  CAPACITY="$bat/capacity"; break
+done
 
-# No battery present (desktop, different name, removed) -> exit quietly.
-[ -r "$CAPACITY" ] || exit 0
+# No battery present (desktop, removed) -> exit quietly.
+[ -n "$CAPACITY" ] || exit 0
 
 PERCENT=$(cat "$CAPACITY")
 
