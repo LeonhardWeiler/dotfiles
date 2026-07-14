@@ -201,6 +201,11 @@ scripts). The source->target mapping is stated explicitly in
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).
+- Scripts carry a two-line license header right after the shebang:
+  `# SPDX-License-Identifier: GPL-3.0-or-later` + a `# Copyright (C) <year>
+  <name>` line (the repo is GPLv3, see `LICENSE`). Add it to any new script so the
+  license travels with a single copied file. Third-party scripts (e.g.
+  `config/mpv/scripts/thumbfast.lua`) keep their own header.
 - Two health/workflow skills write into `AGENT/`: `review-and-update-report`
   (health report) and `implement-todo` (work through `TODO.md`, one commit per
   item).

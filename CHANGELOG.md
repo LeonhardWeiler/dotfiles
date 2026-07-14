@@ -8,6 +8,12 @@ Versions before `1.0.0` are pre-release: anything may still change.
 
 ## [Unreleased]
 
+### Added
+
+- SPDX license headers (`GPL-3.0-or-later` + copyright) at the top of every own
+  script (`install`, `setup/install-programs`, `config/usrbin/*`,
+  `change-wallpaper.sh`), so the license travels with a single copied file.
+
 ### Changed
 
 - Documentation now says **GNU/Linux** where the whole operating system is meant

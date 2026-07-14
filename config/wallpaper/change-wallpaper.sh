@@ -1,4 +1,7 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Leonhard Weiler
+#
 # change-wallpaper - pick a random wallpaper (excluding the previous one) and set
 # it via swaybg. Wallpapers live in $WALLPAPER_DIR (default:
 # ~/.local/share/wallpapers, where links.conf points config/wallpaper/pictures).

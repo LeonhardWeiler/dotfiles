@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Leonhard Weiler
+#
 # update_programs_list - regenerates programs.txt in the dotfiles repo from the
 # explicitly installed packages (without the base group). Non-interactive.
 #

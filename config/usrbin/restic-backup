@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Leonhard Weiler
 set -eu
 
 command -v restic >/dev/null 2>&1 || {
