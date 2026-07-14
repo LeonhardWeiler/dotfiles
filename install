@@ -494,11 +494,11 @@ register_step fonts do_fonts "Install fonts + refresh font cache (fc-cache)"
 # owner question in `setup` (or forced via `--scrub`) - NOT a menu step.
 do_scrub() {
   info "Scrubbing personal data from the working copy (non-owner)"
-  local gc="$BASEDIR/config/git/.gitconfig"
+  local gc="$BASEDIR/config/git/config"
   local rb="$BASEDIR/config/usrbin/restic-backup"
   local env="$BASEDIR/config/hypr/env.lua"
   if [ "$DRYRUN" = 1 ]; then
-    [ -f "$gc" ]  && printf '    [dry] reset git identity/signing in config/git/.gitconfig\n'
+    [ -f "$gc" ]  && printf '    [dry] reset git identity/signing in config/git/config\n'
     [ -f "$rb" ]  && printf '    [dry] replace restic backup host in config/usrbin/restic-backup\n'
     [ -f "$env" ] && grep -q 'WLR_DRM_DEVICES' "$env" \
       && printf '    [dry] drop the WLR_DRM_DEVICES GPU pin in config/hypr/env.lua\n'
@@ -515,9 +515,9 @@ do_scrub() {
 [core]
 	editor = nvim
 EOF
-    ok "reset git identity/signing: config/git/.gitconfig"
+    ok "reset git identity/signing: config/git/config"
   else
-    warn "config/git/.gitconfig missing - git scrub skipped"
+    warn "config/git/config missing - git scrub skipped"
   fi
   # restic: replace whatever backup host is set as the default with a showcase
   # placeholder (matches everything between `RESTIC_REPOSITORY:-` and `}`).

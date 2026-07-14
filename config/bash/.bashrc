@@ -36,7 +36,6 @@ export BROWSER=zen-browser
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 export TYPST_PACKAGE_PATH="$HOME/.config/typst/packages"
-export GIT_CONFIG_GLOBAL="$HOME/.config/git/.gitconfig"
 eval "$(dircolors "${XDG_CONFIG_HOME:-$HOME/.config}/dircolors")"
 
 alias open='xdg-open'

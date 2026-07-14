@@ -6,8 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-# Same git config as in the interactive shell (SSH signing etc.).
-Environment=GIT_CONFIG_GLOBAL=%h/.config/git/.gitconfig
+# git reads its config natively from ~/.config/git/config (SSH signing etc.).
 ExecStart=%h/.local/bin/dotfiles_sync
 
 [Install]
