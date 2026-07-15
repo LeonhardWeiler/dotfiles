@@ -61,9 +61,7 @@ scripts). The source->target mapping is stated explicitly in
   `${XDG_STATE_HOME:-~/.local/state}/dotfiles/linked-targets` (`STATE_FILE`) and
   **prunes automatically** at the end; `prune` is the same step standalone.
   Safety mirrors `unlink`: only symlinks that still resolve into the repo are
-  removed, never real files or foreign links. The snapshot is the **full** config
-  target set (built before `--only`/`--exclude`), so a narrowed run never drops
-  entries. Preview with `-n`.
+  removed, never real files or foreign links. Preview with `-n`.
 - **Validating `links.conf`**: `./install validate` - read-only check (no
   filesystem changes). The `links.conf` pipeline is **parse -> validate -> build
   (globs) -> execute**, and **every** command validates first, so a broken config
@@ -75,11 +73,6 @@ scripts). The source->target mapping is stated explicitly in
   outside the allowlist (`ALLOWED_TARGET_PREFIXES` = `~` / `/etc` / `/usr/local`),
   and a glob that matches nothing. Mark a legitimately-empty glob with a third
   `optional` field: `config/foo/* ~/dir optional`.
-- **Selective linking**: `--only NAME` / `--exclude NAME` (both repeatable) narrow
-  every table command (link/status/unlink/clean) to a subset. `NAME` is the config
-  dir (`config/<name>/…`), e.g. `./install --only nvim`, `./install --exclude mpv`.
-  Filtering happens **after** validation (the whole config is still validated);
-  an unknown name warns and an empty result aborts.
 - **Update the package list** (without re-linking): `update_programs_list` (from
   `config/usrbin/`, on the PATH; the same script the pacman hook uses).
 - **Install packages from `programs.txt`**: `./setup/install-programs` (uses `yay`).

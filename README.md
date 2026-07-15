@@ -70,7 +70,6 @@ Useful variants:
 ```bash
 ./install status          # show state of every entry (ok / foreign link / real file / missing)
 ./install validate        # check links.conf (strict, read-only) - no filesystem changes
-./install --only nvim     # act only on one config (repeatable); --exclude NAME is the inverse
 ./install --user-only     # only ~ targets, never touch /etc, no sudo
 ./install -n              # dry run: print what would happen, change nothing
 ./install --force         # back up real files/dirs at the target to .bak, then link

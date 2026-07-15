@@ -38,9 +38,6 @@
 #       --no-units            do not (re)activate the systemd units
 #       --force               back up real files/dirs at the target to .bak and
 #                             replace them with the symlink
-#       --only NAME           act only on this config (repeatable); NAME is the
-#                             config dir, e.g. nvim, mpv, usrbin
-#       --exclude NAME        act on everything except this config (repeatable)
 #   -h, --help                this help
 set -euo pipefail
 
@@ -60,8 +57,6 @@ FORCE=0
 SKIPPED_REAL=0       # number of skipped real targets (without --force) - for the closing hint
 FLAG_STEPS_GIVEN=0   # was at least one --<step> flag passed?
 TIMEZONE=""          # optional --timezone value (Region/City)
-ONLY_NAMES=()        # --only <name>:    link only these config names
-EXCLUDE_NAMES=()     # --exclude <name>: link everything except these
 
 # systemd units to (re)activate are kept out of the script in setup/services.txt
 # and loaded into USER_UNITS/SYSTEM_UNITS just below (after the output helpers).
@@ -144,8 +139,6 @@ while [ $# -gt 0 ]; do
     --no-units)    NO_UNITS=1 ;;
     --force)       FORCE=1 ;;
     -c|--config)   shift; CONFIG="${1:?--config needs a file}" ;;
-    --only)        shift; ONLY_NAMES+=("${1:?--only needs a config name}") ;;
-    --exclude)     shift; EXCLUDE_NAMES+=("${1:?--exclude needs a config name}") ;;
     -h|--help)     usage 0 ;;
     # ── Step flags: every registered optional step maps to SELECTED[<name>]
     # (see register_step). --timezone is special - it also takes an argument.
@@ -273,7 +266,7 @@ clean_one() {
 # linger forever, invisible to unlink/status which only see the CURRENT targets.
 # Safety: only ever unlink a symlink that still points into the repo; real files
 # and foreign links are left untouched (same rule as unlink_one). ALL_TGTS holds
-# the current desired set (full config, unaffected by --only/--exclude).
+# the current desired target set.
 prune_stale() {
   [ -f "$STATE_FILE" ] || return 0
   local -A desired; local t
@@ -604,33 +597,7 @@ build_table() {
   done
 }
 
-# The config "name" of a source is its top dir under config/ (config/<name>/…),
-# e.g. config/nvim -> nvim, config/btop/btop.conf -> btop, config/usrbin/x ->
-# usrbin. Used by --only/--exclude.
-name_of() { local s="${1#config/}"; printf '%s' "${s%%/*}"; }
 in_array() { local x="$1"; shift; local e; for e in "$@"; do [ "$e" = "$x" ] && return 0; done; return 1; }
-
-# Filter the built table down by --only / --exclude (matched on the config name).
-# Runs AFTER validation, so the whole config is still validated - only what gets
-# acted on is narrowed.
-filter_table() {
-  { [ "${#ONLY_NAMES[@]}" -eq 0 ] && [ "${#EXCLUDE_NAMES[@]}" -eq 0 ]; } && return 0
-  local i nm n ns=() nt=()
-  local -A avail
-  for i in "${!SRCS[@]}"; do avail["$(name_of "${SRCS[$i]}")"]=1; done
-  for n in "${ONLY_NAMES[@]}" "${EXCLUDE_NAMES[@]}"; do
-    [ -z "${avail[$n]:-}" ] && warn "no config named '$n' (see the dirs under config/)"
-  done
-  for i in "${!SRCS[@]}"; do
-    nm="$(name_of "${SRCS[$i]}")"
-    if [ "${#ONLY_NAMES[@]}" -gt 0 ] && ! in_array "$nm" "${ONLY_NAMES[@]}"; then continue; fi
-    if [ "${#EXCLUDE_NAMES[@]}" -gt 0 ] && in_array "$nm" "${EXCLUDE_NAMES[@]}"; then continue; fi
-    ns+=("${SRCS[$i]}"); nt+=("${TGTS[$i]}")
-  done
-  SRCS=("${ns[@]}"); TGTS=("${nt[@]}")
-  [ "${#SRCS[@]}" -gt 0 ] || { warn "no entries left after --only/--exclude"; exit 1; }
-  info "Selected ${#SRCS[@]} entries (--only/--exclude)"
-}
 
 SRCS=(); TGTS=()
 parse_links
@@ -648,12 +615,10 @@ if ! validate_links; then
 fi
 build_table
 [ "${#SRCS[@]}" -gt 0 ] || { warn "no entries in $CONFIG"; exit 1; }
-# Full desired target set (expanded, BEFORE --only/--exclude) - the source of
-# truth for prune/state, so a narrowed run never drops entries from the snapshot.
+# Desired target set (expanded) - the source of truth for prune/state.
 ALL_TGTS=()
 for _t in "${TGTS[@]}"; do ALL_TGTS+=("$(expand_target "$_t")"); done
 unset _t
-filter_table
 
 # ── Execution ────────────────────────────────────────────────────────────────
 [ "$DRYRUN" = 1 ] && info "- Dry run: nothing is changed -"
