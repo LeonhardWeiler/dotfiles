@@ -2,7 +2,7 @@
 
 ![hyprland screenshot](./images/hyprland-screenshot.png)
 
-This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The dotfiles are optimized for a minimal and fast workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager.
+This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager. It is meant to be *practical*, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
 
 ## Requirements
 
@@ -189,6 +189,16 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 I use Arch GNU/Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles_sync` (run from the Hyprland autostart) commits and pushes it on login. You can still refresh it manually while installing via the install script.
 
 > Note: This setup has been primarily tested on Arch GNU/Linux. Other distributions may require adjustments.
+
+## Non-free packages
+
+In the interest of honesty: `programs.txt` is not a free-software-only manifest. Some tracked packages are **proprietary** and installed from the AUR:
+
+- **`unityhub`** (and the Unity editor it manages) - proprietary game engine.
+- **`plasticscm-client-gui`** - proprietary version control (Unity/PlasticSCM).
+- **`figma-agent-linux-bin`** - proprietary font helper for Figma.
+
+In addition, **`linux-firmware`** and **`amd-ucode`** ship non-free binary blobs (device firmware / CPU microcode) that the stock `linux` kernel loads. If you want a fully free system, drop the packages above and swap `linux`/`linux-firmware` for `linux-libre`/`linux-libre-firmware` (note: some hardware then loses driver support). The rest of the tooling (Hyprland, Alacritty, Neovim, mpv, KeePassXC, …) is free software.
 
 ## Manual system state (not symlinked)
 
