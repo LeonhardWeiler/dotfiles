@@ -12,7 +12,6 @@
 #                             -> link configs (--force) -> activate units
 #   ./install unlink          remove the symlinks we manage
 #   ./install status          show the current state of every entry
-#   ./install clean           delete the .bak backups created by --force
 #   ./install validate        check links.conf without touching the filesystem
 #
 # Optional setup steps (selectable in the `setup` menu, runnable individually via
@@ -128,7 +127,7 @@ confirm() {
 # ── Argument parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
-    link|setup|unlink|status|clean|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
+    link|setup|unlink|status|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
     -n|--dry-run)  DRYRUN=1 ;;
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
@@ -242,17 +241,6 @@ status_one() {
   elif [ -e "$target" ]; then state="${C_WARN}real file${C_RST}"
   else state="missing"; fi
   printf '  %-46s %s\n' "$2" "$state"
-}
-
-clean_one() {
-  prepare_target "$1" "$2" || return 0
-  local target="$PT_TARGET" root="$PT_ROOT" b
-  shopt -s nullglob
-  for b in "$target.bak" "$target".bak.[0-9]*; do
-    { [ -e "$b" ] || [ -L "$b" ]; } || continue
-    run "$root" rm -rf "$b"; ok "deleted: $b"
-  done
-  shopt -u nullglob
 }
 
 # ── Optional step functions ──────────────────────────────────────────────────
@@ -609,9 +597,5 @@ case "$CMD" in
   status)
     info "Status (${#SRCS[@]} entries)"
     for i in "${!SRCS[@]}"; do status_one "${SRCS[$i]}" "${TGTS[$i]}"; done
-    ;;
-  clean)
-    info "Deleting .bak backups of the managed targets"
-    for i in "${!SRCS[@]}"; do clean_one "${SRCS[$i]}" "${TGTS[$i]}"; done
     ;;
 esac

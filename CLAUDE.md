@@ -50,9 +50,6 @@ scripts). The source->target mapping is stated explicitly in
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file
   / missing.
-- **Cleaning backups**: `./install clean` - deletes the `.bak` backups of the
-  managed targets that `--force` created (incl. `*.bak.<timestamp>`; foreign
-  `.bak` are left untouched). Preview with `-n`.
 - **Validating `links.conf`**: `./install validate` - read-only check (no
   filesystem changes). The `links.conf` pipeline is **parse -> validate -> build
   (globs) -> execute**, and **every** command validates first, so a broken config

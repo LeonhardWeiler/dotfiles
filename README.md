@@ -73,7 +73,6 @@ Useful variants:
 ./install --user-only     # only ~ targets, never touch /etc, no sudo
 ./install -n              # dry run: print what would happen, change nothing
 ./install --force         # back up real files/dirs at the target to .bak, then link
-./install clean           # delete the .bak backups that --force created
 ./install unlink          # remove the symlinks this repo manages
 ```
 
