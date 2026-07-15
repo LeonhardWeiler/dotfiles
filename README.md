@@ -74,7 +74,6 @@ Useful variants:
 ./install -n              # dry run: print what would happen, change nothing
 ./install --force         # back up real files/dirs at the target to .bak, then link
 ./install clean           # delete the .bak backups that --force created
-./install prune           # remove links we created whose target left links.conf
 ./install unlink          # remove the symlinks this repo manages
 ```
 
@@ -86,14 +85,6 @@ Useful variants:
 > empty can be marked with a third `optional` field
 > (`config/foo/* ~/dir optional`). Run `./install validate` on its own to check
 > without linking.
-
-> Retargeting a mapping (moving a target in `links.conf`) leaves the old link
-> orphaned - `unlink`/`status` only know the _current_ targets. `./install`
-> records every linked target in a snapshot
-> (`${XDG_STATE_HOME:-~/.local/state}/dotfiles/linked-targets`) and **prunes**
-> such orphans automatically on the next `link`/`setup` (or on demand via
-> `./install prune`). Only symlinks that still point into the repo are removed -
-> real files and foreign links are never touched.
 
 > Everyday use is just `./install` (idempotent, never overwrites real files).
 > `setup` is the one-shot fresh-machine bootstrap; to only (re)install packages

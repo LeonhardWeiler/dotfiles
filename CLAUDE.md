@@ -53,15 +53,6 @@ scripts). The source->target mapping is stated explicitly in
 - **Cleaning backups**: `./install clean` - deletes the `.bak` backups of the
   managed targets that `--force` created (incl. `*.bak.<timestamp>`; foreign
   `.bak` are left untouched). Preview with `-n`.
-- **Pruning stale links**: `./install prune` - removes links we created whose
-  target was **removed/retargeted** in `links.conf` (e.g. moving `~/.dircolors`
-  to `~/.config/dircolors` leaves the old link orphaned, invisible to
-  `unlink`/`status` which only know the *current* targets). Each successful
-  `link`/`setup` writes a snapshot of the linked targets to
-  `${XDG_STATE_HOME:-~/.local/state}/dotfiles/linked-targets` (`STATE_FILE`) and
-  **prunes automatically** at the end; `prune` is the same step standalone.
-  Safety mirrors `unlink`: only symlinks that still resolve into the repo are
-  removed, never real files or foreign links. Preview with `-n`.
 - **Validating `links.conf`**: `./install validate` - read-only check (no
   filesystem changes). The `links.conf` pipeline is **parse -> validate -> build
   (globs) -> execute**, and **every** command validates first, so a broken config

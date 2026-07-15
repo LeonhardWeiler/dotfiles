@@ -13,7 +13,6 @@
 #   ./install unlink          remove the symlinks we manage
 #   ./install status          show the current state of every entry
 #   ./install clean           delete the .bak backups created by --force
-#   ./install prune           remove links we created whose target left links.conf
 #   ./install validate        check links.conf without touching the filesystem
 #
 # Optional setup steps (selectable in the `setup` menu, runnable individually via
@@ -44,10 +43,6 @@ set -euo pipefail
 BASEDIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_REAL="$(realpath -m -- "$BASEDIR")"   # canonical repo root, for source-escape checks
 CONFIG="setup/links.conf"
-# Snapshot of the targets the last link created - used by prune to detect links
-# whose target was removed/retargeted in links.conf (they would otherwise be
-# orphaned, invisible to unlink/status which only know the CURRENT targets).
-STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/linked-targets"
 CMD="link"
 EXPLICIT_CMD=0       # was a subcommand typed explicitly?
 DRYRUN=0
@@ -133,7 +128,7 @@ confirm() {
 # ── Argument parsing ─────────────────────────────────────────────────────────
 while [ $# -gt 0 ]; do
   case "$1" in
-    link|setup|unlink|status|clean|prune|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
+    link|setup|unlink|status|clean|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
     -n|--dry-run)  DRYRUN=1 ;;
     --user-only)   USER_ONLY=1 ;;
     --no-units)    NO_UNITS=1 ;;
@@ -258,47 +253,6 @@ clean_one() {
     run "$root" rm -rf "$b"; ok "deleted: $b"
   done
   shopt -u nullglob
-}
-
-# Remove OUR own stale links: targets a previous run created (recorded in
-# STATE_FILE) that are no longer in links.conf - e.g. after a mapping was
-# retargeted (~/.dircolors -> ~/.config/dircolors) the old link would otherwise
-# linger forever, invisible to unlink/status which only see the CURRENT targets.
-# Safety: only ever unlink a symlink that still points into the repo; real files
-# and foreign links are left untouched (same rule as unlink_one). ALL_TGTS holds
-# the current desired target set.
-prune_stale() {
-  [ -f "$STATE_FILE" ] || return 0
-  local -A desired; local t
-  for t in "${ALL_TGTS[@]}"; do desired["$t"]=1; done
-  local old dest root removed=0
-  while IFS= read -r old || [ -n "$old" ]; do
-    [ -z "$old" ] && continue
-    [ -n "${desired[$old]:-}" ] && continue        # still a current target - keep
-    [ -L "$old" ] || continue                       # already gone or a real file - leave it
-    dest="$(readlink "$old")"
-    case "$dest" in
-      "$BASEDIR"/*|"$BASEDIR") : ;;
-      *) warn "stale target points elsewhere (kept): $old"; continue ;;
-    esac
-    root=0; needs_root "$old" && root=1
-    { [ "$USER_ONLY" = 1 ] && [ "$root" = 1 ]; } && continue
-    run "$root" rm "$old"; ok "pruned stale link: $old"; removed=$((removed + 1))
-  done < "$STATE_FILE"
-  # Note: keep this the last statement returning 0. Under `set -e` a non-zero
-  # return here (e.g. from a bare `[ "$removed" -eq 0 ] && …` when removed>0)
-  # would abort the caller before save_linked_state/reactivate_units run.
-  if [ "$removed" -eq 0 ]; then ok "no stale links to prune"; fi
-  return 0
-}
-
-# Record the current desired targets so the next run can detect the ones that
-# disappear from links.conf (see prune_stale). One absolute path per line.
-save_linked_state() {
-  [ "$DRYRUN" = 1 ] && return 0
-  local dir; dir="$(dirname "$STATE_FILE")"
-  mkdir -p "$dir" || { warn "state dir not creatable: $dir"; return 0; }
-  printf '%s\n' "${ALL_TGTS[@]}" > "$STATE_FILE"
 }
 
 # ── Optional step functions ──────────────────────────────────────────────────
@@ -615,18 +569,12 @@ if ! validate_links; then
 fi
 build_table
 [ "${#SRCS[@]}" -gt 0 ] || { warn "no entries in $CONFIG"; exit 1; }
-# Desired target set (expanded) - the source of truth for prune/state.
-ALL_TGTS=()
-for _t in "${TGTS[@]}"; do ALL_TGTS+=("$(expand_target "$_t")"); done
-unset _t
 
 # ── Execution ────────────────────────────────────────────────────────────────
 [ "$DRYRUN" = 1 ] && info "- Dry run: nothing is changed -"
 case "$CMD" in
   link)
     do_symlinks
-    prune_stale
-    save_linked_state
     reactivate_units
     next_steps
     ;;
@@ -637,8 +585,6 @@ case "$CMD" in
     choose_steps
     is_selected programs && do_programs_install
     do_symlinks
-    prune_stale
-    save_linked_state
     is_selected systemd && reactivate_units
     is_selected groups && do_groups
     is_selected timezone && do_timezone
@@ -667,10 +613,5 @@ case "$CMD" in
   clean)
     info "Deleting .bak backups of the managed targets"
     for i in "${!SRCS[@]}"; do clean_one "${SRCS[$i]}" "${TGTS[$i]}"; done
-    ;;
-  prune)
-    info "Pruning stale links (targets that left $CONFIG)"
-    prune_stale
-    save_linked_state
     ;;
 esac
