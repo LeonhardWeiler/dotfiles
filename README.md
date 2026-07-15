@@ -2,7 +2,7 @@
 
 ![hyprland screenshot](./images/hyprland-screenshot.png)
 
-This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager. It is meant to be *practical*, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
+This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager. It is meant to be _practical_, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
 
 ## Requirements
 
@@ -45,17 +45,17 @@ runs the selected steps:
 
 The optional steps (menu entries; each also has a flag, see below):
 
-| Step                                                  | Flag                | Default |
-| ----------------------------------------------------- | ------------------- | ------- |
-| Install packages from `programs.txt`                  | `--programs`        | ✓       |
-| (Re)activate systemd units                            | `--systemd`         | ✓       |
-| Add user to the required groups (`usermod -aG`)       | `--groups`          |         |
-| Set the timezone (`/etc/localtime`)                   | `--timezone ZONE`   |         |
-| Generate locales (`locale-gen`)                       | `--locale`          | ✓       |
-| Deploy the ly@tty2 drop-ins as real copies            | `--ly-dropin`       |         |
-| Passwordless sudo for `wheel` (`/etc/sudoers.d/`)     | `--sudoers`         |         |
-| Rebuild the initramfs (`mkinitcpio -P`)               | `--initramfs`       |         |
-| Install fonts + refresh the font cache (`fc-cache`)   | `--fonts`           |         |
+| Step                                                | Flag              | Default |
+| --------------------------------------------------- | ----------------- | ------- |
+| Install packages from `programs.txt`                | `--programs`      | ✓       |
+| (Re)activate systemd units                          | `--systemd`       | ✓       |
+| Add user to the required groups (`usermod -aG`)     | `--groups`        |         |
+| Set the timezone (`/etc/localtime`)                 | `--timezone ZONE` |         |
+| Generate locales (`locale-gen`)                     | `--locale`        | ✓       |
+| Deploy the ly@tty2 drop-ins as real copies          | `--ly-dropin`     |         |
+| Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`       |         |
+| Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`     |         |
+| Install fonts + refresh the font cache (`fc-cache`) | `--fonts`         |         |
 
 Each step is also runnable on its own for automation: `./install --<step>` runs
 just those steps (no linking, no menu), e.g. `./install --timezone Europe/Vienna`
@@ -211,7 +211,6 @@ commands are kept here as reference and for doing them by hand. Checklist:
 
   ```bash
   sudo usermod -aG wheel,input,kvm,libvirt,uucp,disk,lock <user>
-  # add docker / wireshark only if you actually install those packages
   ```
 
   Group changes take effect after re-login. Conversely, drop groups whose program
