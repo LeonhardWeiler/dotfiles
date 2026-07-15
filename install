@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 Leonhard Weiler
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
 # Symlink manager for these dotfiles - no external dependencies.
 # Reads the mapping file `links.conf` (source -> target) and creates the

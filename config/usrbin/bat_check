@@ -1,6 +1,6 @@
 #!/bin/sh
-# SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 Leonhard Weiler
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 
 # Find the first real battery (name-independent: BAT0, BAT1, CMB0, ...).
 CAPACITY=

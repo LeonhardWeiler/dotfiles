@@ -1,6 +1,6 @@
 #!/bin/sh
-# SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 Leonhard Weiler
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
 # dotfiles_sync - updates generated configs, commits changes and pushes them.
 # Run at login from the Hyprland autostart (config/hypr/autostart.lua) and

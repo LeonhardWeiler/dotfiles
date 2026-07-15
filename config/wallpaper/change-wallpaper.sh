@@ -1,6 +1,6 @@
 #!/bin/sh
-# SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2026 Leonhard Weiler
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
 # change-wallpaper - pick a random wallpaper (excluding the previous one) and set
 # it via swaybg. Wallpapers live in $WALLPAPER_DIR (default:

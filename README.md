@@ -273,7 +273,7 @@ sudo mkinitcpio -P
 
 ## License
 
-Licensed under the GNU General Public License, either version 3 of the License,
-or (at your option) any later version - SPDX identifier
-[`GPL-3.0-or-later`](https://spdx.org/licenses/GPL-3.0-or-later.html). The full
-license text is in [`LICENSE`](LICENSE).
+Licensed under the ISC License - SPDX identifier
+[`ISC`](https://spdx.org/licenses/ISC.html). The full license text is in
+[`LICENSE`](LICENSE). Bundled third-party files (e.g. under `config/mpv/`) keep
+their own license.

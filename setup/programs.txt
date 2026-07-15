@@ -44,7 +44,7 @@ qt5ct 1.9-2
 restic 0.19.1-1
 ripgrep 15.1.0-4
 rofi 2.0.0-1
-signal-desktop 8.17.0-1
+signal-desktop 8.18.0-1
 swaybg 1.2.2-1
 swtpm 0.10.1-2
 thunderbird 152.0-1
