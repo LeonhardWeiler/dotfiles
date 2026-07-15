@@ -35,11 +35,7 @@ scripts). The source->target mapping is stated explicitly in
   `DEFAULT_STEPS` = menu preselection:
   - `--programs` - install packages from `programs.txt` (delegates to
     `setup/install-programs`, bootstraps yay). *Default.*
-  - `--remove-programs` - remove explicitly installed packages that are **not**
-    in the manifest (`pacman -Rns`, with a prompt; prune to the package list).
   - `--systemd` - activate user/system units (`reactivate_units`). *Default.*
-  - `--remove-systemd` - deactivate those same units (prompt; note: linked units
-    are removed in the process).
   - `--groups` - add the user to the groups from `setup/groups.txt` (loaded into
     `GROUP_LIST`) via `usermod -aG`.
   - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).

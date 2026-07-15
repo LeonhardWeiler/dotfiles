@@ -48,9 +48,7 @@ The optional steps (menu entries; each also has a flag, see below):
 | Step                                                  | Flag                | Default |
 | ----------------------------------------------------- | ------------------- | ------- |
 | Install packages from `programs.txt`                  | `--programs`        | ✓       |
-| Remove installed packages not in the manifest (prune) | `--remove-programs` |         |
 | (Re)activate systemd units                            | `--systemd`         | ✓       |
-| Deactivate those systemd units                        | `--remove-systemd`  |         |
 | Add user to the required groups (`usermod -aG`)       | `--groups`          |         |
 | Set the timezone (`/etc/localtime`)                   | `--timezone ZONE`   |         |
 | Generate locales (`locale-gen`)                       | `--locale`          | ✓       |
@@ -63,8 +61,6 @@ Each step is also runnable on its own for automation: `./install --<step>` runs
 just those steps (no linking, no menu), e.g. `./install --timezone Europe/Vienna`
 or `./install --groups --sudoers`. To skip the menu but still do the full setup,
 pass the flags to `setup`: `./install setup --programs --systemd --locale`.
-Destructive steps (`--remove-programs`, `--remove-systemd`) ask for confirmation
-and are skipped without a terminal.
 
 The scripts assume the repo lives at `~/dotfiles`; if you clone elsewhere, export
 `DOTFILES_DIR` (used by `dotfiles_sync`/`update_programs_list`) accordingly.

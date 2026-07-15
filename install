@@ -20,10 +20,7 @@
 # a flag for automation - e.g. `./install --groups` or
 # `./install setup --timezone Europe/Vienna`):
 #   --programs                install packages from setup/programs.txt (yay)
-#   --remove-programs         remove explicitly installed packages that are NOT
-#                             in programs.txt (manifest prune, asks first)
 #   --systemd                 activate systemd units (USER_UNITS + SYSTEM_UNITS)
-#   --remove-systemd          deactivate those same units (asks first)
 #   --groups                  add the user to the required groups (usermod -aG)
 #   --timezone ZONE           set the timezone (e.g. --timezone Europe/Vienna);
 #                             without ZONE the menu asks interactively
@@ -152,7 +149,7 @@ while [ $# -gt 0 ]; do
     -h|--help)     usage 0 ;;
     # ── Step flags: every registered optional step maps to SELECTED[<name>]
     # (see register_step). --timezone is special - it also takes an argument.
-    --programs | --remove-programs | --systemd | --remove-systemd | --groups | \
+    --programs | --systemd | --groups | \
     --locale | --ly-dropin | --sudoers | --initramfs | --fonts)
                         SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
@@ -324,29 +321,6 @@ do_programs_install() {
 }
 register_step programs do_programs_install "Install packages from programs.txt"
 
-# Remove explicitly installed packages that are NOT in the manifest
-# (programs.txt) - pulls the system onto the tracked package list. Deliberately
-# asks first and defaults to "no" (aggressive operation); pacman -Rns also
-# removes dependencies and config leftovers.
-do_programs_remove() {
-  command -v pacman >/dev/null 2>&1 || { warn "pacman missing - package removal skipped"; return 0; }
-  local manifest="$BASEDIR/setup/programs.txt"
-  [ -f "$manifest" ] || { warn "programs.txt missing - nothing to remove"; return 0; }
-  info "Finding untracked packages (explicitly installed but not in programs.txt)"
-  local extras
-  extras="$(comm -23 <(pacman -Qqe | sort -u) <(awk 'NF{print $1}' "$manifest" | sort -u))"
-  if [ -z "$extras" ]; then ok "no untracked packages - nothing to remove"; return 0; fi
-  printf '  To remove:\n'; printf '    %s\n' $extras
-  if [ "$DRYRUN" = 1 ]; then printf '    [dry] sudo pacman -Rns %s\n' "$extras"; return 0; fi
-  if confirm "  Really remove these packages (pacman -Rns)?"; then
-    # shellcheck disable=SC2086
-    run 1 pacman -Rns $extras || warn "package removal not (fully) successful"
-  else
-    info "package removal skipped"
-  fi
-}
-register_step remove-programs do_programs_remove "Remove untracked packages (prune)"
-
 # Closing hint after linking: report skipped real targets prominently and remind
 # the user to apply the freshly linked shell config. (A script cannot reload the
 # interactive parent shell itself - hence the explicit hint instead of a useless
@@ -420,24 +394,6 @@ reactivate_units() {
   done
 }
 register_step systemd reactivate_units "Activate systemd units (enable)"
-
-# Counterpart to reactivate_units: deactivate those same units. Note: our unit
-# files are linked units (symlinks at the standard path) - for such units
-# `disable` also removes that symlink, so the unit is gone entirely afterwards
-# (re-linking via `./install` recreates it). Hence the confirmation.
-do_systemd_disable() {
-  [ "$DRYRUN" = 0 ] && ! confirm "  Really deactivate the systemd units?" && { info "skipped"; return 0; }
-  info "Deactivating systemd user units"
-  for u in "${USER_UNITS[@]}"; do
-    run 0 systemctl --user disable "$u" >/dev/null 2>&1 || warn "user unit not deactivated: $u"
-  done
-  [ "$USER_ONLY" = 1 ] && return 0
-  info "Deactivating systemd system units (sudo)"
-  for u in "${SYSTEM_UNITS[@]}"; do
-    run 1 systemctl disable "$u" >/dev/null 2>&1 || warn "system unit not deactivated: $u"
-  done
-}
-register_step remove-systemd do_systemd_disable "Deactivate systemd units (disable)"
 
 # Add the user to the groups the tracked tools need. GROUP_LIST is loaded from
 # setup/groups.txt near the top (Bash reserves `GROUPS` for the current GIDs).
@@ -719,7 +675,6 @@ case "$CMD" in
     prune_stale
     save_linked_state
     is_selected systemd && reactivate_units
-    is_selected remove-systemd && do_systemd_disable
     is_selected groups && do_groups
     is_selected timezone && do_timezone
     is_selected ly-dropin && do_ly_dropin
@@ -727,7 +682,6 @@ case "$CMD" in
     is_selected initramfs && do_initramfs
     is_selected fonts && do_fonts
     is_selected locale && do_locale
-    is_selected remove-programs && do_programs_remove
     next_steps
     ;;
   run-steps)
