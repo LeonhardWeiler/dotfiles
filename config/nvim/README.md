@@ -1,5 +1,7 @@
 # Neovim configuration
 
+![neovim screenshot](./images/neovim-screenshot.png)
+
 Personal, keyboard-first Neovim config based on
 [lazy.nvim](https://github.com/folke/lazy.nvim). Tested with **Neovim 0.12**
 (needs at least 0.11 because of the new `vim.lsp.config` API and the
@@ -39,50 +41,54 @@ lua/plugins/             one file per plugin/area (auto-import)
 
 ## Plugins
 
-| Area          | Plugin(s) |
-|---------------|-----------|
-| Manager       | lazy.nvim |
-| Theme         | kanagawa.nvim |
-| File manager  | oil.nvim |
-| Search        | telescope.nvim, plenary.nvim |
-| Navigation    | harpoon (`harpoon2`) |
-| Statusline    | lualine.nvim |
-| Git           | gitsigns.nvim |
-| Comments      | Comment.nvim |
-| Editing       | mini.pairs, mini.icons |
-| Treesitter    | nvim-treesitter (`main`) |
-| LSP           | mason.nvim, mason-lspconfig.nvim, nvim-lspconfig, lazydev.nvim, mason-tool-installer.nvim |
-| Completion    | blink.cmp, LuaSnip, friendly-snippets |
-| Formatter     | conform.nvim (stylua, biome, prettierd, goimports+gofumpt, typstyle) |
-| Linter        | nvim-lint (biome, golangci-lint) |
-| Typst         | typst-preview.nvim |
+| Area         | Plugin(s)                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| Manager      | lazy.nvim                                                                                 |
+| Theme        | kanagawa.nvim                                                                             |
+| File manager | oil.nvim                                                                                  |
+| Search       | telescope.nvim, plenary.nvim                                                              |
+| Navigation   | harpoon (`harpoon2`)                                                                      |
+| Statusline   | lualine.nvim                                                                              |
+| Git          | gitsigns.nvim                                                                             |
+| Comments     | Comment.nvim                                                                              |
+| Editing      | mini.pairs, mini.icons                                                                    |
+| Treesitter   | nvim-treesitter (`main`)                                                                  |
+| LSP          | mason.nvim, mason-lspconfig.nvim, nvim-lspconfig, lazydev.nvim, mason-tool-installer.nvim |
+| Completion   | blink.cmp, LuaSnip, friendly-snippets                                                     |
+| Formatter    | conform.nvim (stylua, biome, prettierd, goimports+gofumpt, typstyle)                      |
+| Linter       | nvim-lint (biome, golangci-lint)                                                          |
+| Typst        | typst-preview.nvim                                                                        |
 
 ## Keymaps (selection)
 
 Leader = `<Space>`.
 
 ### General
-| Key | Action |
-|-------|--------|
-| `<leader>pv` | Oil (file manager) |
-| `<leader>ob` | Open the current file in the default program/browser |
-| `<leader>S` | Search & replace word under cursor |
-| `<leader>sd` | Diagnostics into the quickfix list (shown with `<leader>sq`) |
-| `<leader>r` (visual) | Paste over selection without overwriting the register |
-| `J`/`K` (visual) | Move lines |
+
+| Key                  | Action                                                       |
+| -------------------- | ------------------------------------------------------------ |
+| `<leader>pv`         | Oil (file manager)                                           |
+| `<leader>ob`         | Open the current file in the default program/browser         |
+| `<leader>S`          | Search & replace word under cursor                           |
+| `<leader>sd`         | Diagnostics into the quickfix list (shown with `<leader>sq`) |
+| `<leader>r` (visual) | Paste over selection without overwriting the register        |
+| `J`/`K` (visual)     | Move lines                                                   |
 
 ### Harpoon
-| Key | Action |
-|-------|--------|
-| `<leader>a` | Pin file |
-| `<leader>h` | Menu |
+
+| Key                     | Action           |
+| ----------------------- | ---------------- |
+| `<leader>a`             | Pin file         |
+| `<leader>h`             | Menu             |
 | `<leader>1`…`<leader>4` | Jump to file 1-4 |
 
 ### Telescope
+
 `<leader>s` + `f` files · `g` live grep · `h` help · `c` colorscheme ·
 `q` quickfix · `l` spelling · `k` keymaps · `t` filetypes
 
 ### LSP (buffer-local on attach)
+
 `gd` definition · `gr` references · `K` hover · `<leader>rn` rename ·
 `<leader>ca` code action · `<leader>e` diagnostics · `[d`/`]d` navigate diagnostics
 

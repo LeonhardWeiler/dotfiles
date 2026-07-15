@@ -1,5 +1,7 @@
 # My Dotfiles
 
+![hyprland screenshot](./images/hyprland-screenshot.png)
+
 This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The dotfiles are optimized for a minimal and fast workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager.
 
 ## Requirements
@@ -43,19 +45,19 @@ runs the selected steps:
 
 The optional steps (menu entries; each also has a flag, see below):
 
-| Step | Flag | Default |
-| ---- | ---- | ------- |
-| Install packages from `programs.txt` | `--programs` | ✓ |
-| Remove installed packages not in the manifest (prune) | `--remove-programs` | |
-| (Re)activate systemd units | `--systemd` | ✓ |
-| Deactivate those systemd units | `--remove-systemd` | |
-| Add user to the required groups (`usermod -aG`) | `--groups` | |
-| Set the timezone (`/etc/localtime`) | `--timezone ZONE` | |
-| Generate locales (`locale-gen`) | `--locale` | ✓ |
-| Deploy the ly@tty2 drop-ins as real copies | `--ly-dropin` | |
-| Passwordless sudo for `wheel` (`/etc/sudoers.d/`) | `--sudoers` | |
-| Rebuild the initramfs (`mkinitcpio -P`) | `--initramfs` | |
-| Install fonts + refresh the font cache (`fc-cache`) | `--fonts` | |
+| Step                                                  | Flag                | Default |
+| ----------------------------------------------------- | ------------------- | ------- |
+| Install packages from `programs.txt`                  | `--programs`        | ✓       |
+| Remove installed packages not in the manifest (prune) | `--remove-programs` |         |
+| (Re)activate systemd units                            | `--systemd`         | ✓       |
+| Deactivate those systemd units                        | `--remove-systemd`  |         |
+| Add user to the required groups (`usermod -aG`)       | `--groups`          |         |
+| Set the timezone (`/etc/localtime`)                   | `--timezone ZONE`   |         |
+| Generate locales (`locale-gen`)                       | `--locale`          | ✓       |
+| Deploy the ly@tty2 drop-ins as real copies            | `--ly-dropin`       |         |
+| Passwordless sudo for `wheel` (`/etc/sudoers.d/`)     | `--sudoers`         |         |
+| Rebuild the initramfs (`mkinitcpio -P`)               | `--initramfs`       |         |
+| Install fonts + refresh the font cache (`fc-cache`)   | `--fonts`           |         |
 
 Each step is also runnable on its own for automation: `./install --<step>` runs
 just those steps (no linking, no menu), e.g. `./install --timezone Europe/Vienna`
@@ -91,7 +93,7 @@ Useful variants:
 > without linking.
 
 > Retargeting a mapping (moving a target in `links.conf`) leaves the old link
-> orphaned - `unlink`/`status` only know the *current* targets. `./install`
+> orphaned - `unlink`/`status` only know the _current_ targets. `./install`
 > records every linked target in a snapshot
 > (`${XDG_STATE_HOME:-~/.local/state}/dotfiles/linked-targets`) and **prunes**
 > such orphans automatically on the next `link`/`setup` (or on demand via
@@ -219,6 +221,7 @@ commands are kept here as reference and for doing them by hand. Checklist:
 
   Group changes take effect after re-login. Conversely, drop groups whose program
   you no longer have installed, e.g. `sudo gpasswd -d <user> docker`.
+
 - **Timezone** (`./install --timezone Europe/Vienna`):
   `sudo ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime`
 - **Locales** (`./install --locale`): `/etc/locale.conf` and `/etc/locale.gen`
@@ -249,6 +252,7 @@ commands are kept here as reference and for doing them by hand. Checklist:
   (`ExecStartPre=loadkeys …`) to work around a boot-time KMS/vconsole-setup race
   that otherwise leaves the ly login field on QWERTY instead of the
   `/etc/vconsole.conf` `KEYMAP`.
+
 - **sudo** (`./install --sudoers`): this setup relies on passwordless sudo for
   the `wheel` group (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, written to
   `/etc/sudoers.d/10-wheel-nopasswd` and validated with `visudo -c`) - a
