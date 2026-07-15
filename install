@@ -33,13 +33,6 @@
 #                             (/etc/sudoers.d/, validated with visudo)
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
 #   --fonts                   install the font packages and refresh the font cache
-#   --scrub                   replace personal data (git identity/signing, restic
-#                             backup host, the WLR_DRM_DEVICES GPU pin) with
-#                             generic placeholders in the working copy - for
-#                             non-owner clones. `setup` asks interactively (owner
-#                             prompt); non-interactively it only scrubs with this
-#                             flag.
-#   --no-scrub                force-keep the personal data (skip the owner prompt)
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -70,8 +63,6 @@ FORCE=0
 SKIPPED_REAL=0       # number of skipped real targets (without --force) - for the closing hint
 FLAG_STEPS_GIVEN=0   # was at least one --<step> flag passed?
 TIMEZONE=""          # optional --timezone value (Region/City)
-SCRUB_CHOICE=""      # personal-data scrub: "" = ask on a TTY / keep otherwise,
-                     # 1 = --scrub (force), 0 = --no-scrub (force off)
 ONLY_NAMES=()        # --only <name>:    link only these config names
 EXCLUDE_NAMES=()     # --exclude <name>: link everything except these
 
@@ -166,19 +157,14 @@ while [ $# -gt 0 ]; do
                         SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
-    # Scrub is NOT a generic step flag (must not suppress the setup defaults);
-    # it is a separate tri-state so `setup` never scrubs non-interactively
-    # unless explicitly asked.
-    --scrub)            SCRUB_CHOICE=1 ;;
-    --no-scrub)         SCRUB_CHOICE=0 ;;
     *) warn "unknown argument: $1"; usage 1 ;;
   esac
   shift
 done
 
-# No explicit subcommand but step flags (or a standalone --scrub) given -> run
-# only those steps (scriptable, no linking, no menu).
-if [ "$EXPLICIT_CMD" = 0 ] && { [ "$FLAG_STEPS_GIVEN" = 1 ] || [ "$SCRUB_CHOICE" = 1 ]; }; then
+# No explicit subcommand but step flags given -> run only those steps
+# (scriptable, no linking, no menu).
+if [ "$EXPLICIT_CMD" = 0 ] && [ "$FLAG_STEPS_GIVEN" = 1 ]; then
   CMD="run-steps"
 fi
 
@@ -543,62 +529,6 @@ do_fonts() {
 }
 register_step fonts do_fonts "Install fonts + refresh font cache (fc-cache)"
 
-# Non-owner scrub: replace personal data in the WORKING COPY with generic
-# placeholders BEFORE it is linked, so a foreign user never deploys the owner's
-# git identity/signing key, backup host or GPU pin. Idempotent. Driven by the
-# owner question in `setup` (or forced via `--scrub`) - NOT a menu step.
-do_scrub() {
-  info "Scrubbing personal data from the working copy (non-owner)"
-  local gc="$BASEDIR/config/git/config"
-  local rb="$BASEDIR/config/usrbin/restic-backup"
-  local env="$BASEDIR/config/hypr/env.lua"
-  if [ "$DRYRUN" = 1 ]; then
-    [ -f "$gc" ]  && printf '    [dry] reset git identity/signing in config/git/config\n'
-    [ -f "$rb" ]  && printf '    [dry] replace restic backup host in config/usrbin/restic-backup\n'
-    [ -f "$env" ] && grep -q 'WLR_DRM_DEVICES' "$env" \
-      && printf '    [dry] drop the WLR_DRM_DEVICES GPU pin in config/hypr/env.lua\n'
-    return 0
-  fi
-  # git: drop the owner's name/email/signing key, keep the functional editor
-  # setting. Signing is removed on purpose - a bogus signingkey would make every
-  # commit fail for a foreign user.
-  if [ -f "$gc" ]; then
-    cat > "$gc" <<'EOF'
-[user]
-	email =
-	name =
-[core]
-	editor = nvim
-EOF
-    ok "reset git identity/signing: config/git/config"
-  else
-    warn "config/git/config missing - git scrub skipped"
-  fi
-  # restic: replace whatever backup host is set as the default with a showcase
-  # placeholder (matches everything between `RESTIC_REPOSITORY:-` and `}`).
-  if [ -f "$rb" ]; then
-    if sed -i 's#\(RESTIC_REPOSITORY:-\)[^}]*#\1sftp:user@ip:drive/path/to/your/backup#' "$rb"; then
-      ok "restic backup host -> showcase placeholder: config/usrbin/restic-backup"
-    else
-      warn "restic scrub failed"
-    fi
-  else
-    warn "config/usrbin/restic-backup missing - restic scrub skipped"
-  fi
-  # GPU: the owner pins the integrated GPU via WLR_DRM_DEVICES (hides the discrete
-  # card). For anyone else that exact PCI path is wrong - drop the line so wlroots
-  # auto-detects their GPU (maximum compatibility). No-op if already absent.
-  if [ -f "$env" ]; then
-    if grep -q 'WLR_DRM_DEVICES' "$env"; then
-      sed -i '/hl\.env("WLR_DRM_DEVICES"/d' "$env" \
-        && ok "removed the GPU pin (WLR_DRM_DEVICES): config/hypr/env.lua" \
-        || warn "GPU scrub failed"
-    fi
-  else
-    warn "config/hypr/env.lua missing - GPU scrub skipped"
-  fi
-}
-
 # ── links.conf pipeline: parse -> validate -> build (globs) -> execute ────────
 # Explicit phases so execution never sees a malformed entry: the raw entries
 # (verbatim from the file, no globbing) are validated first; only then is the
@@ -784,18 +714,7 @@ case "$CMD" in
     FORCE=1
     info "Setup: optional steps -> link (--force) -> units"
     choose_steps
-    # Owner check: only the repository owner should deploy the personal identity
-    # data. --scrub/--no-scrub win; otherwise ask on a TTY ("no" -> scrub before
-    # linking). Non-interactively WITHOUT an explicit flag we keep the working
-    # copy intact - never scrub silently in a script/CI.
-    SCRUB=0
-    if [ "$SCRUB_CHOICE" = 1 ]; then SCRUB=1
-    elif [ "$SCRUB_CHOICE" = 0 ]; then SCRUB=0
-    elif [ -t 0 ]; then confirm "  Are you the repository owner?" || SCRUB=1
-    else warn "non-interactive setup: personal data kept as-is (use --scrub to strip it, --no-scrub to silence)"
-    fi
     is_selected programs && do_programs_install
-    [ "$SCRUB" = 1 ] && do_scrub
     do_symlinks
     prune_stale
     save_linked_state
@@ -812,12 +731,10 @@ case "$CMD" in
     next_steps
     ;;
   run-steps)
-    # Only the optional steps chosen via flags (scriptable), in canonical order
-    # (STEP_ORDER). Scrub is not a step - run it explicitly on --scrub.
+    # Only the optional steps chosen via flags (scriptable), in canonical order.
     for s in "${STEP_ORDER[@]}"; do
       is_selected "$s" && "${STEP_FN[$s]}"
     done
-    [ "$SCRUB_CHOICE" = 1 ] && do_scrub
     ;;
   unlink)
     info "Removing symlinks"

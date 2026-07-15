@@ -26,12 +26,8 @@ scripts). The source->target mapping is stated explicitly in
   symlinks are replaced anyway).
 - **New machine (bootstrap, one command)**: `./install setup` - shows a **menu of
   optional steps** (on a TTY; Enter = defaults, without a TTY the defaults run),
-  then asks **"Are you the repository owner? [y/N]"** on a TTY and, on "no",
-  scrubs the personal data before linking (see `--scrub`). **Non-interactively
-  it does NOT scrub** unless `--scrub` is passed (never scrub silently in a
-  script/CI; `--no-scrub` forces off). Then it links the configs (implies
-  `--force`) and runs the chosen steps. `link` stays the idempotent everyday
-  refresh; `setup` wraps the first-time setup flow.
+  then links the configs (implies `--force`) and runs the chosen steps. `link`
+  stays the idempotent everyday refresh; `setup` wraps the first-time setup flow.
 - **Optional setup steps** (selectable in the `setup` menu, **runnable
   individually via a flag** - `./install --<step>` runs only those steps without
   linking; `./install setup --<step> …` skips the menu and selects exactly
@@ -54,16 +50,6 @@ scripts). The source->target mapping is stated explicitly in
   - `--initramfs` - `mkinitcpio -P`.
   - `--fonts` - install the font packages from `setup/fonts.txt` (loaded into
     `FONT_PACKAGES`) and rebuild the fontconfig cache (`fc-cache -f`).
-  - `--scrub` / `--no-scrub` - replace the owner's personal data in the **working
-    copy** with generic placeholders: git identity/signing in
-    `config/git/config` -> blank name/email, signing removed; the restic
-    backup host in `config/usrbin/restic-backup` ->
-    `sftp:user@ip:drive/path/to/your/backup`; the `WLR_DRM_DEVICES` iGPU pin in
-    `config/hypr/env.lua` -> removed (so wlroots auto-detects the GPU). Idempotent
-    and dry-run aware. **Not** a menu step and **not** part of the generic
-    step-flag machinery: it is a tri-state driven by the owner prompt in `setup`
-    (`--scrub` forces it, `--no-scrub` forces it off, no flag on a non-TTY keeps
-    the data). Also runnable standalone (`./install --scrub`, scrub only).
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file
