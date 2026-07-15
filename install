@@ -6,6 +6,9 @@
 # Reads the mapping file `links.conf` (source -> target) and creates the
 # symlinks, removes them again, or shows their current state.
 #
+# Keep this lean: new config is a line in links.conf, not code here. Prefer
+# deleting a feature over growing this file - resist feature creep.
+#
 # Usage:
 #   ./install [link]          create/refresh symlinks (default, everyday)
 #   ./install setup           fresh machine, ONE command: optional steps (menu)
