@@ -78,9 +78,9 @@ Useful variants:
 
 > Every command validates `links.conf` first and **aborts on any problem**
 > (nothing changed), reporting `links.conf:<line>: <msg>`. It rejects: a missing
-> target, stray extra fields, an absolute source or one that escapes the repo, a
-> non-existent source, duplicate sources/targets, a target outside `~` / `/etc` /
-> `/usr/local`, and a glob that matches nothing. A glob that may legitimately be
+> target, stray extra fields, an absolute source, a non-existent source, a
+> duplicate target, a target outside `~` / `/etc` / `/usr/local`, and a glob that
+> matches nothing. A glob that may legitimately be
 > empty can be marked with a third `optional` field
 > (`config/foo/* ~/dir optional`). Run `./install validate` on its own to check
 > without linking.
