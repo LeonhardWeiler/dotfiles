@@ -8,7 +8,7 @@ btop 1.4.7-1
 dmidecode 3.7-1
 dnsmasq 2.93-1
 dosfstools 4.2-5
-dotnet-sdk 10.0.9.sdk109-1
+dotnet-sdk 10.0.10.sdk110-1
 figma-agent-linux-bin 0.4.3-1
 git 2.55.0-1
 hyprland 0.55.4-1
@@ -19,9 +19,9 @@ jq 1.8.2-1
 keepassxc 2.7.12-3
 less 1:704-1
 libnotify 0.8.8-1
-linux 7.1.3.arch1-3
+linux 7.1.3.arch2-1
 linux-firmware 20260622-1
-linux-headers 7.1.3.arch1-3
+linux-headers 7.1.3.arch2-1
 ly 1.4.1-1
 mako 1.11.0-1
 mesa 1:26.1.4-1
@@ -43,9 +43,9 @@ qemu-desktop 11.0.2-3
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
 restic 0.19.1-1
-ripgrep 15.1.0-4
+ripgrep 15.2.0-1
 rofi 2.0.0-1
-signal-desktop 8.18.0-1
+signal-desktop 8.19.0-1
 swaybg 1.2.2-1
 swtpm 0.10.1-2
 thunderbird 152.0-1
@@ -62,5 +62,5 @@ wl-clipboard 1:2.3.0-1
 wlr-randr 0.5.0-1
 xdg-desktop-portal-hyprland 1.3.12-2
 yay 13.0.1-1
-zen-browser-bin 1.21.6b-1
+zen-browser-bin 1.21.7b-1
 zip 3.0-13
