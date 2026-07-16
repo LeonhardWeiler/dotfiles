@@ -2,6 +2,7 @@ acpi 1.8-2
 alacritty 0.17.0-1
 amd-ucode 20260622-1
 base-devel 1-2
+bc 1.08.2-1
 brightnessctl 0.5.1-3
 btop 1.4.7-1
 dmidecode 3.7-1
@@ -44,6 +45,7 @@ qt5ct 1.9-2
 restic 0.19.1-1
 ripgrep 15.1.0-4
 rofi 2.0.0-1
+scx-scheds 1.1.2-1
 signal-desktop 8.18.0-1
 swaybg 1.2.2-1
 swtpm 0.10.1-2
