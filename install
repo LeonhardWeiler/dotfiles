@@ -422,6 +422,19 @@ do_fonts() {
 }
 register_step fonts do_fonts "Install fonts + refresh font cache (fc-cache)"
 
+# Build + install dwl (compiled-config Wayland compositor) from the tracked
+# config/dwl/config.h. dwl is configured at compile time, so this IS the "apply"
+# step for config/dwl changes; delegates to config/dwl/build-dwl (clone/pin dwl,
+# drop in config.h, make, install the binary to /usr/local/bin). Not a default
+# step - only needed on a fresh machine or after editing config/dwl/config.h.
+do_dwl() {
+  local script="$BASEDIR/config/dwl/build-dwl"
+  [ -x "$script" ] || { warn "config/dwl/build-dwl missing - skipped"; return 0; }
+  info "Building + installing dwl (config/dwl/build-dwl)"
+  run 0 "$script" || warn "dwl build failed"
+}
+register_step dwl do_dwl "Build + install dwl from config/dwl/config.h"
+
 # ── links.conf pipeline: parse -> validate -> build (globs) -> execute ────────
 # Explicit phases so execution never sees a malformed entry: the raw entries
 # (verbatim from the file, no globbing) are validated first; only then is the

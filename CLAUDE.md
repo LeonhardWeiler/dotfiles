@@ -46,6 +46,11 @@ scripts). The source->target mapping is stated explicitly in
   - `--initramfs` - `mkinitcpio -P`.
   - `--fonts` - install the font packages from `setup/fonts.txt` (loaded into
     `FONT_PACKAGES`) and rebuild the fontconfig cache (`fc-cache -f`).
+  - `--dwl` - build + install **dwl** (Wayland compositor, compiled config) from
+    `config/dwl/config.h` via `config/dwl/build-dwl` (clone/pin dwl, drop in
+    `config.h`, `make`, install the binary to `/usr/local/bin/dwl`). Since dwl is
+    configured at compile time, this is the **apply** step for `config/dwl`
+    changes. Not a default step.
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file
@@ -72,7 +77,7 @@ scripts). The source->target mapping is stated explicitly in
 ## Structure
 
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
-  `foot`, `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
+  `dwl`, `foot`, `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `vconsole`, `wallpaper`.
   Whole directories are linked as a dir symlink (foot, hypr, nvim, rofi,
@@ -154,6 +159,15 @@ scripts). The source->target mapping is stated explicitly in
   used and is therefore **gitignored** - do not edit it. The old hyprlang config
   still lives in the git history or locally as `hyprland.conf.bak`. The conversion
   was done with `hyprlang2lua`.
+- **dwl** (`config/dwl/`) is an alternative Wayland compositor added alongside
+  Hyprland (both stay installed; ly lists both). Unlike everything else here it
+  is **configured at compile time**: `config/dwl/config.h` is the source of truth
+  and is **not** symlinked - it is compiled into the binary. Editing it means
+  rebuilding (`./install --dwl`). Only the session glue is symlinked
+  (`dwl.desktop`, `dwl-run`, `dwl-autostart` -> `/usr/local/…`). ly finds the
+  session via the extra `waylandsessions` path in `config/ly/config.ini`. See
+  `config/dwl/README.md` for the Hyprland->dwl port and what could not be
+  reproduced 1:1 (gaps, pixel-exact tiled resize/move, workspaces vs tags, …).
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).

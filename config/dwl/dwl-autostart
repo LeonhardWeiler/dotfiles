@@ -1,0 +1,18 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# dwl autostart - run via `dwl -s dwl-autostart` from dwl-run. Mirrors
+# config/hypr/autostart.lua 1:1. dwl kills this process group on exit, so the
+# backgrounded jobs stop with the session.
+
+mako &                                                    # notification daemon
+gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
+"$HOME/.local/bin/change-wallpaper"                       # random wallpaper via swaybg
+
+# Sync tracked configs (commit + push) once on login. Best effort; tolerates
+# being offline.
+"$HOME/.local/bin/dotfiles_sync"
+
+# Low-battery warning: poll every 2 minutes.
+while true; do "$HOME/.local/bin/bat_check"; sleep 120; done &

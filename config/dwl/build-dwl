@@ -1,0 +1,49 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Build dwl from source with the tracked config.h and install the binary to
+# /usr/local/bin/dwl. dwl is configured at compile time (suckless style), so
+# there is no runtime config to symlink - editing config/dwl/config.h and
+# re-running this script (or `./install --dwl`) is the "apply" step.
+#
+# Only the binary is installed; the .desktop session file and env wrapper are
+# managed as symlinks via setup/links.conf (dwl.desktop -> dwl-run), so this
+# script deliberately does NOT run `make install` (which would overwrite the
+# session file with the upstream Exec=dwl one).
+
+set -eu
+
+DWL_VERSION="v0.8"                 # pinned; matches config.h (dwl 0.8 struct layout)
+SRC_DIR="${DWL_SRC_DIR:-$HOME/.local/src/dwl}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_H="$SCRIPT_DIR/config.h"
+
+[ -f "$CONFIG_H" ] || { echo "build-dwl: $CONFIG_H not found" >&2; exit 1; }
+
+# Build dependency (wlroots is tightly version-coupled to dwl). wayland-protocols
+# and base-devel are assumed present; install the versioned wlroots if missing.
+if command -v pacman >/dev/null 2>&1 && ! pacman -Q wlroots0.19 >/dev/null 2>&1; then
+	echo "build-dwl: installing wlroots0.19 ..."
+	sudo pacman -S --needed --noconfirm wlroots0.19
+fi
+
+# Clone (pinned) or reuse an existing checkout.
+if [ -d "$SRC_DIR/.git" ]; then
+	echo "build-dwl: updating $SRC_DIR to $DWL_VERSION ..."
+	git -C "$SRC_DIR" fetch --tags --depth 1 origin "$DWL_VERSION"
+	git -C "$SRC_DIR" checkout -q "$DWL_VERSION"
+else
+	echo "build-dwl: cloning dwl $DWL_VERSION into $SRC_DIR ..."
+	mkdir -p "$(dirname "$SRC_DIR")"
+	git clone --depth 1 --branch "$DWL_VERSION" https://codeberg.org/dwl/dwl.git "$SRC_DIR"
+fi
+
+# Drop in the tracked config and build.
+cp -f "$CONFIG_H" "$SRC_DIR/config.h"
+make -C "$SRC_DIR" clean >/dev/null 2>&1 || true
+make -C "$SRC_DIR"
+
+# Install the binary only (see header comment).
+sudo install -Dm755 "$SRC_DIR/dwl" /usr/local/bin/dwl
+echo "build-dwl: installed $(/usr/local/bin/dwl -v 2>&1 | head -1) -> /usr/local/bin/dwl"

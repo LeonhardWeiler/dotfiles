@@ -1,0 +1,25 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# dwl session entry point (referenced by dwl.desktop, launched from ly).
+# dwl itself has no config file for environment variables, so the session
+# environment is exported here before dwl starts. These mirror config/hypr/env.lua
+# 1:1 (kept identical so GUI apps scale the same as under Hyprland).
+
+# Identify the session to xdg-desktop-portal and friends.
+export XDG_CURRENT_DESKTOP=dwl
+
+# Pin the integrated GPU (AMD Radeon 680M) so wlroots never uses the discrete
+# card. Machine-specific - remove this line on other hardware (wlroots then
+# auto-detects the GPU). Mirrors the WLR_DRM_DEVICES line in config/hypr/env.lua.
+export WLR_DRM_DEVICES=/dev/dri/by-path/pci-0000:34:00.0-card
+
+export QT_QPA_PLATFORMTHEME=qt5ct
+export QT_SCALE_FACTOR=1.6
+export QT_AUTO_SCREEN_SCALE_FACTOR=0
+export GDK_SCALE=2
+export XCURSOR_SIZE=18
+
+# Start dwl; -s runs the autostart script (mako, wallpaper, sync, battery poll).
+exec dwl -s dwl-autostart
