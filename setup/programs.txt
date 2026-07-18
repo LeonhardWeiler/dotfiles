@@ -1,5 +1,4 @@
 acpi 1.8-2
-alacritty 0.17.0-1
 amd-ucode 20260622-1
 base-devel 1-2
 bc 1.08.2-1
@@ -14,6 +13,7 @@ dosfstools 4.2-5
 dotnet-sdk 10.0.10.sdk110-1
 figma-agent-linux-bin 0.4.3-1
 fio 3.42-1
+foot 1.27.0-1
 git 2.55.0-1
 glmark2 2023.01-2
 hdparm 9.65-3

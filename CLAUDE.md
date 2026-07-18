@@ -71,11 +71,11 @@ scripts). The source->target mapping is stated explicitly in
 
 ## Structure
 
-- **`config/`** = flat config sources: `alacritty`, `bash`, `btop`, `claude`,
-  `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
+- **`config/`** = flat config sources: `bash`, `btop`, `claude`,
+  `foot`, `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `vconsole`, `wallpaper`.
-  Whole directories are linked as a dir symlink (alacritty, hypr, nvim, rofi,
+  Whole directories are linked as a dir symlink (foot, hypr, nvim, rofi,
   mako, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system

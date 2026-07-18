@@ -61,19 +61,7 @@ things a **cron line or a plain shell loop** could do without a unit file, a
 `.timer`, and a linked symlink each. Where a one-liner works, prefer the
 one-liner; reserve units for what genuinely needs socket activation or ordering.
 
-## 5. The Rust terminal
-
-**The gripe:** `alacritty`. Luke used **st** (suckless terminal, ~1000 lines of
-C you patch yourself). A GPU-accelerated terminal in Rust with a YAML/TOML
-config is, to him, a browser cosplaying as a terminal. Same energy: he'd raise
-an eyebrow at `btop` (a C++ htop with a paint job) over plain `htop`/`top`.
-
-**How to appease him:** No action needed — this is a genuine values difference,
-not a bug. But if you ever feel the terminal is heavier than the work it does,
-`foot` (a lightweight Wayland-native terminal in C) is the "suckless-adjacent"
-answer that still fits Wayland. Worth knowing the option exists.
-
-## 6. GUI everything: keepassxc, qt5ct, rofi, mako
+## 5. GUI everything: keepassxc, qt5ct, rofi, mako
 
 **The gripe:** `rofi_keepassxc` is **201 lines** to put a password manager behind
 a graphical menu. Luke keeps passwords in **pass** (`pass`, gpg-encrypted files,
@@ -86,7 +74,7 @@ is the single most "over-built for the job" script in `usrbin/` — worth a read
 see if half of it is error-handling for cases that can't happen. Shorter is
 suckless-er.
 
-## 7. Where's the email? Where's the RSS?
+## 6. Where's the email? Where's the RSS?
 
 **The gripe:** Luke's whole brand is doing _real work_ in the terminal — email
 in **neomutt**, RSS in **newsboat**, files in **lf**, notes in vim. This repo has
@@ -99,7 +87,7 @@ browser for mail/feeds/files, a terminal newsboat or lf setup is a genuinely nic
 addition that fits the repo's ethos far better than another blur radius. Not a
 criticism of what's here — a suggestion of what's missing.
 
-## 8. The wallpaper randomizer
+## 7. The wallpaper randomizer
 
 **The gripe:** `config/wallpaper/change-wallpaper.sh` + a `pictures/` set +
 swaybg, wired into autostart. To Luke this is the _definition_ of ricing —

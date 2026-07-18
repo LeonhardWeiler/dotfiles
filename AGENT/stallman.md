@@ -117,7 +117,7 @@ it…"). Optional maschinenlesbar via **REUSE**/SPDX
 
 - **KeePassXC** (`config/keepassxc/`): freie Software, GPL — **Daumen hoch**. Dass
   die `*.kdbx` nicht eingecheckt wird, ist genau die richtige Trennung.
-- **Wayland/Hyprland, Alacritty, btop, mpv, rofi, mako, nvim**: alles frei
+- **Wayland/Hyprland, foot, btop, mpv, rofi, mako, nvim**: alles frei
   lizenziert — hier hat er nichts zu meckern.
 - **Noto-Fonts, JetBrains-Mono-Nerd**: frei lizenziert — passt.
 - **systemd**: frei, aber Stallman hat es historisch für seinen monolithischen

@@ -2,7 +2,7 @@
 -- (e.g. a different terminal) is only needed in one place. Included by other
 -- modules via `require("programs")`.
 return {
-	terminal = "alacritty",
+	terminal = "foot",
 	menu = "rofi -show drun",
 	browser = "zen-browser",
 	lock = "hyprlock",

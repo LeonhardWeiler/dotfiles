@@ -163,10 +163,10 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 
 | Component      | Path                               |
 | -------------- | ---------------------------------- |
-| Alacritty      | `~/.config/alacritty`              |
 | Bash           | `~/.bashrc`                        |
 | btop           | `~/.config/btop`                   |
 | Claude Code    | `~/.claude/{skills,settings.json}` |
+| foot           | `~/.config/foot`                   |
 | Git            | `~/.config/git`                    |
 | Hyprland       | `~/.config/hypr`                   |
 | KeePassXC      | `~/.config/keepassxc`              |
@@ -198,7 +198,7 @@ In the interest of honesty: `programs.txt` is not a free-software-only manifest.
 - **`plasticscm-client-gui`** - proprietary version control (Unity/PlasticSCM).
 - **`figma-agent-linux-bin`** - proprietary font helper for Figma.
 
-In addition, **`linux-firmware`** and **`amd-ucode`** ship non-free binary blobs (device firmware / CPU microcode) that the stock `linux` kernel loads. If you want a fully free system, drop the packages above and swap `linux`/`linux-firmware` for `linux-libre`/`linux-libre-firmware` (note: some hardware then loses driver support). The rest of the tooling (Hyprland, Alacritty, Neovim, mpv, KeePassXC, …) is free software.
+In addition, **`linux-firmware`** and **`amd-ucode`** ship non-free binary blobs (device firmware / CPU microcode) that the stock `linux` kernel loads. If you want a fully free system, drop the packages above and swap `linux`/`linux-firmware` for `linux-libre`/`linux-libre-firmware` (note: some hardware then loses driver support). The rest of the tooling (Hyprland, foot, Neovim, mpv, KeePassXC, …) is free software.
 
 ## Manual system state (not symlinked)
 
