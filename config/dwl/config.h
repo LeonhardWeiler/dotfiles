@@ -124,8 +124,8 @@ static const Key keys[] = {
 	{ MODKEY,                       XKB_KEY_k,       focusstack,       {.i = -1} },
 
 	/* Master area width */
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_h,       setmfact,         {.f = -0.05f} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_l,       setmfact,         {.f = +0.05f} },
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_h,       setmfact,         {.f = -0.02f} },
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_l,       setmfact,         {.f = +0.02f} },
 
 	/* Fullscreen / master swap */
 	{ MODKEY,                       XKB_KEY_m,       togglefullscreen, {0} },

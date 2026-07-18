@@ -1,0 +1,25 @@
+From d7bdf898d5f5fc30cc5551c900578c1f70a68d0f Mon Sep 17 00:00:00 2001
+From: Leonhard Weiler <leonhard-weiler@hotmail.com>
+Date: Sun, 19 Jul 2026 01:02:54 +0200
+Subject: [PATCH] insert new clients at bottom of fstack
+
+---
+ dwl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dwl.c b/dwl.c
+index 0ab0ef0..5c7fcbb 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -1426,7 +1426,7 @@ focusclient(Client *c, int lift)
+ 	/* Put the new client atop the focus stack and select its monitor */
+ 	if (c && !client_is_unmanaged(c)) {
+ 		wl_list_remove(&c->flink);
+-		wl_list_insert(&fstack, &c->flink);
++    wl_list_insert(fstack.prev, &c->flink);
+ 		selmon = c->mon;
+ 		c->isurgent = 0;
+ 
+-- 
+2.55.0
+

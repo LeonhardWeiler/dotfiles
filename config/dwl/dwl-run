@@ -6,15 +6,12 @@
 # dwl has no config file for environment variables, so the session environment
 # is exported here before dwl starts.
 
-# Identify the session to xdg-desktop-portal and friends.
 export XDG_CURRENT_DESKTOP=dwl
 
-# HiDPI scaling and cursor size for GUI toolkits.
 export QT_QPA_PLATFORMTHEME=qt5ct
 export QT_SCALE_FACTOR=1.6
 export QT_AUTO_SCREEN_SCALE_FACTOR=0
 export GDK_SCALE=2
 export XCURSOR_SIZE=18
 
-# Start dwl; -s runs the autostart script (mako, wallpaper, sync, battery poll).
 exec dwl -s dwl-autostart
