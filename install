@@ -31,6 +31,7 @@
 #                             (/etc/sudoers.d/, validated with visudo)
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
 #   --fonts                   install the font packages and refresh the font cache
+#   --dwl                     build + install dwl from config/dwl/config.h
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -139,7 +140,7 @@ while [ $# -gt 0 ]; do
     # ── Step flags: every registered optional step maps to SELECTED[<name>]
     # (see register_step). --timezone is special - it also takes an argument.
     --programs | --systemd | --groups | \
-    --locale | --ly-dropin | --sudoers | --initramfs | --fonts)
+    --locale | --ly-dropin | --sudoers | --initramfs | --fonts | --dwl)
                         SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
