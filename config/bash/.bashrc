@@ -35,12 +35,10 @@ export BROWSER=zen-browser
 # render the same regardless of how they were launched (terminal vs. rofi).
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
-eval "$(dircolors "${XDG_CONFIG_HOME:-$HOME/.config}/dircolors")"
 
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
 alias arst='sudo shutdown now'
-alias ls='ls --color=auto'
 export NIX_CONFIG="experimental-features = nix-command flakes"
 # Only source it if Nix is installed (otherwise an error in every shell without Nix).
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
