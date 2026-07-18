@@ -1,0 +1,11 @@
+# mkinitcpio preset file for the custom-built kernel (vmlinuz-custom).
+# ALL_kver points at the kernel image so mkinitcpio reads the version from it
+# (mirrors linux.preset), staying correct across custom-kernel rebuilds.
+
+#ALL_config="/etc/mkinitcpio.conf"
+ALL_kver="/efi/vmlinuz-custom"
+
+PRESETS=('default')
+
+#default_config="/etc/mkinitcpio.conf"
+default_image="/efi/initramfs-custom.img"
