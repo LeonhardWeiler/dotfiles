@@ -34,6 +34,15 @@ static const unsigned int gappov = 6;  /* outer vertical */
 
 /* logging */
 static int log_level = WLR_ERROR;
+ 
+static const char *const autostart[] = {
+  "mako", NULL,
+  "gsettings", "set", "org.gnome.desktop.interface", "color-scheme", "prefer-dark", NULL,
+  "$HOME/.local/bin/change-wallpaper", NULL,
+  "$HOME/.local/bin/dotfiles_sync", NULL,
+  "sh", "-c", "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done", NULL,
+  NULL
+};
 
 static const Rule rules[] = {
 	/* app_id             title       tags mask     isfloating   monitor */
@@ -51,13 +60,10 @@ static const Layout layouts[] = {
 };
 
 /* monitors.
- * (x=-1, y=-1) means "auto-arrange"; the external output lands to the right of
- * eDP-1. Set fixed x/y here for a specific layout. */
+ * (x=-1, y=-1) means "auto-arrange"; the external output lands to the right of */
 static const MonitorRule monrules[] = {
 	/* name        mfact  nmaster scale  layout       rotate/reflect               x    y */
 	{ "eDP-1",     0.55f, 1,      1.6f,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,  -1,  -1 },
-	{ "HDMI-A-1",  0.55f, 1,      1.0f,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,  -1,  -1 },
-	/* fallback rule for any other output (at least one rule must exist) */
 	{ NULL,        0.55f, 1,      1.0f,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,  -1,  -1 },
 };
 
