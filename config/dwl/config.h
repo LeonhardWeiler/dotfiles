@@ -1,10 +1,10 @@
-/* dwl configuration - ported 1:1 (where possible) from the Hyprland config
- * under config/hypr/. dwl is configured at COMPILE time: edit this file and
+/* dwl configuration. dwl is configured at COMPILE time: edit this file and
  * rebuild (config/dwl/build-dwl, or `./install --dwl`). See config/dwl/README.md
- * for the mapping and the points that could NOT be reproduced 1:1.
+ * for the keybind overview.
  *
- * Base: dwl 0.8 config.def.h (codeberg.org/dwl/dwl). Struct field order must
- * match the dwl version being built. */
+ * Base: dwl 0.8 config.def.h (codeberg.org/dwl/dwl) plus the gaps patch
+ * (config/dwl/patches/gaps.patch). Struct field order must match the dwl version
+ * being built. */
 
 /* Taken from https://github.com/djpohly/dwl/issues/466 */
 #define COLOR(hex)    { ((hex >> 24) & 0xFF) / 255.0f, \
@@ -12,20 +12,24 @@
                         ((hex >> 8) & 0xFF) / 255.0f, \
                         (hex & 0xFF) / 255.0f }
 /* appearance */
-static const int sloppyfocus               = 1;  /* hypr input.follow_mouse = 1 */
+static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;
-static const unsigned int borderpx         = 0;  /* hypr general.border_size = 0 */
+static const unsigned int borderpx         = 0;  /* window border width */
 static const float rootcolor[]             = COLOR(0x000000ff);
-static const float bordercolor[]           = COLOR(0x595959ff); /* hypr inactive_border rgb(595959) */
-static const float focuscolor[]            = COLOR(0xddddddff); /* hypr active_border  rgb(dddddd) */
+static const float bordercolor[]           = COLOR(0x595959ff); /* unfocused border */
+static const float focuscolor[]            = COLOR(0xddddddff); /* focused border */
 static const float urgentcolor[]           = COLOR(0xff0000ff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f};
 
-/* tagging - 6 tags to mirror the 6 Hyprland workspaces (TAGCOUNT must be <= 31).
- * NOTE: dwl "tags" are not identical to Hyprland "workspaces" (a window can hold
- * several tags, several tags can be viewed at once), but ALT+1..6 (view) and
- * ALT+SHIFT+1..6 (move) behave like workspace switching for everyday use. */
+/* gaps (px, from the gaps patch) - inner = between windows, outer = screen edge */
+static const unsigned int gappih = 3;  /* inner horizontal */
+static const unsigned int gappiv = 3;  /* inner vertical */
+static const unsigned int gappoh = 6;  /* outer horizontal */
+static const unsigned int gappov = 6;  /* outer vertical */
+
+/* tagging - 6 tags. TAGCOUNT must be <= 31. ALT+1..6 view a tag, ALT+SHIFT+1..6
+ * move the focused window to a tag. */
 #define TAGCOUNT (6)
 
 /* logging */
@@ -37,9 +41,8 @@ static const Rule rules[] = {
 	{ "__never_matches",  NULL,       0,            0,           -1 },
 };
 
-/* layout(s) - Hyprland ran the master layout only; dwl "tile" is the equivalent
- * master-stack layout. Floating/monocle stay available for togglefullscreen and
- * per-window floating. */
+/* layout(s) - "tile" is the master-stack layout; floating and monocle stay
+ * available for togglefullscreen and per-window floating. */
 static const Layout layouts[] = {
 	/* symbol     arrange function */
 	{ "[]=",      tile },
@@ -47,11 +50,9 @@ static const Layout layouts[] = {
 	{ "[M]",      monocle },
 };
 
-/* monitors - ported from config/hypr/monitors.lua.
- * (x=-1, y=-1) means "auto-arrange". The Hyprland HDMI position (2560x0) is not
- * reproduced literally because dwl's x/y live in the SCALED layout space, not
- * Hyprland's; auto-arrange places the external screen to the right of eDP-1,
- * which matches the intended layout. Adjust x/y here if you need a fixed spot. */
+/* monitors.
+ * (x=-1, y=-1) means "auto-arrange"; the external output lands to the right of
+ * eDP-1. Set fixed x/y here for a specific layout. */
 static const MonitorRule monrules[] = {
 	/* name        mfact  nmaster scale  layout       rotate/reflect               x    y */
 	{ "eDP-1",     0.55f, 1,      1.6f,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,  -1,  -1 },
@@ -60,7 +61,7 @@ static const MonitorRule monrules[] = {
 	{ NULL,        0.55f, 1,      1.0f,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,  -1,  -1 },
 };
 
-/* keyboard - ported from config/hypr/looknfeel.lua (input block). */
+/* keyboard */
 static const struct xkb_rule_names xkb_rules = {
 	.layout  = "us",
 	.variant = "colemak_dh",
@@ -68,9 +69,9 @@ static const struct xkb_rule_names xkb_rules = {
 };
 
 static const int repeat_rate  = 25;
-static const int repeat_delay = 300; /* hypr input.repeat_delay = 300 */
+static const int repeat_delay = 300;
 
-/* Trackpad - hypr touchpad.natural_scroll = false. */
+/* Trackpad */
 static const int tap_to_click = 1;
 static const int tap_and_drag = 1;
 static const int drag_lock = 1;
@@ -85,12 +86,11 @@ static const enum libinput_config_accel_profile accel_profile = LIBINPUT_CONFIG_
 static const double accel_speed = 0.0;
 static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TAP_MAP_LRM;
 
-/* main modifier - hypr mainMod = ALT */
+/* main modifier */
 #define MODKEY WLR_MODIFIER_ALT
 
-/* Tag keys: ALT+n = view tag n, ALT+SHIFT+n = move window to tag n (mirrors the
- * Hyprland workspace binds). CTRL / CTRL+SHIFT toggles are dwl extras and do not
- * clash with anything from the Hyprland config. */
+/* Tag keys: ALT+n = view tag n, ALT+SHIFT+n = move window to tag n; CTRL /
+ * CTRL+SHIFT add the toggleview / toggletag variants. */
 #define TAGKEYS(KEY,SKEY,TAG) \
 	{ MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
 	{ MODKEY|WLR_MODIFIER_CTRL,  KEY,            toggleview,      {.ui = 1 << TAG} }, \
@@ -100,7 +100,7 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
-/* commands - from config/hypr/programs.lua */
+/* commands */
 static const char *termcmd[]    = { "foot", NULL };
 static const char *menucmd[]    = { "rofi", "-show", "drun", NULL };
 static const char *filescmd[]   = { "rofi", "-show", "filebrowser", NULL };
@@ -119,23 +119,20 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_n,       spawn,            {.v = browsercmd} },
 	{ WLR_MODIFIER_LOGO,            XKB_KEY_l,       spawn,            {.v = lockcmd} },
 
-	/* Focus in the master/stack (hypr J/K = cyclenext/cycleprev) */
+	/* Focus in the master/stack */
 	{ MODKEY,                       XKB_KEY_j,       focusstack,       {.i = +1} },
 	{ MODKEY,                       XKB_KEY_k,       focusstack,       {.i = -1} },
 
-	/* Master area width (closest tiled equivalent of hypr's horizontal resize;
-	 * hypr's vertical resize and pixel-exact moves have no tiled counterpart -
-	 * see README). */
+	/* Master area width */
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_h,       setmfact,         {.f = -0.05f} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_l,       setmfact,         {.f = +0.05f} },
 
-	/* Fullscreen / master swap. dwl has no separate "maximized" vs "fullscreen":
-	 * both hypr binds map to togglefullscreen. */
+	/* Fullscreen / master swap */
 	{ MODKEY,                       XKB_KEY_m,       togglefullscreen, {0} },
 	{ MODKEY,                       XKB_KEY_z,       togglefullscreen, {0} },
 	{ MODKEY,                       XKB_KEY_Return,  zoom,             {0} },
 
-	/* Workspaces 1-6 -> tags 1-6 */
+	/* Tags 1-6 */
 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                       0),
 	TAGKEYS(          XKB_KEY_2, XKB_KEY_at,                           1),
 	TAGKEYS(          XKB_KEY_3, XKB_KEY_numbersign,                   2),
@@ -143,27 +140,24 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_5, XKB_KEY_percent,                      4),
 	TAGKEYS(          XKB_KEY_6, XKB_KEY_asciicircum,                  5),
 
-	/* Multimedia keys (ALT+Fx as in Hyprland). NOTE: unlike Hyprland's
-	 * locked=true, dwl does not run keybinds while the session is locked. */
+	/* Multimedia keys */
 	{ MODKEY,                       XKB_KEY_F3,      spawn, SHCMD("~/.local/bin/vol_ctl up") },
 	{ MODKEY,                       XKB_KEY_F2,      spawn, SHCMD("~/.local/bin/vol_ctl down") },
 	{ MODKEY,                       XKB_KEY_F1,      spawn, SHCMD("~/.local/bin/vol_ctl mute") },
 	{ MODKEY,                       XKB_KEY_F6,      spawn, SHCMD("~/.local/bin/bright_ctl up") },
 	{ MODKEY,                       XKB_KEY_F5,      spawn, SHCMD("~/.local/bin/bright_ctl down") },
 
-	/* Screenshot (region -> clipboard). hyprshot is Hyprland-only, so this uses
-	 * grim + slurp + wl-copy. */
+	/* Screenshot (region -> clipboard) */
 	{ 0,                            XKB_KEY_Print,   spawn, SHCMD("grim -g \"$(slurp)\" - | wl-copy") },
 
-	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx: keep the VT-switch escape hatches. */
+	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx: VT-switch escape hatches. */
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
 #define CHVT(n) { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_XF86Switch_VT_##n, chvt, {.ui = (n)} }
 	CHVT(1), CHVT(2), CHVT(3), CHVT(4), CHVT(5), CHVT(6),
 	CHVT(7), CHVT(8), CHVT(9), CHVT(10), CHVT(11), CHVT(12),
 };
 
-/* Mouse: ALT+left = move, ALT+right = resize (hypr mouse:272 / mouse:273).
- * ALT+middle = togglefloating is a harmless dwl extra. */
+/* Mouse: ALT+left = move, ALT+right = resize, ALT+middle = togglefloating. */
 static const Button buttons[] = {
 	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },

@@ -28,16 +28,25 @@ if command -v pacman >/dev/null 2>&1 && ! pacman -Q wlroots0.19 >/dev/null 2>&1;
 	sudo pacman -S --needed --noconfirm wlroots0.19
 fi
 
-# Clone (pinned) or reuse an existing checkout.
+# Clone (pinned) or reuse an existing checkout, always reset to a pristine
+# tag so patches apply idempotently.
 if [ -d "$SRC_DIR/.git" ]; then
-	echo "build-dwl: updating $SRC_DIR to $DWL_VERSION ..."
+	echo "build-dwl: resetting $SRC_DIR to a pristine $DWL_VERSION ..."
 	git -C "$SRC_DIR" fetch --tags --depth 1 origin "$DWL_VERSION"
 	git -C "$SRC_DIR" checkout -q "$DWL_VERSION"
+	git -C "$SRC_DIR" reset -q --hard "$DWL_VERSION"
 else
 	echo "build-dwl: cloning dwl $DWL_VERSION into $SRC_DIR ..."
 	mkdir -p "$(dirname "$SRC_DIR")"
 	git clone --depth 1 --branch "$DWL_VERSION" https://codeberg.org/dwl/dwl.git "$SRC_DIR"
 fi
+
+# Apply the tracked patches (e.g. gaps) onto the pristine checkout.
+for patch in "$SCRIPT_DIR"/patches/*.patch; do
+	[ -e "$patch" ] || continue
+	echo "build-dwl: applying $(basename "$patch") ..."
+	git -C "$SRC_DIR" apply "$patch"
+done
 
 # Drop in the tracked config and build.
 cp -f "$CONFIG_H" "$SRC_DIR/config.h"

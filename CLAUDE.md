@@ -165,9 +165,11 @@ scripts). The source->target mapping is stated explicitly in
   and is **not** symlinked - it is compiled into the binary. Editing it means
   rebuilding (`./install --dwl`). Only the session glue is symlinked
   (`dwl.desktop`, `dwl-run`, `dwl-autostart` -> `/usr/local/…`). ly finds the
-  session via the extra `waylandsessions` path in `config/ly/config.ini`. See
-  `config/dwl/README.md` for the Hyprland->dwl port and what could not be
-  reproduced 1:1 (gaps, pixel-exact tiled resize/move, workspaces vs tags, …).
+  session via the extra `waylandsessions` path in `config/ly/config.ini`. Gaps
+  (like Hyprland's) come from `config/dwl/patches/gaps.patch`, applied by
+  `build-dwl` on top of the pinned checkout. See `config/dwl/README.md` for the
+  Hyprland->dwl port and what could not be reproduced 1:1 (pixel-exact tiled
+  resize/move, workspaces vs tags, …).
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).

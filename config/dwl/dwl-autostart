@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
-# dwl autostart - run via `dwl -s dwl-autostart` from dwl-run. Mirrors
-# config/hypr/autostart.lua 1:1. dwl kills this process group on exit, so the
-# backgrounded jobs stop with the session.
+# dwl autostart - run via `dwl -s dwl-autostart` from dwl-run. dwl kills this
+# process group on exit, so the backgrounded jobs stop with the session.
 
 mako &                                                    # notification daemon
 gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
