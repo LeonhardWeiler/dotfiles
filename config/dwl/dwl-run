@@ -9,11 +9,6 @@
 # Identify the session to xdg-desktop-portal and friends.
 export XDG_CURRENT_DESKTOP=dwl
 
-# Pin the integrated GPU (AMD Radeon 680M) so wlroots never uses the discrete
-# card. Machine-specific - remove this line on other hardware (wlroots then
-# auto-detects the GPU).
-export WLR_DRM_DEVICES=/dev/dri/by-path/pci-0000:34:00.0-card
-
 # HiDPI scaling and cursor size for GUI toolkits.
 export QT_QPA_PLATFORMTHEME=qt5ct
 export QT_SCALE_FACTOR=1.6
