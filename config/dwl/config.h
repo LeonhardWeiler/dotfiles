@@ -36,7 +36,14 @@ static const unsigned int gappov = 6;  /* outer vertical */
 static int log_level = WLR_ERROR;
  
 static const char *const autostart[] = {
-  "mako", NULL,
+  /* mako is NOT started here: it ships a D-Bus activation file
+     (org.freedesktop.Notifications -> mako.service), so dbus-broker starts it
+     on demand the first time notify-send fires (vol_ctl/bright_ctl OSD). That
+     means it only runs once you actually change volume/brightness, never on an
+     idle login. For the on-demand start to reach the Wayland display, push
+     WAYLAND_DISPLAY (set by dwl just before this runs) into the systemd/D-Bus
+     activation environment. */
+  "dbus-update-activation-environment", "--systemd", "WAYLAND_DISPLAY", "XDG_CURRENT_DESKTOP", NULL,
   /* wallpaper disabled - re-enable this line (and the links.conf wallpaper
      lines) plus `./install --wbg` to bring wbg back. */
   /* "sh", "-c", "$HOME/.local/bin/change-wallpaper", NULL, */
