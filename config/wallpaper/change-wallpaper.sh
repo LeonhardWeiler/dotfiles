@@ -3,7 +3,7 @@
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
 # change-wallpaper - pick a random wallpaper (excluding the previous one) and set
-# it via swaybg. Wallpapers live in $WALLPAPER_DIR (default:
+# it via wbg. Wallpapers live in $WALLPAPER_DIR (default:
 # ~/.local/share/wallpapers, where links.conf points config/wallpaper/pictures).
 # The "previous" marker is kept in the XDG state dir, not in the repo.
 
@@ -37,9 +37,9 @@ if [ -z "$WALLPAPER" ]; then
   exit 1
 fi
 
-# Stop old swaybg instances, then set the wallpaper.
-pkill swaybg
-swaybg -i "$WALLPAPER" -m fill &
+# Stop old wbg instances, then set the wallpaper (wbg scales to fill the output).
+pkill wbg
+wbg "$WALLPAPER" &
 
 # Remember the current wallpaper as the previous one.
 echo "$WALLPAPER" > "$PREV_WALLPAPER_FILE"

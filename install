@@ -32,6 +32,7 @@
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
 #   --fonts                   install the font packages and refresh the font cache
 #   --dwl                     build + install dwl from config/dwl/config.h
+#   --wbg                     build + install wbg (wallpaper program) from source
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -140,7 +141,7 @@ while [ $# -gt 0 ]; do
     # ── Step flags: every registered optional step maps to SELECTED[<name>]
     # (see register_step). --timezone is special - it also takes an argument.
     --programs | --systemd | --groups | \
-    --locale | --ly-dropin | --sudoers | --initramfs | --fonts | --dwl)
+    --locale | --ly-dropin | --sudoers | --initramfs | --fonts | --dwl | --wbg)
                         SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
@@ -435,6 +436,18 @@ do_dwl() {
   run 0 "$script" || warn "dwl build failed"
 }
 register_step dwl do_dwl "Build + install dwl from config/dwl/config.h"
+
+# Build + install wbg (the wallpaper program used by change-wallpaper.sh) from a
+# pinned upstream tag; delegates to config/wbg/build-wbg (clone/pin, meson/ninja,
+# install the binary to /usr/local/bin). Not a default step - only needed on a
+# fresh machine.
+do_wbg() {
+  local script="$BASEDIR/config/wbg/build-wbg"
+  [ -x "$script" ] || { warn "config/wbg/build-wbg missing - skipped"; return 0; }
+  info "Building + installing wbg (config/wbg/build-wbg)"
+  run 0 "$script" || warn "wbg build failed"
+}
+register_step wbg do_wbg "Build + install wbg (wallpaper program) from source"
 
 # ── links.conf pipeline: parse -> validate -> build (globs) -> execute ────────
 # Explicit phases so execution never sees a malformed entry: the raw entries

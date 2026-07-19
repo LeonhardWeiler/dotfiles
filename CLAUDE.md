@@ -51,6 +51,11 @@ scripts). The source->target mapping is stated explicitly in
     `config.h`, `make`, install the binary to `/usr/local/bin/dwl`). Since dwl is
     configured at compile time, this is the **apply** step for `config/dwl`
     changes. Not a default step.
+  - `--wbg` - build + install **wbg** (the wallpaper program) from a pinned
+    upstream tag via `config/wbg/build-wbg` (clone/pin wbg,
+    `meson`/`ninja`, install the binary to `/usr/local/bin/wbg`; installs
+    `tllist` from the AUR via yay). Like dwl, the source is cloned at build time
+    (not committed) and only the binary is installed. Not a default step.
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file
@@ -84,7 +89,7 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
   `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `usrbin`, `vconsole`, `wallpaper`.
+  `systemd-system`, `usrbin`, `vconsole`, `wallpaper`, `wbg`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
   mako, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude`/`hyprlock` and `/etc` targets deliberately **only the single file**
@@ -132,7 +137,7 @@ scripts). The source->target mapping is stated explicitly in
   there - so the hook stays portable for a foreign user too.
 - **`config/wallpaper/`** = the picture set (`pictures/`, linked as a dir symlink
   to `~/.local/share/wallpapers`) plus `change-wallpaper.sh` (linked to
-  `~/.local/bin/change-wallpaper`, picks a random wallpaper via swaybg; called
+  `~/.local/bin/change-wallpaper`, picks a random wallpaper via wbg; called
   from the dwl autostart in `config/dwl/config.h`). The script defaults to
   `~/.local/share/wallpapers`, so both link targets line up.
 - **`nvim/`** has its **own `CLAUDE.md`** (`config/nvim/CLAUDE.md`) with the

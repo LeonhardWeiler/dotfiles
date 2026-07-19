@@ -90,7 +90,7 @@ criticism of what's here — a suggestion of what's missing.
 ## 7. The wallpaper randomizer
 
 **The gripe:** `config/wallpaper/change-wallpaper.sh` + a `pictures/` set +
-swaybg, wired into autostart. To Luke this is the _definition_ of ricing —
+wbg, wired into autostart. To Luke this is the _definition_ of ricing —
 effort spent on how the desktop looks while idle. "Nobody sees your wallpaper;
 you have windows open."
 

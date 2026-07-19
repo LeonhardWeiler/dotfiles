@@ -184,6 +184,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | Scripts        | `~/.local/bin`                     |
 | Systemd System | `/etc/systemd/system/`             |
 | Wallpapers     | `~/.local/share/wallpapers`        |
+| wbg            | compiled + `/usr/local` binary     |
 
 ## My Setup
 

@@ -57,10 +57,10 @@ rt-tests 2.10-1
 signal-desktop 8.19.0-1
 slurp 1.5.0-2
 stress-ng 0.21.04-2
-swaybg 1.2.2-1
 swtpm 0.10.1-2
 sysbench 1.0.20-2
 thunderbird 152.0-1
+tllist 1.1.0-2
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
 ufw 0.36.2-7
