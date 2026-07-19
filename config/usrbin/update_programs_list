@@ -12,7 +12,6 @@
 #
 # Callers:
 #   - pacman hook (PostTransaction, runs as root)
-#   - dotfiles_sync (startup sync, runs as user)
 #   - manually (`update_programs_list`)
 #
 # If the call runs as root (hook), the file is handed back to the user afterwards

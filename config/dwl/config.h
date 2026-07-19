@@ -40,7 +40,6 @@ static const char *const autostart[] = {
   /* wallpaper disabled - re-enable this line (and the links.conf wallpaper
      lines) plus `./install --wbg` to bring wbg back. */
   /* "sh", "-c", "$HOME/.local/bin/change-wallpaper", NULL, */
-  "sh", "-c", "$HOME/.local/bin/dotfiles_sync", NULL,
   "sh", "-c", "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done", NULL,
   NULL
 };

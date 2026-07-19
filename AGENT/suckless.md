@@ -118,8 +118,8 @@ im ganzen Repo.
 ly-Drop-ins als `/etc`-Kopien wegen früher Boot-Reihenfolge. Für die suckless-
 Fraktion (die `sinit`, runit, klein-init bevorzugt) ist das die
 Bloat-Infrastruktur, gegen die man antritt. _Lobenswert immerhin_: Der
-`bat_check`-Loop und `dotfiles_sync` laufen **bewusst nicht** als User-Units,
-sondern als simple Kommandos aus dem Hyprland-Autostart. Das ist der richtige
+`bat_check`-Loop läuft **bewusst nicht** als User-Unit,
+sondern als simples Kommando aus dem dwl-Autostart. Das ist der richtige
 Instinkt — nur an genau einer Stelle konsequent angewendet.
 
 ### 6. Neovim: `lazy.nvim` + `mason` + 15 Plugins

@@ -126,9 +126,9 @@ scripts). The source->target mapping is stated explicitly in
 - **System services**: activated by the `install` script after linking via
   `systemctl enable` - the unit lists live in `setup/services.txt` (loaded into
   `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the
-  battery-level check and the config sync run as plain commands from the dwl
-  autostart (`autostart[]` in `config/dwl/config.h`) instead of systemd user units
-  (a `while` loop calling `bat_check` every 2 min, and `dotfiles_sync` once on login).
+  battery-level check runs as a plain command from the dwl
+  autostart (`autostart[]` in `config/dwl/config.h`) instead of a systemd user unit
+  (a `while` loop calling `bat_check` every 2 min).
   Deliberately `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
@@ -138,8 +138,8 @@ scripts). The source->target mapping is stated explicitly in
   **not** tracked (formerly `*.wants` links in the repo - now removed).
 - **Not linked**: `AGENT/` (work/workflow files) stays in the repo root.
 - Custom scripts: **`config/usrbin/*`** -> `~/.local/bin` (per file, on the
-  `PATH` via `.bashrc`). `dotfiles_sync` versions
-  `setup/programs.txt`; `update_programs_list` writes there.
+  `PATH` via `.bashrc`). `update_programs_list` writes
+  `setup/programs.txt`.
   `update_programs_list` is **additionally** linked to the fixed system path
   `/usr/local/bin/update_programs_list` (its own `links.conf` line), because the
   pacman hook (`/etc/pacman.d/hooks`) knows no `$HOME` variables and calls it from

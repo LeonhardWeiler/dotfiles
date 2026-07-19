@@ -63,7 +63,7 @@ or `./install --groups --sudoers`. To skip the menu but still do the full setup,
 pass the flags to `setup`: `./install setup --programs --systemd --locale`.
 
 The scripts assume the repo lives at `~/dotfiles`; if you clone elsewhere, export
-`DOTFILES_DIR` (used by `dotfiles_sync`/`update_programs_list`) accordingly.
+`DOTFILES_DIR` (used by `update_programs_list`) accordingly.
 
 Useful variants:
 
@@ -142,19 +142,12 @@ sudo systemctl status <name>.service
 
 ### Login-time helpers (no user units)
 
-There are **no systemd user units**. Two things that would otherwise want a
-`.timer`/`.service` run as plain commands from the dwl autostart
+There are **no systemd user units**. What would otherwise want a
+`.timer`/`.service` runs as a plain command from the dwl autostart
 (`autostart[]` in `config/dwl/config.h`), so nothing needs to be enabled:
 
 - **Battery warning** - a shell loop calls `bat_check` every 2 minutes:
   `while true; do ~/.local/bin/bat_check; sleep 120; done`.
-- **Config sync** - `dotfiles_sync` runs once on login to commit + push
-  `programs.txt` (and further tracked configs).
-
-> `dotfiles_sync` commits and **pushes** automatically. That requires an SSH key
-> usable without interaction (passphrase-less or provided via `ssh-agent` at
-> login); otherwise only the push fails (best effort, login is not blocked).
-> Extensible via `GENERATORS`/`PATHS` in `~/.local/bin/dotfiles_sync`.
 
 PipeWire/WirePlumber/figma-agent are enabled by their own package presets and are
 **not** managed here.
@@ -188,7 +181,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 
 ## My Setup
 
-I use Arch GNU/Linux with the dwl Wayland compositor. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles_sync` (run from the dwl autostart) commits and pushes it on login. You can still refresh it manually while installing via the install script.
+I use Arch GNU/Linux with the dwl Wayland compositor. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction. You can still refresh it manually while installing via the install script.
 
 > Note: This setup has been primarily tested on Arch GNU/Linux. Other distributions may require adjustments.
 
