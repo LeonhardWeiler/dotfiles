@@ -59,6 +59,12 @@ scripts). The source->target mapping is stated explicitly in
     it is built from source rather than installed from the AUR `wbg` package
     (which enables every format). Like dwl, the source is cloned at build time
     (not committed) and only the binary is installed. Not a default step.
+    **Currently stood down**: wbg + the whole wallpaper feature are disabled
+    (nothing installed/linked/autostarted) - the `config/wbg/` build script and
+    `config/wallpaper/pictures` stay in the repo so it can be brought back. To
+    re-enable: uncomment the two wallpaper lines in `setup/links.conf` and the
+    `change-wallpaper` autostart line in `config/dwl/config.h` (then
+    `./install --dwl`), and run `./install --wbg`.
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).
 - **Status**: `./install status` - shows per entry ok / foreign link / real file

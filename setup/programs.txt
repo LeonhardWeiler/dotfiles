@@ -60,7 +60,6 @@ stress-ng 0.21.04-2
 swtpm 0.10.1-2
 sysbench 1.0.20-2
 thunderbird 152.0-1
-tllist 1.1.0-2
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
 ufw 0.36.2-7
