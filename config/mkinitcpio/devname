@@ -1,0 +1,32 @@
+#!/bin/bash
+# mkinitcpio install hook: bundle modules.devname into the initramfs.
+#
+# On a heavily trimmed kernel where all boot-critical drivers are built in
+# (=y), mkinitcpio adds zero modules, so no modules.devname exists in the
+# image. The udev runtime hook still runs `kmod static-nodes`, which then
+# prints the harmless (exit 0) early-boot warning:
+#     modules.devname not found - ignoring
+# Adding the file (keyed on ${KERNELVERSION}, so it stays correct across
+# kernel rebuilds) makes kmod find it and silences the warning. The static
+# /dev nodes it describes are still created later on the real root by
+# kmod-static-nodes.service.
+
+build() {
+    local f="/usr/lib/modules/${KERNELVERSION}/modules.devname"
+    if [[ -f $f ]]; then
+        add_file "$f"
+    else
+        warning "modules.devname for %s not found on host - skipping" "${KERNELVERSION}"
+    fi
+}
+
+help() {
+    cat <<'HELPEOF'
+Bundles /usr/lib/modules/<version>/modules.devname into the image so that
+'kmod static-nodes' (called by the udev hook) finds it in early boot,
+silencing the harmless "modules.devname not found - ignoring" warning that
+appears on module-less (fully built-in) kernel configs.
+HELPEOF
+}
+
+# vim: set ft=sh ts=4 sw=4 et:
