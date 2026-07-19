@@ -54,7 +54,10 @@ scripts). The source->target mapping is stated explicitly in
   - `--wbg` - build + install **wbg** (the wallpaper program) from a pinned
     upstream tag via `config/wbg/build-wbg` (clone/pin wbg,
     `meson`/`ninja`, install the binary to `/usr/local/bin/wbg`; installs
-    `tllist` from the AUR via yay). Like dwl, the source is cloned at build time
+    `tllist` from the AUR via yay). Built **jpg-only** (meson feature flags
+    disable png/webp/jxl/svg) since all wallpapers are jpg - that is the reason
+    it is built from source rather than installed from the AUR `wbg` package
+    (which enables every format). Like dwl, the source is cloned at build time
     (not committed) and only the binary is installed. Not a default step.
 - **Removing**: `./install unlink` - removes the symlinks we manage (only real
   symlinks to our sources; real files/foreign links stay).

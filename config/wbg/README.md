@@ -2,18 +2,14 @@
 
 [wbg](https://codeberg.org/dnkl/wbg) — a minimal wallpaper program for
 wlroots-based Wayland compositors (layer-shell). It is the wallpaper backend for
-the dwl session.
+the dwl session and has **no runtime config**: it takes a single image path and
+scales it to fill the output.
 
-wbg has **no runtime config**: it takes a single image path and scales it to
-fill the output. Like dwl, it is built from a **pinned upstream tag** cloned at
-build time into `~/.local/src/wbg` (not committed to this repo); only the binary
-is installed.
-
-## Files
-
-- `build-wbg` — clone/pin wbg (1.3.0), reset to a pristine checkout, `meson` +
-  `ninja` build, install **only the binary** to `/usr/local/bin/wbg`. Installs
-  the official-repo deps via pacman and `tllist` (AUR) via yay.
+wbg is available in the AUR, but that package builds with every image format
+enabled. We only use jpg wallpapers, so `build-wbg` builds it **jpg-only** from a
+pinned upstream tag (1.3.0) — cloned at build time into `~/.local/src/wbg` (not
+committed), only the binary installed. That drops the png/webp/jxl/svg deps and
+leaves libjpeg-turbo as the sole image dep (plus `tllist` from the AUR).
 
 ## Build / apply
 

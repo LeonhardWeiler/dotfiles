@@ -4,20 +4,23 @@
 #
 # Build wbg from source and install the binary to /usr/local/bin/wbg. wbg is the
 # wallpaper program used by the dwl session (set via config/wallpaper/
-# change-wallpaper.sh). It has no runtime config, so - like dwl - the source is
-# cloned at build time from a pinned tag into ~/.local/src (not committed); this
-# script is the "install/update" step for wbg. Only the binary is installed
-# (not `ninja install`), matching the build-dwl convention.
+# change-wallpaper.sh). The AUR package builds with every image format enabled;
+# we only ever use jpg wallpapers, so this script exists to build wbg jpg-only
+# (via meson feature flags below) and thereby drop the png/webp/jxl/svg deps.
+# The source is cloned at build time from a pinned tag into ~/.local/src (not
+# committed); this script is the "install/update" step for wbg. Only the binary
+# is installed (not `ninja install`), matching the build-dwl convention.
 
 set -eu
 
 WBG_VERSION="1.3.0"                # pinned upstream release tag
 SRC_DIR="${WBG_SRC_DIR:-$HOME/.local/src/wbg}"
 
-# Build/runtime dependencies. tllist is dnkl's tiny linked-list header and lives
-# in the AUR, so install it via yay; the rest are official-repo packages. wbg
-# also bundles nanosvg (SVG is off by default), so no nanosvg package is needed.
-REPO_DEPS="pixman libpng libjpeg-turbo libwebp libjxl wayland wayland-protocols meson ninja"
+# Build/runtime dependencies for a jpg-only build. tllist is dnkl's tiny
+# linked-list header and lives in the AUR, so install it via yay; the rest are
+# official-repo packages. Only libjpeg-turbo is pulled in for image decoding -
+# png/webp/jxl are disabled below, and svg (bundled nanosvg) stays off.
+REPO_DEPS="pixman libjpeg-turbo wayland wayland-protocols meson ninja"
 
 if command -v pacman >/dev/null 2>&1; then
 	# shellcheck disable=SC2086 # word-splitting the dep list is intended
@@ -43,8 +46,11 @@ else
 fi
 
 # Configure + build (wipe any previous build dir so this stays idempotent).
+# jpg-only: enable jpeg, disable every other decoder so their deps aren't needed.
 rm -rf "$SRC_DIR/build"
-meson setup --buildtype=release "$SRC_DIR/build" "$SRC_DIR"
+meson setup --buildtype=release \
+	-Djpeg=enabled -Dpng=disabled -Dwebp=disabled -Djxl=disabled -Dsvg=false \
+	"$SRC_DIR/build" "$SRC_DIR"
 ninja -C "$SRC_DIR/build"
 
 # Install the binary only (see header comment).
