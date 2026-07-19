@@ -14,7 +14,7 @@
 /* appearance */
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;
-static const unsigned int borderpx         = 0;  /* window border width */
+static const unsigned int borderpx         = 1;  /* window border width */
 static const float rootcolor[]             = COLOR(0x000000ff);
 static const float bordercolor[]           = COLOR(0x595959ff); /* unfocused border */
 static const float focuscolor[]            = COLOR(0xddddddff); /* focused border */
