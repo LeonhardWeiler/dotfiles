@@ -7,7 +7,9 @@
 # seconds and then quits on stdin EOF. Styling lives in config/wob/wob.ini.
 #
 # Usage: osd <value 0-100> [style]     e.g. osd 40   /   osd 40 muted
-DURATION=0.8
+# Visible time defaults to 0.8s; override with OSD_DURATION (e.g. a longer,
+# more noticeable battery warning).
+DURATION=${OSD_DURATION:-0.8}
 
 command -v wob >/dev/null 2>&1 || {
   echo "osd: 'wob' not found" >&2

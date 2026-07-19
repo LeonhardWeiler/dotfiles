@@ -19,12 +19,9 @@ case "$PERCENT" in
   ''|*[!0-9]*) exit 0 ;;
 esac
 
+# Low battery: flash a red wob bar via the osd helper (no notification daemon).
+# The autostart loop re-runs this every 2 min, so the warning repeats while low.
 if [ "$PERCENT" -lt 10 ]; then
-    notify-send \
-      -h string:x-canonical-private-synchronous:bat \
-      -h int:value:"$PERCENT" \
-      "Battery" "${PERCENT}%" \
-      -t 0 \
-      -u critical
+  OSD_DURATION=3 "$(dirname "$0")/osd" "$PERCENT" critical
 fi
 
