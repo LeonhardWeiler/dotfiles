@@ -1,8 +1,8 @@
 # My Dotfiles
 
-![hyprland screenshot](./images/hyprland-screenshot.png)
+![desktop screenshot](./images/hyprland-screenshot.png)
 
-This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the Hyprland window manager. It is meant to be _practical_, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
+This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the dwl Wayland compositor. It is meant to be _practical_, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
 
 ## Requirements
 
@@ -143,8 +143,8 @@ sudo systemctl status <name>.service
 ### Login-time helpers (no user units)
 
 There are **no systemd user units**. Two things that would otherwise want a
-`.timer`/`.service` run as plain commands from the Hyprland autostart
-(`config/hypr/autostart.lua`), so nothing needs to be enabled:
+`.timer`/`.service` run as plain commands from the dwl autostart
+(`autostart[]` in `config/dwl/config.h`), so nothing needs to be enabled:
 
 - **Battery warning** - a shell loop calls `bat_check` every 2 minutes:
   `while true; do ~/.local/bin/bat_check; sleep 120; done`.
@@ -166,9 +166,10 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | Bash           | `~/.bashrc`                        |
 | btop           | `~/.config/btop`                   |
 | Claude Code    | `~/.claude/{skills,settings.json}` |
+| dwl            | compiled + `/usr/local` session    |
 | foot           | `~/.config/foot`                   |
 | Git            | `~/.config/git`                    |
-| Hyprland       | `~/.config/hypr`                   |
+| hyprlock       | `~/.config/hypr/hyprlock.conf`     |
 | KeePassXC      | `~/.config/keepassxc`              |
 | Ly             | `/etc/ly`                          |
 | Mako           | `~/.config/mako`                   |
@@ -186,7 +187,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 
 ## My Setup
 
-I use Arch GNU/Linux with the Hyprland window manager. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles_sync` (run from the Hyprland autostart) commits and pushes it on login. You can still refresh it manually while installing via the install script.
+I use Arch GNU/Linux with the dwl Wayland compositor. The file `programs.txt` contains a complete list of installed packages. A pacman hook (`/etc/pacman.d/hooks`, installed via the `pacman` package) regenerates it automatically after every `pacman`/`yay` transaction, and `dotfiles_sync` (run from the dwl autostart) commits and pushes it on login. You can still refresh it manually while installing via the install script.
 
 > Note: This setup has been primarily tested on Arch GNU/Linux. Other distributions may require adjustments.
 
@@ -198,7 +199,7 @@ In the interest of honesty: `programs.txt` is not a free-software-only manifest.
 - **`plasticscm-client-gui`** - proprietary version control (Unity/PlasticSCM).
 - **`figma-agent-linux-bin`** - proprietary font helper for Figma.
 
-In addition, **`linux-firmware`** and **`amd-ucode`** ship non-free binary blobs (device firmware / CPU microcode) that the stock `linux` kernel loads. If you want a fully free system, drop the packages above and swap `linux`/`linux-firmware` for `linux-libre`/`linux-libre-firmware` (note: some hardware then loses driver support). The rest of the tooling (Hyprland, foot, Neovim, mpv, KeePassXC, …) is free software.
+In addition, **`linux-firmware`** and **`amd-ucode`** ship non-free binary blobs (device firmware / CPU microcode) that the stock `linux` kernel loads. If you want a fully free system, drop the packages above and swap `linux`/`linux-firmware` for `linux-libre`/`linux-libre-firmware` (note: some hardware then loses driver support). The rest of the tooling (dwl, foot, Neovim, mpv, KeePassXC, …) is free software.
 
 ## Manual system state (not symlinked)
 

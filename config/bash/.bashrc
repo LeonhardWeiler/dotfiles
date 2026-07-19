@@ -31,8 +31,9 @@ export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM=wayland
 export BROWSER=zen-browser
 # Scaling/cursor are deliberately NOT set here, but exclusively as session env in
-# hyprland.conf (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, ...). That way GUI apps
-# render the same regardless of how they were launched (terminal vs. rofi).
+# the dwl session wrapper config/dwl/dwl-run (QT_SCALE_FACTOR, GDK_SCALE,
+# XCURSOR_SIZE, ...). That way GUI apps render the same regardless of how they
+# were launched (terminal vs. rofi).
 
 export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 

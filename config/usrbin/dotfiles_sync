@@ -3,7 +3,7 @@
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
 # dotfiles_sync - updates generated configs, commits changes and pushes them.
-# Run at login from the Hyprland autostart (config/hypr/autostart.lua) and
+# Run at login from the dwl autostart (autostart[] in config/dwl/config.h) and
 # deliberately extensible:
 #   - more generators      -> extend GENERATORS
 #   - more paths to version -> extend PATHS

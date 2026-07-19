@@ -13,7 +13,7 @@
 # power-profiles-daemon = power profiles (laptop).
 #
 # There are currently no `user` units: the battery check and the config sync run
-# as plain commands from the Hyprland autostart (config/hypr/autostart.lua)
+# as plain commands from the dwl autostart (autostart[] in config/dwl/config.h)
 # instead of systemd user units.
 
 system  NetworkManager.service

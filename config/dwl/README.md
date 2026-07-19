@@ -1,8 +1,9 @@
 # dwl
 
 [dwl](https://codeberg.org/dwl/dwl) — a simple, hackable dynamic tiling Wayland
-compositor (dwm for Wayland). Added as a lightweight alternative to Hyprland;
-Hyprland stays installed and untouched, both show up in the ly login menu.
+compositor (dwm for Wayland). Originally added as a lightweight alternative to
+Hyprland; it is now the compositor in use — Hyprland has been removed. Only dwl
+shows up in the ly login menu.
 
 dwl is configured at **compile time** (suckless style): there is no runtime
 config file. The tracked source of truth is **`config.h`**; changing behaviour
@@ -38,7 +39,7 @@ config/dwl/build-dwl
 `./install` (link) sets up the symlinks; `./install --dwl` compiles and installs
 the binary. Log out and pick **dwl** in ly.
 
-## Keybinds (ported from config/hypr/keybinds.lua)
+## Keybinds (ported from the former Hyprland config)
 
 `mainMod` = ALT, same as Hyprland.
 

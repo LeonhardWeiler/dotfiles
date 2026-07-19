@@ -4,7 +4,7 @@ Notes for working on this dotfiles repo. Comment/doc language: **English**.
 
 ## Overview
 
-Personal dotfiles for Arch GNU/Linux with Hyprland (Wayland), managed via a **custom,
+Personal dotfiles for Arch GNU/Linux with dwl (Wayland), managed via a **custom,
 dependency-free symlink script** (`./install`, plain Bash). The repo root
 separates **`config/`** (the config sources, **flat**: `config/<name>/…`) from
 **`setup/`** (deployment machinery: link map, package manifest, bootstrap
@@ -77,12 +77,12 @@ scripts). The source->target mapping is stated explicitly in
 ## Structure
 
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
-  `dwl`, `foot`, `git`, `hypr`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
+  `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `vconsole`, `wallpaper`.
-  Whole directories are linked as a dir symlink (foot, hypr, nvim, rofi,
+  Whole directories are linked as a dir symlink (foot, nvim, rofi,
   mako, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
-  `claude` and `/etc` targets deliberately **only the single file**
+  `claude`/`hyprlock` and `/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
@@ -107,9 +107,9 @@ scripts). The source->target mapping is stated explicitly in
 - **System services**: activated by the `install` script after linking via
   `systemctl enable` - the unit lists live in `setup/services.txt` (loaded into
   `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the
-  battery-level check and the config sync run as plain commands from the Hyprland
-  autostart (`config/hypr/autostart.lua`) instead of systemd user units (a `while`
-  loop calling `bat_check` every 2 min, and `dotfiles_sync` once on login).
+  battery-level check and the config sync run as plain commands from the dwl
+  autostart (`autostart[]` in `config/dwl/config.h`) instead of systemd user units
+  (a `while` loop calling `bat_check` every 2 min, and `dotfiles_sync` once on login).
   Deliberately `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
@@ -128,7 +128,7 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/wallpaper/`** = the picture set (`pictures/`, linked as a dir symlink
   to `~/.local/share/wallpapers`) plus `change-wallpaper.sh` (linked to
   `~/.local/bin/change-wallpaper`, picks a random wallpaper via swaybg; called
-  from `config/hypr/autostart.lua`). The script defaults to
+  from the dwl autostart in `config/dwl/config.h`). The script defaults to
   `~/.local/share/wallpapers`, so both link targets line up.
 - **`nvim/`** has its **own `CLAUDE.md`** (`config/nvim/CLAUDE.md`) with the
   nvim-specific verification commands - for nvim changes look there.
@@ -143,24 +143,15 @@ scripts). The source->target mapping is stated explicitly in
   `config/usrbin/*`.
 - **`AGENT/` stays in the root** and outside the link logic.
 - **Scaling/cursor env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) are set
-  exclusively in `config/hypr/env.lua` (via `hl.env(...)`), **not** in `.bashrc`
+  exclusively in the dwl session wrapper `config/dwl/dwl-run`, **not** in `.bashrc`
   - do not duplicate them (otherwise apps render differently depending on how
-  they were launched). (`hyprland.conf` is only the gitignored, auto-generated
-  stub.)
-- Hyprland config: since 0.55 **hyprlang (`.conf`) is deprecated** in favour of
-  the **Lua config** (API global `hl`, loaded from `~/.config/hypr/hyprland.lua`,
-  source under `config/hypr/`). `hyprland.lua` is only the **entry point** and
-  loads the thematic modules via `require()` (`env`, `monitors`, `animations`,
-  `devices`, `keybinds`, `looknfeel`, `autostart`) plus the central
-  `programs.lua` (program names). Splitting pattern per the wiki
-  (`require("module")`, flat in the hypr directory). On changes, maintain the
-  matching module and check it with `luac -p <file>.lua`; format with **stylua**
-  (tabs). `hyprland.conf` is **auto-generated** by Hyprland as a stub when Lua is
-  used and is therefore **gitignored** - do not edit it. The old hyprlang config
-  still lives in the git history or locally as `hyprland.conf.bak`. The conversion
-  was done with `hyprlang2lua`.
-- **dwl** (`config/dwl/`) is an alternative Wayland compositor added alongside
-  Hyprland (both stay installed; ly lists both). Unlike everything else here it
+  they were launched).
+- **hyprlock** (`config/hyprlock/hyprlock.conf`) is kept as the dwl screen locker
+  (dwl's `lockcmd` in `config.h`). It reads `~/.config/hypr/hyprlock.conf`, so the
+  file is linked there per-file (the `~/.config/hypr` directory itself stays real -
+  Hyprland and its `config/hypr` Lua config have been removed).
+- **dwl** (`config/dwl/`) is the Wayland compositor (it replaced Hyprland, which
+  has been removed). Unlike everything else here it
   is **configured at compile time**: `config/dwl/config.h` is the source of truth
   and is **not** symlinked - it is compiled into the binary. Editing it means
   rebuilding (`./install --dwl`). Only the session glue is symlinked
