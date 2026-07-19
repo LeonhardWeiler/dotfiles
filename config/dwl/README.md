@@ -20,10 +20,12 @@ means editing it and rebuilding.
 - `patches/gaps.patch` — adds inner/outer gaps to the `tile` layout
   (`gappih/gappiv/gappoh/gappov` in `config.h`), matching the previous Hyprland
   look (inner 3px, outer 6px).
-- `dwl-run` — session entry point (env vars from Hyprland's `env.lua`, then
-  `exec dwl -s dwl-autostart`). Symlinked to `/usr/local/bin/dwl-run`.
-- `dwl-autostart` — startup commands (mako, wallpaper, sync, battery poll),
-  mirrors Hyprland's `autostart.lua`. Symlinked to `/usr/local/bin/dwl-autostart`.
+- `dwl-run` — session entry point: exports the scaling/cursor env, then
+  `exec dwl`. Symlinked to `/usr/local/bin/dwl-run`. (XDG_CURRENT_DESKTOP and the
+  Qt platform theme come from `~/.bash_profile`, sourced by ly's login shell.)
+- Startup programs (mako, wallpaper, sync, battery poll) are spawned by dwl
+  itself via the `autostart[]` array in `config.h` (enabled by
+  `patches/autostart.patch`) — there is no separate autostart script.
 - `dwl.desktop` — the ly/wayland session entry (`Exec=dwl-run`). Symlinked to
   `/usr/local/share/wayland-sessions/dwl.desktop` (ly reads that path via the
   extra `waylandsessions` line in `config/ly/config.ini`).
