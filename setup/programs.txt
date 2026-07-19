@@ -16,10 +16,9 @@ fio 3.42-1
 foot 1.27.0-1
 git 2.55.0-1
 glmark2 2023.01-2
+grim 1.5.0-2
 hdparm 9.65-3
-hyprland 0.55.4-1
 hyprlock 0.9.5-4
-hyprshot 1.3.0-4
 iperf3 3.21-1
 iptables 1:1.8.13-1
 jq 1.8.2-1
@@ -56,6 +55,7 @@ rofi 2.0.0-1
 rsync 3.4.4-1
 rt-tests 2.10-1
 signal-desktop 8.19.0-1
+slurp 1.5.0-2
 stress-ng 0.21.04-2
 swaybg 1.2.2-1
 swtpm 0.10.1-2
@@ -75,7 +75,6 @@ wireplumber 0.5.15-1
 wl-clipboard 1:2.3.0-1
 wlr-randr 0.5.0-1
 wlroots0.19 0.19.3-1
-xdg-desktop-portal-hyprland 1.3.12-2
 yay 13.0.1-1
 zen-browser-bin 1.21.8b-1
 zip 3.0-13
