@@ -3,7 +3,7 @@
 # (mirrors linux.preset), staying correct across custom-kernel rebuilds.
 
 #ALL_config="/etc/mkinitcpio.conf"
-ALL_kver="7.1.3-arch2-2"
+ALL_kver="/efi/vmlinuz-custom"
 
 PRESETS=('default')
 
