@@ -28,6 +28,21 @@ if command -v pacman >/dev/null 2>&1 && ! pacman -Q wlroots0.19 >/dev/null 2>&1;
 	sudo pacman -S --needed --noconfirm wlroots0.19
 fi
 
+# XWayland support (see the make invocation below). Needs the xcb build libs
+# (xcb + xcb-icccm, the latter from xcb-util-wm) and, at runtime, the Xwayland
+# server itself (xorg-xwayland) which wlroots spawns lazily for X11 clients.
+if command -v pacman >/dev/null 2>&1; then
+	xdeps=""
+	pacman -Q libxcb        >/dev/null 2>&1 || xdeps="$xdeps libxcb"
+	pacman -Q xcb-util-wm   >/dev/null 2>&1 || xdeps="$xdeps xcb-util-wm"
+	pacman -Q xorg-xwayland >/dev/null 2>&1 || xdeps="$xdeps xorg-xwayland"
+	if [ -n "$xdeps" ]; then
+		echo "build-dwl: installing XWayland deps:$xdeps ..."
+		# shellcheck disable=SC2086
+		sudo pacman -S --needed --noconfirm $xdeps
+	fi
+fi
+
 # Clone (pinned) or reuse an existing checkout, always reset to a pristine
 # tag so patches apply idempotently.
 if [ -d "$SRC_DIR/.git" ]; then
@@ -48,10 +63,13 @@ for patch in "$SCRIPT_DIR"/patches/*.patch; do
 	git -C "$SRC_DIR" apply "$patch"
 done
 
-# Drop in the tracked config and build.
+# Drop in the tracked config and build. XWayland is enabled here (upstream
+# config.mk ships it off): -DXWAYLAND compiles the X11 support in, and the xcb
+# libs are added to the pkg-config PKGS via XLIBS. Passed on the command line so
+# no config.mk patch is needed - make overrides the empty config.mk assignments.
 cp -f "$CONFIG_H" "$SRC_DIR/config.h"
 make -C "$SRC_DIR" clean >/dev/null 2>&1 || true
-make -C "$SRC_DIR"
+make -C "$SRC_DIR" XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm"
 
 # Install the binary only (see header comment).
 sudo install -Dm755 "$SRC_DIR/dwl" /usr/local/bin/dwl
