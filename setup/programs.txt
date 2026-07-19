@@ -64,9 +64,9 @@ thunderbird 152.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
 ufw 0.36.2-7
-unityhub 3.19.1-1
+unityhub 3.19.5-1
 unzip 6.0-23
-virt-manager 5.1.0-3
+virt-manager 5.1.0-4
 vulkan-radeon 1:26.1.5-1
 vulkan-tools 1.4.350.1-1
 wayland 1.25.0-1
