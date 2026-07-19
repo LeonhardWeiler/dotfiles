@@ -37,7 +37,6 @@ static int log_level = WLR_ERROR;
  
 static const char *const autostart[] = {
   "mako", NULL,
-  "gsettings", "set", "org.gnome.desktop.interface", "color-scheme", "prefer-dark", NULL,
   "sh", "-c", "$HOME/.local/bin/change-wallpaper", NULL,
   "sh", "-c", "$HOME/.local/bin/dotfiles_sync", NULL,
   "sh", "-c", "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done", NULL,
