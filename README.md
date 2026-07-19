@@ -1,6 +1,6 @@
 # My Dotfiles
 
-![desktop screenshot](./images/hyprland-screenshot.png)
+![desktop screenshot](./images/desktop-screenshot.png)
 
 This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the dwl Wayland compositor. It is meant to be _practical_, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
 

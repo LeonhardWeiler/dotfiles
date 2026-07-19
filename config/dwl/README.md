@@ -1,9 +1,7 @@
 # dwl
 
 [dwl](https://codeberg.org/dwl/dwl) — a simple, hackable dynamic tiling Wayland
-compositor (dwm for Wayland). Originally added as a lightweight alternative to
-Hyprland; it is now the compositor in use — Hyprland has been removed. Only dwl
-shows up in the ly login menu.
+compositor (dwm for Wayland).
 
 dwl is configured at **compile time** (suckless style): there is no runtime
 config file. The tracked source of truth is **`config.h`**; changing behaviour
@@ -18,8 +16,7 @@ means editing it and rebuilding.
   `/usr/local/bin/dwl`. Deliberately installs **only the binary** (not
   `make install`, which would overwrite the session file below).
 - `patches/gaps.patch` — adds inner/outer gaps to the `tile` layout
-  (`gappih/gappiv/gappoh/gappov` in `config.h`), matching the previous Hyprland
-  look (inner 3px, outer 6px).
+  (`gappih/gappiv/gappoh/gappov` in `config.h`)
 - `dwl-run` — session entry point: exports the scaling/cursor env, then
   `exec dwl`. Symlinked to `/usr/local/bin/dwl-run`. (XDG_CURRENT_DESKTOP and the
   Qt platform theme come from `~/.bash_profile`, sourced by ly's login shell.)
@@ -41,9 +38,9 @@ config/dwl/build-dwl
 `./install` (link) sets up the symlinks; `./install --dwl` compiles and installs
 the binary. Log out and pick **dwl** in ly.
 
-## Keybinds (ported from the former Hyprland config)
+## Keybinds
 
-`mainMod` = ALT, same as Hyprland.
+`mainMod` = ALT
 
 | Action                        | dwl bind                  |
 | ----------------------------- | ------------------------- |
@@ -65,32 +62,3 @@ the binary. Log out and pick **dwl** in ly.
 | Brightness up/down            | ALT+F6 / ALT+F5           |
 | Screenshot region → clipboard | Print                     |
 | Move / resize with mouse      | ALT+drag / ALT+right-drag |
-
-## Not reproducible 1:1 (dwl vs Hyprland)
-
-dwl is a minimal tiling compositor; a few Hyprland features have no equivalent:
-
-1. **Pixel-exact resize/move of tiled windows** — Hyprland's `ALT+SHIFT+hjkl`
-   (resize ±20px) and `ALT+CTRL+SHIFT+hjkl` (move ±20px) don't map onto tiling.
-   Only the **horizontal** resize is kept, as master-width (`ALT+SHIFT+H/L` →
-   setmfact). Vertical resize and tiled moves are dropped; floating windows can
-   still be moved/resized with the mouse (ALT+drag).
-2. **"maximized" vs "fullscreen"** — dwl has only one fullscreen mode, so both
-   `ALT+M` and `ALT+Z` map to `togglefullscreen`.
-3. **Workspaces → tags** — dwl uses tags, not workspaces. ALT+1..6 / ALT+SHIFT+1..6
-   behave like workspace switch/move, but tags are a looser model (a window can
-   carry several tags; several tags can be viewed at once).
-4. **Screenshot tool** — `hyprshot` is Hyprland-only; replaced by
-   `grim -g "$(slurp)" - | wl-copy` (grim/slurp/wl-clipboard).
-5. **Media keys while locked** — Hyprland bound them with `locked=true`. dwl does
-   not dispatch keybinds while the session is locked, so volume/brightness keys
-   don't work on the lock screen.
-6. **Monitor position** — Hyprland's explicit `HDMI-A-1` at `2560x0` is not copied
-   verbatim (dwl x/y are in a different, scaled coordinate space); the external
-   output auto-arranges to the right of eDP-1. Set fixed `x/y` in `config.h` if
-   needed.
-7. **Animations / rounding / blur** — none in dwl (Hyprland had them disabled
-   anyway, so no visible change).
-8. **hyprlock** — reused as the locker (it speaks the standard ext-session-lock
-   protocol, so it should work under dwl); if it ever misbehaves, swap `lockcmd`
-   in `config.h` for e.g. `swaylock`.

@@ -34,12 +34,12 @@ scripts). The source->target mapping is stated explicitly in
   those). Registry in the script: `register_step <name> <fn> "<description>"`,
   `DEFAULT_STEPS` = menu preselection:
   - `--programs` - install packages from `programs.txt` (delegates to
-    `setup/install-programs`, bootstraps yay). *Default.*
-  - `--systemd` - activate user/system units (`reactivate_units`). *Default.*
+    `setup/install-programs`, bootstraps yay). _Default._
+  - `--systemd` - activate user/system units (`reactivate_units`). _Default._
   - `--groups` - add the user to the groups from `setup/groups.txt` (loaded into
     `GROUP_LIST`) via `usermod -aG`.
   - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).
-  - `--locale` - `locale-gen`. *Default.*
+  - `--locale` - `locale-gen`. _Default._
   - `--ly-dropin` - deploy the ly@tty2 drop-ins as **real copies** to `/etc`.
   - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
@@ -73,6 +73,11 @@ scripts). The source->target mapping is stated explicitly in
   <script>`. Most scripts are POSIX `#!/bin/sh`; only `install` and
   `config/usrbin/update_programs_list` are intentionally `bash` (associative
   arrays / process substitution) - keep new bashisms out of the `sh` scripts.
+  
+  
+  
+  
+
 
 ## Structure
 
@@ -145,28 +150,25 @@ scripts). The source->target mapping is stated explicitly in
 - **Scaling/cursor env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) are set
   exclusively in the dwl session wrapper `config/dwl/dwl-run`, **not** in `.bashrc`
   - do not duplicate them (otherwise apps render differently depending on how
-  they were launched).
+    they were launched).
 - **hyprlock** (`config/hyprlock/hyprlock.conf`) is kept as the dwl screen locker
   (dwl's `lockcmd` in `config.h`). It reads `~/.config/hypr/hyprlock.conf`, so the
-  file is linked there per-file (the `~/.config/hypr` directory itself stays real -
-  Hyprland and its `config/hypr` Lua config have been removed).
-- **dwl** (`config/dwl/`) is the Wayland compositor (it replaced Hyprland, which
-  has been removed). Unlike everything else here it
+  file is linked there per-file
+- **dwl** (`config/dwl/`) is the Wayland compositor. Unlike everything else here it
   is **configured at compile time**: `config/dwl/config.h` is the source of truth
   and is **not** symlinked - it is compiled into the binary. Editing it means
   rebuilding (`./install --dwl`). Only the session glue is symlinked
-  (`dwl.desktop`, `dwl-run`, `dwl-autostart` -> `/usr/local/…`). ly finds the
-  session via the extra `waylandsessions` path in `config/ly/config.ini`. Gaps
-  (like Hyprland's) come from `config/dwl/patches/gaps.patch`, applied by
-  `build-dwl` on top of the pinned checkout. See `config/dwl/README.md` for the
-  Hyprland->dwl port and what could not be reproduced 1:1 (pixel-exact tiled
-  resize/move, workspaces vs tags, …).
+  (`dwl.desktop`, `dwl-run` -> `/usr/local/…`); startup programs are spawned by
+  dwl itself (`autostart[]` in `config.h`, via `patches/autostart.patch`). ly finds
+  the session via the extra `waylandsessions` path in `config/ly/config.ini`. Gaps
+  come from `config/dwl/patches/gaps.patch`, applied by
+  `build-dwl` on top of the pinned checkout.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).
 - Scripts carry a two-line license header right after the shebang:
   `# SPDX-License-Identifier: ISC` + a `# Copyright (C) <year> The
-  leonhardweiler/dotfiles Authors` line (the repo is ISC, see `LICENSE`). Add it to any new script so the
+leonhardweiler/dotfiles Authors` line (the repo is ISC, see `LICENSE`). Add it to any new script so the
   license travels with a single copied file. Third-party scripts (e.g.
   `config/mpv/scripts/thumbfast.lua`) keep their own header.
 - Two health/workflow skills write into `AGENT/`: `review-and-update-report`
