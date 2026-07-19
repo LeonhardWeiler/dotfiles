@@ -165,7 +165,6 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | hyprlock       | `~/.config/hypr/hyprlock.conf`     |
 | KeePassXC      | `~/.config/keepassxc`              |
 | Ly             | `/etc/ly`                          |
-| Mako           | `~/.config/mako`                   |
 | MIME defaults  | `~/.config/mimeapps.list`          |
 | mkinitcpio     | `/etc/mkinitcpio.conf`             |
 | MPV            | `~/.config/mpv`                    |

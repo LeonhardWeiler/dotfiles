@@ -20,7 +20,7 @@ means editing it and rebuilding.
 - `dwl-run` — session entry point: exports the scaling/cursor env, then
   `exec dwl`. Symlinked to `/usr/local/bin/dwl-run`. (XDG_CURRENT_DESKTOP and the
   Qt platform theme come from `~/.bash_profile`, sourced by ly's login shell.)
-- Startup programs (mako, wallpaper, sync, battery poll) are spawned by dwl
+- Startup programs (currently just the battery poll) are spawned by dwl
   itself via the `autostart[]` array in `config.h` (enabled by
   `patches/autostart.patch`) — there is no separate autostart script.
 - `dwl.desktop` — the ly/wayland session entry (`Exec=dwl-run`). Symlinked to

@@ -96,11 +96,11 @@ scripts). The source->target mapping is stated explicitly in
 ## Structure
 
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
-  `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `ly`, `mako`, `mimeapps`,
+  `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `ly`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `vconsole`, `wallpaper`, `wbg`, `wob`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
-  mako, wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
+  wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude`/`hyprlock` and `/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
