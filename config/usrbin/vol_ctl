@@ -40,6 +40,12 @@ IS_MUTED=$(pactl get-sink-mute "$SINK" | awk '{print $2}')
 VOLUME_RAW=$(pactl get-sink-volume "$SINK" | grep -oP '\d+%' | head -n1)
 VOLUME=${VOLUME_RAW%\%}
 
+# Never exceed 100% - clamp back down if an "up" pushed past it.
+if [ "$VOLUME" -gt 100 ]; then
+  pactl set-sink-volume "$SINK" 100%
+  VOLUME=100
+fi
+
 if [ "$IS_MUTED" = "yes" ]; then
   "$OSD" "$VOLUME" muted
 else

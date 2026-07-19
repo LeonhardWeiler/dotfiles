@@ -36,9 +36,6 @@ static const unsigned int gappov = 6;  /* outer vertical */
 static int log_level = WLR_ERROR;
  
 static const char *const autostart[] = {
-  /* No notification daemon runs here. The volume/brightness OSD is drawn
-     on demand by ~/.local/bin/osd (ephemeral wob) straight from the keybinds
-     (vol_ctl/bright_ctl), so nothing needs to sit in the background. */
   /* wallpaper disabled - re-enable this line (and the links.conf wallpaper
      lines) plus `./install --wbg` to bring wbg back. */
   /* "sh", "-c", "$HOME/.local/bin/change-wallpaper", NULL, */

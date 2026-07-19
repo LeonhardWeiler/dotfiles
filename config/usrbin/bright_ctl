@@ -3,6 +3,7 @@
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 
 STEP=5
+MIN=5   # floor: never go fully dark, and keep the bottom steps distinguishable
 
 # Check required commands (degrade quietly instead of failing cryptically).
 # The OSD itself is drawn by the sibling `osd` script (ephemeral wob, no daemon).
@@ -14,22 +15,28 @@ for cmd in brightnessctl; do
   }
 done
 
+# Step in whole percentage points on top of the current level (rounded), then
+# set an absolute value. Relative `set 5%-` bottoms out at 0 and leaves several
+# low steps looking identical (a 0-4% bar is visually empty); absolute steps
+# with a MIN floor keep every step distinct and never black out the screen.
+MAX=$(brightnessctl max)
+CURRENT=$(brightnessctl get)
+PERCENT=$(( (CURRENT * 100 + MAX / 2) / MAX ))
+
 case "$1" in
-  up)
-    brightnessctl set +${STEP}%
-    ;;
-  down)
-    brightnessctl set ${STEP}%-
-    ;;
+  up)   PERCENT=$((PERCENT + STEP)) ;;
+  down) PERCENT=$((PERCENT - STEP)) ;;
   *)
     echo "Usage: $0 {up|down}"
     exit 1
     ;;
 esac
 
-CURRENT=$(brightnessctl get)
-MAX=$(brightnessctl max)
-PERCENT=$((CURRENT * 100 / MAX))
+# Clamp to [MIN, 100].
+[ "$PERCENT" -gt 100 ]   && PERCENT=100
+[ "$PERCENT" -lt "$MIN" ] && PERCENT=$MIN
+
+brightnessctl set "${PERCENT}%" >/dev/null
 
 "$OSD" "$PERCENT"
 
