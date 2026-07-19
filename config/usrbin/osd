@@ -1,0 +1,26 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# osd - show an ephemeral wob overlay bar and exit. No notification daemon:
+# each call pipes one value into a fresh wob, which draws the bar for $DURATION
+# seconds and then quits on stdin EOF. Styling lives in config/wob/wob.ini.
+#
+# Usage: osd <value 0-100> [style]     e.g. osd 40   /   osd 40 muted
+DURATION=0.8
+
+command -v wob >/dev/null 2>&1 || {
+  echo "osd: 'wob' not found" >&2
+  exit 1
+}
+
+[ -n "$1" ] || {
+  echo "Usage: osd <value 0-100> [style]" >&2
+  exit 1
+}
+
+# Keep stdin open for DURATION so wob shows the bar that long; the closing EOF
+# then makes wob exit. wob treats that EOF as an error (stderr line + exit 1),
+# but here it is the expected way to stop it, so its status carries no signal -
+# discard stderr and report success.
+{ printf '%s\n' "$1${2:+ $2}"; sleep "$DURATION"; } | wob 2>/dev/null || true

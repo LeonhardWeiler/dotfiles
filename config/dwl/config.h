@@ -36,14 +36,9 @@ static const unsigned int gappov = 6;  /* outer vertical */
 static int log_level = WLR_ERROR;
  
 static const char *const autostart[] = {
-  /* mako is NOT started here: it ships a D-Bus activation file
-     (org.freedesktop.Notifications -> mako.service), so dbus-broker starts it
-     on demand the first time notify-send fires (vol_ctl/bright_ctl OSD). That
-     means it only runs once you actually change volume/brightness, never on an
-     idle login. For the on-demand start to reach the Wayland display, push
-     WAYLAND_DISPLAY (set by dwl just before this runs) into the systemd/D-Bus
-     activation environment. */
-  "dbus-update-activation-environment", "--systemd", "WAYLAND_DISPLAY", "XDG_CURRENT_DESKTOP", NULL,
+  /* No notification daemon runs here. The volume/brightness OSD is drawn
+     on demand by ~/.local/bin/osd (ephemeral wob) straight from the keybinds
+     (vol_ctl/bright_ctl), so nothing needs to sit in the background. */
   /* wallpaper disabled - re-enable this line (and the links.conf wallpaper
      lines) plus `./install --wbg` to bring wbg back. */
   /* "sh", "-c", "$HOME/.local/bin/change-wallpaper", NULL, */
@@ -102,8 +97,7 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 /* main modifier */
 #define MODKEY WLR_MODIFIER_ALT
 
-/* Tag keys: ALT+n = view tag n, ALT+SHIFT+n = move window to tag n; CTRL /
- * CTRL+SHIFT add the toggleview / toggletag variants. */
+/* Tag keys: ALT+n = view tag n, ALT+SHIFT+n = move window to tag n */
 #define TAGKEYS(KEY,SKEY,TAG) \
 	{ MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
 	{ MODKEY|WLR_MODIFIER_SHIFT, SKEY,           tag,             {.ui = 1 << TAG} }
@@ -140,7 +134,6 @@ static const Key keys[] = {
 
 	/* Fullscreen / master swap */
 	{ MODKEY,                       XKB_KEY_m,       togglefullscreen, {0} },
-	{ MODKEY,                       XKB_KEY_z,       togglefullscreen, {0} },
 	{ MODKEY,                       XKB_KEY_Return,  zoom,             {0} },
 
 	/* Tags 1-6 */

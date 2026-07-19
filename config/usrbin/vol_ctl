@@ -5,7 +5,9 @@
 STEP=5
 
 # Check required commands (degrade quietly instead of failing cryptically).
-for cmd in pactl notify-send; do
+# The OSD itself is drawn by the sibling `osd` script (ephemeral wob, no daemon).
+OSD="$(dirname "$0")/osd"
+for cmd in pactl; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "vol_ctl: '$cmd' not found" >&2
     exit 1
@@ -39,13 +41,8 @@ VOLUME_RAW=$(pactl get-sink-volume "$SINK" | grep -oP '\d+%' | head -n1)
 VOLUME=${VOLUME_RAW%\%}
 
 if [ "$IS_MUTED" = "yes" ]; then
-  notify-send \
-    -h string:x-canonical-private-synchronous:volume \
-    "Volume" "Muted"
+  "$OSD" "$VOLUME" muted
 else
-  notify-send \
-    -h string:x-canonical-private-synchronous:volume \
-    -h int:value:$VOLUME \
-    "Volume" "${VOLUME}%"
+  "$OSD" "$VOLUME"
 fi
 

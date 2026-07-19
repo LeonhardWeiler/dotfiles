@@ -170,6 +170,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | mkinitcpio     | `/etc/mkinitcpio.conf`             |
 | MPV            | `~/.config/mpv`                    |
 | Neovim         | `~/.config/nvim`                   |
+| wob (OSD)      | `~/.config/wob`                    |
 | Pacman hooks   | `/etc/pacman.d/hooks`              |
 | PipeWire       | `~/.config/pipewire`               |
 | qt5ct          | `~/.config/qt5ct`                  |

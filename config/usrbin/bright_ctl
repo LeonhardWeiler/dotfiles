@@ -5,7 +5,9 @@
 STEP=5
 
 # Check required commands (degrade quietly instead of failing cryptically).
-for cmd in brightnessctl notify-send; do
+# The OSD itself is drawn by the sibling `osd` script (ephemeral wob, no daemon).
+OSD="$(dirname "$0")/osd"
+for cmd in brightnessctl; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "bright_ctl: '$cmd' not found" >&2
     exit 1
@@ -29,8 +31,5 @@ CURRENT=$(brightnessctl get)
 MAX=$(brightnessctl max)
 PERCENT=$((CURRENT * 100 / MAX))
 
-notify-send \
-  -h string:x-canonical-private-synchronous:brightness \
-  -h int:value:$PERCENT \
-  "Brightness" "${PERCENT}%"
+"$OSD" "$PERCENT"
 
