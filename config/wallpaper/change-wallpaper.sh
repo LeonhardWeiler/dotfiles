@@ -37,9 +37,11 @@ if [ -z "$WALLPAPER" ]; then
   exit 1
 fi
 
-# Stop old wbg instances, then set the wallpaper (wbg scales to fill the output).
+# Stop old wbg instances, then set the wallpaper. -s scales the image uniformly
+# to cover the whole output and crops the overflow (fill), instead of the default
+# fit that letterboxes with black bars on mismatched aspect ratios.
 pkill wbg
-wbg "$WALLPAPER" &
+wbg -s "$WALLPAPER" &
 
 # Remember the current wallpaper as the previous one.
 echo "$WALLPAPER" > "$PREV_WALLPAPER_FILE"
