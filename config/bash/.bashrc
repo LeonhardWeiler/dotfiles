@@ -41,6 +41,8 @@ alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
 alias arst='sudo shutdown now'
 alias todo='nvim ./AGENT/TODO.md'
+# Start Claude Code with auto-accept (auto mode) enabled by default.
+alias claude='claude --permission-mode acceptEdits'
 
 export NIX_CONFIG="experimental-features = nix-command flakes"
 # Only source it if Nix is installed (otherwise an error in every shell without Nix).
