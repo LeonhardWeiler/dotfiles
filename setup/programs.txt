@@ -60,7 +60,6 @@ sysbench 1.0.20-2
 thunderbird 152.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
-ufw 0.36.2-7
 unityhub 3.19.5-1
 unzip 6.0-23
 virt-manager 5.1.0-4
@@ -68,6 +67,7 @@ vulkan-radeon 1:26.1.5-1
 vulkan-tools 1.4.350.1-1
 wayland 1.25.0-1
 wayland-protocols 1.49-1
+wireless-regdb 2026.05.30-1
 wireplumber 0.5.15-1
 wl-clipboard 1:2.3.0-1
 wlr-randr 0.5.0-1
