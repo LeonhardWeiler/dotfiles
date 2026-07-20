@@ -122,17 +122,40 @@ sudo systemctl enable --now NetworkManager.service
 sudo systemctl enable --now ly@tty2.service
 sudo systemctl enable --now dnsmasq.service
 sudo systemctl enable --now sshd.service
-sudo systemctl enable --now libvirtd.service
 sudo systemctl enable --now legion-conservation.service
 sudo systemctl enable --now iptables.service
 sudo systemctl enable --now power-profiles-daemon.service
 sudo systemctl enable --now systemd-timesyncd.service
 sudo systemctl enable --now fstrim.timer
+# libvirt: modular, socket-activated daemons instead of monolithic libvirtd
+sudo systemctl enable --now virtqemud.socket
+sudo systemctl enable --now virtnetworkd.socket
+sudo systemctl enable --now virtstoraged.socket
 ```
 
 > Note: `swtpm` (socket-activated) and PipeWire/WirePlumber (user-scope, enabled
 > per-user by package presets) have no enable-able system `*.service` and are
 > therefore **not** in the list.
+
+### Disabled at boot (startup-time trims)
+
+These are preset-enabled by their packages but deliberately turned **off** by
+`./install` (the `disable` entries in `setup/services.txt`) to shave boot time -
+they sit on / needlessly delay the critical path. To do it by hand:
+
+```bash
+sudo systemctl disable libvirtd.service            # ~1.8s on the critical path
+sudo systemctl disable NetworkManager-wait-online.service
+```
+
+- **`libvirtd.service`** - the old *monolithic* libvirt daemon. It is replaced by
+  the socket-activated *modular* daemons (`virtqemud`/`virtnetworkd`/`virtstoraged`
+  above): they start on the first `qemu:///system` connection, so VMs still work
+  exactly as before - libvirt just isn't started at boot anymore. Verify with
+  `sudo virsh --connect qemu:///system list --all`.
+- **`NetworkManager-wait-online.service`** - blocks `network-online.target` until
+  a link is up; pointless on a laptop where NetworkManager brings the link up
+  asynchronously after login.
 
 Check status:
 
@@ -222,6 +245,19 @@ commands are kept here as reference and for doing them by hand. Checklist:
 - **Not tracked on purpose** (machine-specific / secrets): `/etc/hostname`,
   `/etc/fstab` (UUIDs), and NetworkManager Wi-Fi profiles
   (`/etc/NetworkManager/system-connections/*.nmconnection`, contain PSKs).
+- **ESP on-demand mount** (`/etc/fstab`, machine-specific so by hand): the EFI
+  partition does not need to be mounted at boot - only `bootctl` and kernel
+  updates touch it. Mounting it lazily via `x-systemd.automount` keeps
+  `efi.mount` (and its `systemd-fsck`) off the boot path; it is mounted
+  transparently on first access and unmounted again after the idle timeout. The
+  `/efi` line reads:
+
+  ```
+  UUID=1477-6A85  /efi  vfat  noauto,x-systemd.automount,x-systemd.idle-timeout=2min,rw,relatime,fmask=0077,dmask=0077,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro  0 0
+  ```
+
+  Apply without a reboot: `sudo systemctl daemon-reload && sudo umount /efi &&
+  sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
 - **ly@tty2 drop-ins** (`./install --ly-dropin`;
   `/etc/systemd/system/ly@tty2.service.d/`): the files in
   `config/systemd-system/ly@tty2.service.d/` (`wait-home.conf`, `keymap.conf`)

@@ -69,8 +69,10 @@ info() { printf '%sℹ %s%s\n'    "$C_INFO" "$*"     "$C_RST"; }
 usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
 
 # ── Data lists (kept out of the script, in setup/*.txt) ──────────────────────
-# systemd units, split by scope (`user`/`system`) -> USER_UNITS / SYSTEM_UNITS.
-USER_UNITS=(); SYSTEM_UNITS=()
+# systemd units, split by scope (`user`/`system`/`disable`) -> USER_UNITS /
+# SYSTEM_UNITS / DISABLE_UNITS. `disable` = a preset-enabled system unit we want
+# OFF at boot (e.g. NetworkManager-wait-online, monolithic libvirtd).
+USER_UNITS=(); SYSTEM_UNITS=(); DISABLE_UNITS=()
 read_services() {
   local file="$1" line scope unit
   [ -f "$file" ] || { warn "services list missing: $file"; return 0; }
@@ -78,9 +80,10 @@ read_services() {
     line="${line%%#*}"; read -r scope unit _ <<<"$line" || true
     [ -z "${scope:-}" ] && continue
     case "$scope" in
-      user)   [ -n "${unit:-}" ] && USER_UNITS+=("$unit") ;;
-      system) [ -n "${unit:-}" ] && SYSTEM_UNITS+=("$unit") ;;
-      *) warn "$file: unknown scope '$scope' (expected user|system)" ;;
+      user)    [ -n "${unit:-}" ] && USER_UNITS+=("$unit") ;;
+      system)  [ -n "${unit:-}" ] && SYSTEM_UNITS+=("$unit") ;;
+      disable) [ -n "${unit:-}" ] && DISABLE_UNITS+=("$unit") ;;
+      *) warn "$file: unknown scope '$scope' (expected user|system|disable)" ;;
     esac
   done < "$file"
 }
@@ -330,6 +333,13 @@ reactivate_units() {
   for u in "${SYSTEM_UNITS[@]}"; do
     if [ "$DRYRUN" = 1 ]; then run 1 systemctl enable "$u"
     else run 1 systemctl enable "$u" >/dev/null 2>&1 || warn "system unit not activated: $u"; fi
+  done
+  # Preset-enabled units we want OFF at boot (shave startup time). `disable` is
+  # idempotent; a unit that does not exist just warns.
+  [ ${#DISABLE_UNITS[@]} -gt 0 ] && info "Disabling boot-time system units (sudo)"
+  for u in "${DISABLE_UNITS[@]}"; do
+    if [ "$DRYRUN" = 1 ]; then run 1 systemctl disable "$u"
+    else run 1 systemctl disable "$u" >/dev/null 2>&1 || warn "system unit not disabled: $u"; fi
   done
 }
 register_step systemd reactivate_units "Activate systemd units (enable)"

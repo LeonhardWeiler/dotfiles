@@ -2,8 +2,9 @@
 # (self-healing), and deactivated by `--remove-systemd`.
 #
 # Format: one unit per line, two columns `<scope> <unit>`.
-#   scope = user    -> `systemctl --user enable <unit>`
-#   scope = system  -> `sudo systemctl enable <unit>`
+#   scope = user     -> `systemctl --user enable <unit>`
+#   scope = system   -> `sudo systemctl enable <unit>`
+#   scope = disable  -> `sudo systemctl disable <unit>`  (preset-on unit we want OFF)
 # `#` comments and blank lines are ignored.
 #
 # Only system units that really exist are listed. pipewire/wireplumber are user
@@ -20,9 +21,24 @@ system  NetworkManager.service
 system  ly@tty2.service
 system  dnsmasq.service
 system  sshd.service
-system  libvirtd.service
 system  legion-conservation.service
 system  iptables.service
 system  power-profiles-daemon.service
 system  systemd-timesyncd.service
 system  fstrim.timer
+
+# libvirt: run the modular, socket-activated daemons instead of the monolithic
+# libvirtd.service - the sockets start virtqemud/virtnetworkd/virtstoraged on the
+# first `qemu:///system` connection, so nothing blocks boot. (These are usually
+# preset-enabled already; listed to make the intent explicit and reproducible.)
+system  virtqemud.socket
+system  virtnetworkd.socket
+system  virtstoraged.socket
+
+# Boot-time trims (disabled to cut startup latency):
+#   libvirtd.service              - monolithic libvirt daemon, ~1.8s on the
+#                                   critical path; replaced by the sockets above.
+#   NetworkManager-wait-online    - blocks network-online.target until a link is
+#                                   up; pointless on a laptop with NM.
+disable  libvirtd.service
+disable  NetworkManager-wait-online.service
