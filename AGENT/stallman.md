@@ -2,7 +2,7 @@
 
 Ein (halb ernst gemeinter) Freie-Software-Review dieses Dotfiles-Repos aus der
 Perspektive von RMS. Grundlage: der tatsächliche Zustand von `config/`, `setup/`
-und `README.md` am 2026-07-15. Reihenfolge grob nach Stallmans Empörungspegel.
+und `README.md` am 2026-07-20. Reihenfolge grob nach Stallmans Empörungspegel.
 
 > „I'd be glad to help, but first: it's **GNU/Linux**."
 
@@ -22,20 +22,26 @@ du weder besitzt noch inspizieren kannst." Zusätzlich: die verarbeiteten Daten
 `llama.cpp`/`llamafile` mit einem Modell unter freier Lizenz, offline betrieben.
 Wenn ein Agent bleibt, dann einer, dessen Client **und** Inferenz frei und lokal
 sind. Minimalkompromiss: klar dokumentieren, welche Daten das Gerät verlassen, und
-`config/claude/` nicht als „Config wie jede andere" behandeln.
+`config/claude/` nicht als „Config wie jede andere" behandeln. Immerhin: das
+`config/claude/`-Linking trackt bewusst **keine** `.claude.json`/Sessions/History/
+Secrets — die richtige Trennung, so weit sie hier geht.
 
 ## 2. GitHub — der proprietäre Wirt
 
-**Was ihn stört:** Das Repo lebt mit `.github/workflows/`, dem `gh`-CLI und
-„commits and pushes it on login" sichtbar auf GitHub. Stallman lehnt GitHub seit
-Jahren ab: nicht-freies JavaScript im Browser, proprietäre Plattform, Microsoft-
-Eigentum. Ausgerechnet ein *Freiheits*-Setup an den unfreisten Forge zu hängen,
-wäre für ihn die eigentliche Ironie.
+**Was ihn stört:** Das Repo lebt weiterhin auf **GitHub** (`README.md`:
+`git clone https://github.com/leonhardweiler/dotfiles.git`). Stallman lehnt GitHub
+seit Jahren ab: nicht-freies JavaScript im Browser, proprietäre Plattform,
+Microsoft-Eigentum. Ausgerechnet ein *Freiheits*-Setup an den unfreisten Forge zu
+hängen, wäre für ihn die eigentliche Ironie.
+
+**Was sich entspannt hat:** Es gibt **kein `.github/workflows/` mehr** (keine
+proprietär gehostete CI), und der frühere „commit-and-push-on-login"-Automatismus
+inklusive `gh`-CLI ist **entfernt** (`dotfiles_sync`-Skript gelöscht). Damit hängt
+nur noch der *Hosting-Ort* an GitHub, nicht mehr eine Automatik darum herum.
 
 **Wie man es ändert:** Nach **Codeberg** (Forgejo, AGPL), zu einer selbst
-gehosteten **Forgejo/GitLab-CE**-Instanz oder auf **Savannah** (GNU) umziehen. Die
-CI (`validate.yml`, Selftest) läuft 1:1 unter Forgejo Actions. `gh` durch reines
-`git` über SSH ersetzen.
+gehosteten **Forgejo/GitLab-CE**-Instanz oder auf **Savannah** (GNU) umziehen.
+Reines `git` über SSH statt `gh` — das ist ohnehin schon der Zustand.
 
 ## 3. Hotmail als Commit-Identität — Microsoft-Surveillance
 
@@ -48,7 +54,7 @@ Selbstwiderspruch.
 **Wie man es ändert:** Eine Adresse bei einem Anbieter, der keine Geiselnahme des
 Postfachs betreibt — eigene Domain, ein GNU-freundlicher Host, oder mindestens ein
 Anbieter ohne clientseitiges proprietäres JS-Erfordernis. Immerhin: die Commits
-sind SSH-signiert, nicht mit einem proprietären Dienst — das würde er gutheißen.
+sind SSH-signiert, nicht über einen proprietären Dienst — das würde er gutheißen.
 
 ## 4. Arch Linux statt eines FSF-gebilligten Systems
 
@@ -70,69 +76,89 @@ nicht-freie Software, die niemand auditieren kann. (`amd-ucode` ist Microcode �
 denselben Vorbehalt hat er auch hier, betrachtet es aber pragmatisch als vom
 Prozessor untrennbar.)
 
-**Wie man es ändert:** `linux` durch **`linux-libre`** ersetzen und
-`linux-firmware` durch **`linux-libre-firmware`** (nur die frei lizenzierten
-Blobs). Konsequenz: Hardware, die zwingend unfreie Firmware braucht (manche WLAN-/
-GPU-Chips), funktioniert dann evtl. nicht — für RMS ein Grund, freiheits­taugliche
-Hardware zu kaufen, kein Grund für den Blob.
+**Was ihn versöhnlicher stimmt:** Die `README.md` benennt das inzwischen **selbst
+und ehrlich** — in der Sektion *„Non-free packages"* steht wortwörtlich, dass
+`linux-firmware`/`amd-ucode` non-free Blobs mitbringen und man für ein voll freies
+System `linux`/`linux-firmware` gegen **`linux-libre`/`linux-libre-firmware`**
+tauschen soll. Genau seine Empfehlung, im Repo dokumentiert. Die Doku ist da — nur
+die Praxis fehlt noch.
+
+**Wie man es ändert:** Der Anleitung im eigenen README folgen: `linux` durch
+**`linux-libre`** ersetzen und `linux-firmware` durch **`linux-libre-firmware`**.
+Konsequenz: Hardware, die zwingend unfreie Firmware braucht, funktioniert dann
+evtl. nicht — für RMS ein Grund, freiheitstaugliche Hardware zu kaufen, kein Grund
+für den Blob.
 
 ## 6. `yay` und der AUR — Tor zu unfreier Software
 
 **Was ihn stört:** `setup/install-programs` bootstrappt `yay` und installiert aus
 dem AUR. Der AUR macht keinerlei Freiheits-Unterscheidung; ein einziges
-`yay -S <proprietär>` unterläuft das ganze Prinzip. Der Mechanismus selbst ist
-das Problem, nicht (nur) die heute installierten Pakete.
+`yay -S <proprietär>` unterläuft das ganze Prinzip. Und die `programs.txt` macht
+davon Gebrauch: `unityhub`, `plasticscm-client-gui`, `figma-agent-linux-bin`,
+`dotnet-sdk`, `signal-desktop`, `zen-browser-bin` — für Stallman lauter unfreie
+oder halb-unfreie Software.
+
+**Was ihn versöhnlicher stimmt:** Die `README.md`-Sektion *„Non-free packages"*
+zählt die proprietären Pakete **namentlich und offen** auf („In the interest of
+honesty…"). Das ist nicht Freiheit, aber es ist die Ehrlichkeit, die er verlangt:
+kein Verstecken hinter dem Wort „minimal".
 
 **Wie man es ändert:** Unter Parabola entfällt der AUR-Bedarf weitgehend; wo doch
-gebaut wird, `libre`-Repos bevorzugen. Zumindest in `programs.txt`/`README.md`
-dokumentieren, welche Pakete frei sind, und AUR-Installationen auf frei lizenzierte
+gebaut wird, `libre`-Repos bevorzugen und AUR-Installationen auf frei lizenzierte
 `PKGBUILD`s beschränken.
 
-## 7. „Linux" statt „GNU/Linux" — die Namensfrage
+## 7. „Linux" statt „GNU/Linux" — die Namensfrage (weitgehend erledigt)
 
-**Was ihn stört:** `README.md` schreibt durchgängig „Arch Linux", `CLAUDE.md`
-erwähnt „GNU" **null Mal** (`grep -c GNU CLAUDE.md` = 0). Das System ist das
-GNU-Betriebssystem mit dem Kernel Linux; der verkürzte Name verschweigt für
-Stallman das ganze GNU-Projekt und damit die Freiheitsgeschichte dahinter.
+**Was ihn *früher* störte:** Das README schrieb durchgängig „Arch Linux".
 
-**Wie man es ändert:** In Prosa (README, CLAUDE.md) konsequent **„GNU/Linux"**
-schreiben, wo das ganze System gemeint ist; „Linux" nur für den Kernel.
+**Was jetzt gilt:** `README.md` schreibt konsequent **„GNU/Linux"** bzw. **„Arch
+GNU/Linux"** (`grep -c GNU README.md` = 4), und `CLAUDE.md` nennt „GNU/Linux"
+ebenfalls. Genau die Korrektur, auf die er seit Jahrzehnten pocht — hier
+umgesetzt. Einziger Rest: in Fließtext den Kernel weiterhin nur dann „Linux"
+nennen, wenn wirklich der Kernel gemeint ist. Ansonsten: **Daumen hoch.**
 
-## 8. GPLv3 ist da — aber nicht angewandt
+## 8. Von GPLv3 zu ISC — der Rückschritt beim Copyleft
 
-**Was ihn *freut*:** Es liegt eine **`LICENSE` mit GPLv3** im Root. Freie Lizenz,
-Copyleft, seine eigene — das ist genau richtig und der stärkste Punkt des Repos.
+**Was ihn *früher* freute:** Es lag eine `LICENSE` mit **GPLv3** im Root — freie
+Lizenz, Copyleft, seine eigene. Das war der stärkste Punkt des Repos.
 
-**Was ihn trotzdem stört:** Die Lizenz steht nur herum. Die Skripte
-(`install`, `config/usrbin/*`, die `#!/bin/sh`-Tools) tragen **keine
-Lizenz-/Copyright-Header**. Ohne Header ist bei einer einzeln kopierten Datei die
-Lizenz nicht mitgereist.
+**Was jetzt gilt — und ihn stört:** Die Lizenz ist auf **ISC** gewechselt
+(`LICENSE`: „ISC License … The leonhardweiler/dotfiles Authors"). ISC ist zwar
+eine *freie* Lizenz — daran ist nichts auszusetzen — aber eine **lasche,
+permissive** ohne Copyleft. Für Stallman heißt das: jeder darf den Code nehmen,
+proprietär einbetten und die Freiheit den Nutzern *entziehen*. Der Wechsel weg von
+der GPL ist aus seiner Sicht ein **Rückschritt** — er würde nachdrücklich zurück
+zu **GPLv3-or-later** raten, um das Copyleft zu behalten.
 
-**Wie man es ändert:** Kurzen GPLv3-Header + Copyright-Zeile in jedes Skript
-setzen (der Standardblock „This program is free software: you can redistribute
-it…"). Optional maschinenlesbar via **REUSE**/SPDX
-(`# SPDX-License-Identifier: GPL-3.0-or-later`).
+**Was ihn dabei versöhnt:** Jedes Skript trägt jetzt einen maschinenlesbaren
+**SPDX-Header** (`# SPDX-License-Identifier: ISC`) plus Copyright-Zeile —
+`install`, `setup/install-programs`, alle `config/usrbin/*`. Die *Praxis* der
+Header ist genau richtig (REUSE-konform); nur die *gewählte Lizenz* würde er
+gerne wieder auf GPLv3 sehen.
 
 ## 9. Randnotizen (leiseres Stirnrunzeln)
 
+- **dwl** statt Hyprland (`config/dwl/`): freie Software (MIT), ein schlankes
+  wlroots-Projekt — **Daumen hoch**, freiheitlich wie funktional unbedenklich.
 - **KeePassXC** (`config/keepassxc/`): freie Software, GPL — **Daumen hoch**. Dass
   die `*.kdbx` nicht eingecheckt wird, ist genau die richtige Trennung.
-- **Wayland/Hyprland, foot, btop, mpv, rofi, mako, nvim**: alles frei
+- **Wayland/dwl, foot, btop, mpv, rofi, wob, nvim, hyprlock**: alles frei
   lizenziert — hier hat er nichts zu meckern.
 - **Noto-Fonts, JetBrains-Mono-Nerd**: frei lizenziert — passt.
 - **systemd**: frei, aber Stallman hat es historisch für seinen monolithischen
   Zuschnitt kritisiert. Kein Freiheits-Problem, nur ein philosophisches Naserümpfen.
-- **`WLR_DRM_DEVICES`-Pin** auf `pci-…-card` (`config/hypr/env.lua`): Da das Gerät
-  `amd-ucode` fährt, ist es eine AMD-GPU mit freiem Treiber — **kein NVIDIA-Blob**,
-  gut so.
+- **AMD-GPU mit freiem Treiber** (`amd-ucode`, `vulkan-radeon`, `mesa`): **kein
+  NVIDIA-Blob** für den Grafikstack — gut so.
 
 ---
 
 ## Prioritätenliste (wenn RMS nur drei Wünsche hätte)
 
 1. **Claude/SaaSS** ersetzen oder klar eingrenzen (§1) — das größte Freiheitsleck.
-2. Weg von **GitHub** hin zu Forgejo/Codeberg (§2).
-3. Auf **Parabola GNU/Linux-libre** mit `linux-libre` umsteigen (§4/§5).
+2. Die Lizenz **zurück auf GPLv3** drehen, um das Copyleft zu retten (§8).
+3. Auf **Parabola GNU/Linux-libre** mit `linux-libre` umsteigen (§4/§5) —
+   die README beschreibt den Weg bereits selbst.
 
-> „With free software, you control the program. With this repo, mostly *something*
-> controls you — let's flip the last few of those."
+> „With free software, you control the program. This repo now names its non-free
+> corners honestly and says GNU/Linux — good. Put the copyleft back, and flip the
+> last few servers into your own hands."
