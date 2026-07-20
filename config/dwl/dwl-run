@@ -8,9 +8,9 @@
 # QT_QPA_PLATFORMTHEME come from ~/.bash_profile (sourced by ly's login shell),
 # so they are not duplicated here.
 
-export QT_SCALE_FACTOR=1.6
-export QT_AUTO_SCREEN_SCALE_FACTOR=0
-export GDK_SCALE=2
-export XCURSOR_SIZE=18
+# export QT_SCALE_FACTOR=1.6
+# export QT_AUTO_SCREEN_SCALE_FACTOR=0
+# export GDK_SCALE=2
+# export XCURSOR_SIZE=18
 
 exec dwl
