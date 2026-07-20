@@ -3,16 +3,11 @@
 ![neovim screenshot](./images/neovim-screenshot.png)
 
 Personal, keyboard-first Neovim config based on
-[lazy.nvim](https://github.com/folke/lazy.nvim). Tested with **Neovim 0.12**
-(needs at least 0.11 because of the new `vim.lsp.config` API and the
-nvim-treesitter `main` branch).
+[lazy.nvim](https://github.com/folke/lazy.nvim).
 
 ## Installation
 
-```sh
-git clone <repo> ~/.config/nvim
-nvim
-```
+Run the install command of thee dotfiles repo to symlink it automatically or do it manually.
 
 On the first start lazy.nvim installs all plugins automatically; mason and
 mason-tool-installer pull in the LSP servers, formatters, linters and the
