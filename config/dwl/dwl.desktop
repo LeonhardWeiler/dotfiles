@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=dwl
-Comment=Simple, hackable dynamic tiling Wayland compositor
-Exec=dwl-run
-Type=Application

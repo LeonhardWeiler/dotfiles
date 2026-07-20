@@ -176,11 +176,11 @@ scripts). The source->target mapping is stated explicitly in
   is **configured at compile time**: `config/dwl/config.h` is the source of truth
   and is **not** symlinked - it is compiled into the binary. Editing it means
   rebuilding (`./install --dwl`). Only the session glue is symlinked
-  (`dwl.desktop`, `dwl-run` -> `/usr/local/…`); startup programs are spawned by
+  (`dwl-run` -> `/usr/local/bin`); startup programs are spawned by
   dwl itself (`autostart[]` in `config.h`, via `patches/autostart.patch`). There
   is **no display manager**: `getty@tty1` autologins `leo` and `~/.bash_profile`
-  execs `dwl-run` on tty1 (see the `--getty-autologin` step). `dwl.desktop` stays
-  linked as a plain wayland-session file but is unused without a DM. Gaps
+  execs `dwl-run` on tty1 (see the `--getty-autologin` step). No `.desktop`
+  session file is needed without a DM. Gaps
   come from `config/dwl/patches/gaps.patch`, applied by
   `build-dwl` on top of the pinned checkout.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the

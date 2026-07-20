@@ -19,13 +19,12 @@ means editing it and rebuilding.
   (`gappih/gappiv/gappoh/gappov` in `config.h`)
 - `dwl-run` — session entry point: exports the scaling/cursor env, then
   `exec dwl`. Symlinked to `/usr/local/bin/dwl-run`. (XDG_CURRENT_DESKTOP and the
-  Qt platform theme come from `~/.bash_profile`, sourced by ly's login shell.)
+  Qt platform theme come from `~/.bash_profile`, the autologin login shell.)
+  There is no display manager: `getty@tty1` autologins `leo` and
+  `~/.bash_profile` execs `dwl-run` on tty1 (see `./install --getty-autologin`).
 - Startup programs (currently just the battery poll) are spawned by dwl
   itself via the `autostart[]` array in `config.h` (enabled by
   `patches/autostart.patch`) — there is no separate autostart script.
-- `dwl.desktop` — the ly/wayland session entry (`Exec=dwl-run`). Symlinked to
-  `/usr/local/share/wayland-sessions/dwl.desktop` (ly reads that path via the
-  extra `waylandsessions` line in `config/ly/config.ini`).
 
 ## Build / apply changes
 

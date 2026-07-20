@@ -7,10 +7,8 @@
 # there is no runtime config to symlink - editing config/dwl/config.h and
 # re-running this script (or `./install --dwl`) is the "apply" step.
 #
-# Only the binary is installed; the .desktop session file and env wrapper are
-# managed as symlinks via setup/links.conf (dwl.desktop -> dwl-run), so this
-# script deliberately does NOT run `make install` (which would overwrite the
-# session file with the upstream Exec=dwl one).
+# Only the binary is installed; the dwl-run env wrapper is managed as a symlink
+# via setup/links.conf, so this script deliberately does NOT run `make install`.
 
 set -eu
 
