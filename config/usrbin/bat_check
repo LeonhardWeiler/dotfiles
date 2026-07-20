@@ -22,6 +22,6 @@ esac
 # Low battery: flash a red wob bar via the osd helper (no notification daemon).
 # The autostart loop re-runs this every 2 min, so the warning repeats while low.
 if [ "$PERCENT" -lt 10 ]; then
-  OSD_DURATION=3 "$(dirname "$0")/osd" "$PERCENT" critical
+  OSD_DURATION=5 "$(dirname "$0")/osd" "$PERCENT" critical
 fi
 
