@@ -1,34 +1,20 @@
 #!/bin/sh
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
-#
-# Build dwl from source with the tracked config.h and install the binary to
-# /usr/local/bin/dwl. dwl is configured at compile time (suckless style), so
-# there is no runtime config to symlink - editing config/dwl/config.h and
-# re-running this script (or `./install --dwl`) is the "apply" step.
-#
-# Only the binary is installed; the dwl-run env wrapper is managed as a symlink
-# via setup/links.conf, so this script deliberately does NOT run `make install`.
-
 set -eu
 
-DWL_VERSION="v0.8"                 # pinned; matches config.h (dwl 0.8 struct layout)
+DWL_VERSION="v0.8"
 SRC_DIR="${DWL_SRC_DIR:-$HOME/.local/src/dwl}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_H="$SCRIPT_DIR/config.h"
 
 [ -f "$CONFIG_H" ] || { echo "build-dwl: $CONFIG_H not found" >&2; exit 1; }
 
-# Build dependency (wlroots is tightly version-coupled to dwl). wayland-protocols
-# and base-devel are assumed present; install the versioned wlroots if missing.
 if command -v pacman >/dev/null 2>&1 && ! pacman -Q wlroots0.19 >/dev/null 2>&1; then
 	echo "build-dwl: installing wlroots0.19 ..."
 	sudo pacman -S --needed --noconfirm wlroots0.19
 fi
 
-# XWayland support (see the make invocation below). Needs the xcb build libs
-# (xcb + xcb-icccm, the latter from xcb-util-wm) and, at runtime, the Xwayland
-# server itself (xorg-xwayland) which wlroots spawns lazily for X11 clients.
 if command -v pacman >/dev/null 2>&1; then
 	xdeps=""
 	pacman -Q libxcb        >/dev/null 2>&1 || xdeps="$xdeps libxcb"
@@ -36,13 +22,10 @@ if command -v pacman >/dev/null 2>&1; then
 	pacman -Q xorg-xwayland >/dev/null 2>&1 || xdeps="$xdeps xorg-xwayland"
 	if [ -n "$xdeps" ]; then
 		echo "build-dwl: installing XWayland deps:$xdeps ..."
-		# shellcheck disable=SC2086
 		sudo pacman -S --needed --noconfirm $xdeps
 	fi
 fi
 
-# Clone (pinned) or reuse an existing checkout, always reset to a pristine
-# tag so patches apply idempotently.
 if [ -d "$SRC_DIR/.git" ]; then
 	echo "build-dwl: resetting $SRC_DIR to a pristine $DWL_VERSION ..."
 	git -C "$SRC_DIR" fetch --tags --depth 1 origin "$DWL_VERSION"
@@ -54,21 +37,15 @@ else
 	git clone --depth 1 --branch "$DWL_VERSION" https://codeberg.org/dwl/dwl.git "$SRC_DIR"
 fi
 
-# Apply the tracked patches (e.g. gaps) onto the pristine checkout.
 for patch in "$SCRIPT_DIR"/patches/*.patch; do
 	[ -e "$patch" ] || continue
 	echo "build-dwl: applying $(basename "$patch") ..."
 	git -C "$SRC_DIR" apply "$patch"
 done
 
-# Drop in the tracked config and build. XWayland is enabled here (upstream
-# config.mk ships it off): -DXWAYLAND compiles the X11 support in, and the xcb
-# libs are added to the pkg-config PKGS via XLIBS. Passed on the command line so
-# no config.mk patch is needed - make overrides the empty config.mk assignments.
 cp -f "$CONFIG_H" "$SRC_DIR/config.h"
 make -C "$SRC_DIR" clean >/dev/null 2>&1 || true
 make -C "$SRC_DIR" XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm"
 
-# Install the binary only (see header comment).
 sudo install -Dm755 "$SRC_DIR/dwl" /usr/local/bin/dwl
 echo "build-dwl: installed $(/usr/local/bin/dwl -v 2>&1 | head -1) -> /usr/local/bin/dwl"

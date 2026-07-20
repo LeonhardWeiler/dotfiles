@@ -3,12 +3,9 @@
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 set -e
 
-# Check whether yay is installed, otherwise install it
 if ! command -v yay >/dev/null 2>&1
 then
     echo "yay could not be found, installing yay..."
-    # Own mktemp directory instead of a fixed /tmp/yay: no "already exists" abort
-    # after a previous run; the trap also cleans up on error.
     build_dir="$(mktemp -d)"
     trap 'rm -rf "$build_dir"' EXIT
     git clone https://aur.archlinux.org/yay.git "$build_dir/yay"
@@ -17,18 +14,14 @@ then
     trap - EXIT
 fi
 
-# programs.txt sits next to this script in the setup/ directory.
 PROGRAMS_TXT="$(cd "$(dirname "$0")" && pwd)/programs.txt"
 
 echo "Installing packages from programs.txt..."
 
 while IFS= read -r line
 do
-    # Extract only the package name (everything before the first space)
     package=$(echo "$line" | awk '{print $1}')
 
-    # Check whether the package is already installed (exact name match, not a
-    # description match like -Qs)
     if yay -Q "$package" >/dev/null 2>&1
     then
         echo "$package is already installed."
@@ -39,4 +32,3 @@ do
 done < "$PROGRAMS_TXT"
 
 echo "All packages from programs.txt have been processed."
-

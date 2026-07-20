@@ -33,7 +33,6 @@ vim.opt.updatetime = 50
 vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.swapfile = false
--- Undo history persists across sessions (undodir defaults to stdpath("state")/undo)
 vim.opt.undofile = true
 
 vim.cmd("colorscheme kanagawa")

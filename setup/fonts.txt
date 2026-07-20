@@ -1,7 +1,3 @@
-# fonts.txt - font packages installed by `./install --fonts` (which then rebuilds
-# the fontconfig cache). One package per line; `#` comments and blank lines are
-# ignored. These are also part of programs.txt, but installable on their own here.
-
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji

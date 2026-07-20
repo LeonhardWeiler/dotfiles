@@ -2,26 +2,20 @@
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 
-# Find the first real battery (name-independent: BAT0, BAT1, CMB0, ...).
 CAPACITY=
 for bat in /sys/class/power_supply/*; do
   [ -r "$bat/type" ] && [ "$(cat "$bat/type")" = Battery ] && [ -r "$bat/capacity" ] || continue
   CAPACITY="$bat/capacity"; break
 done
 
-# No battery present (desktop, removed) -> exit quietly.
 [ -n "$CAPACITY" ] || exit 0
 
 PERCENT=$(cat "$CAPACITY")
 
-# Only continue if the value is numeric.
 case "$PERCENT" in
   ''|*[!0-9]*) exit 0 ;;
 esac
 
-# Low battery: flash a red wob bar via the osd helper (no notification daemon).
-# The autostart loop re-runs this every 2 min, so the warning repeats while low.
 if [ "$PERCENT" -lt 10 ]; then
   OSD_DURATION=5 "$(dirname "$0")/osd" "$PERCENT" critical
 fi
-

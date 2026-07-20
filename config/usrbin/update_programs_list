@@ -1,50 +1,27 @@
 #!/bin/bash
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
-#
-# update_programs_list - regenerates programs.txt in the dotfiles repo from the
-# explicitly installed packages (without the base group). Non-interactive.
-#
-# The single source for the package list (previously also duplicated as an
-# interactive setup/update-package-list - removed). Linked via config/usrbin/*
-# into ~/.local/bin (PATH) and additionally under /usr/local/bin for the pacman
-# hook (both via setup/links.conf).
-#
-# Callers:
-#   - pacman hook (PostTransaction, runs as root)
-#   - manually (`update_programs_list`)
-#
-# If the call runs as root (hook), the file is handed back to the user afterwards
-# so it is not owned by root in the repo.
+
 set -euo pipefail
 
-# Determine the real login user - even when the pacman hook runs as root (logname
-# returns the logged-in user, not root). Home via getent so no /home/leo is
-# hardcoded. Everything overridable via the environment.
 OWNER="${DOTFILES_OWNER:-$(logname 2>/dev/null || id -un)}"
 OWNER_HOME="$(getent passwd "$OWNER" | cut -d: -f6)"
 DOTFILES="${DOTFILES_DIR:-${OWNER_HOME:-$HOME}/dotfiles}"
 OUT="$DOTFILES/setup/programs.txt"
 
-# The target directory must exist; otherwise do nothing and exit with 0 so the
-# pacman hook does NOT make the package transaction fail (best effort).
 OUT_DIR="$(dirname "$OUT")"
 if [ ! -d "$OUT_DIR" ]; then
   echo "update_programs_list: $OUT_DIR missing - skipped" >&2
   exit 0
 fi
 
-# Write atomically: first into a temp file in the SAME directory, then mv it into
-# place. That way a process reading concurrently (or the git sync) never sees a
-# half-written file, and if the pipeline fails the old programs.txt stays intact.
 TMP="$(mktemp "$OUT_DIR/.programs.txt.XXXXXX")"
 trap 'rm -f "$TMP"' EXIT
 
-# -Q reads only the local DB (no lock collision) -> safe in the hook.
 pacman -Qe | awk 'NR==FNR{skip[$1];next} !($1 in skip)' <(pacman -Qq base) - > "$TMP"
 
-chmod 644 "$TMP"                                  # mktemp creates 600 -> make readable
-[ "$(id -u)" -eq 0 ] && chown "$OWNER" "$TMP"     # as root: give the file to the user
+chmod 644 "$TMP"
+[ "$(id -u)" -eq 0 ] && chown "$OWNER" "$TMP"
 
 mv -f "$TMP" "$OUT"
 trap - EXIT

@@ -95,6 +95,11 @@ scripts). The source->target mapping is stated explicitly in
   
   
   
+  
+  
+  
+  
+  
 
 
 ## Structure
@@ -165,22 +170,16 @@ scripts). The source->target mapping is stated explicitly in
   the source end in `/*` (glob; links each entry into `<target>/<name>`) - see
   `config/usrbin/*`.
 - **`AGENT/` stays in the root** and outside the link logic.
-- **Scaling/cursor env** (QT_SCALE_FACTOR, GDK_SCALE, XCURSOR_SIZE, …) are set
-  exclusively in the dwl session wrapper `config/dwl/dwl-run`, **not** in `.bashrc`
-  - do not duplicate them (otherwise apps render differently depending on how
-    they were launched).
 - **hyprlock** (`config/hyprlock/hyprlock.conf`) is kept as the dwl screen locker
   (dwl's `lockcmd` in `config.h`). It reads `~/.config/hypr/hyprlock.conf`, so the
   file is linked there per-file
 - **dwl** (`config/dwl/`) is the Wayland compositor. Unlike everything else here it
   is **configured at compile time**: `config/dwl/config.h` is the source of truth
   and is **not** symlinked - it is compiled into the binary. Editing it means
-  rebuilding (`./install --dwl`). Only the session glue is symlinked
-  (`dwl-run` -> `/usr/local/bin`); startup programs are spawned by
+  rebuilding (`./install --dwl`). Startup programs are spawned by
   dwl itself (`autostart[]` in `config.h`, via `patches/autostart.patch`). There
   is **no display manager**: `getty@tty1` autologins `leo` and `~/.bash_profile`
-  execs `dwl-run` on tty1 (see the `--getty-autologin` step). No `.desktop`
-  session file is needed without a DM. Gaps
+  execs `dwl` on tty1 (see the `--getty-autologin` step). Gaps
   come from `config/dwl/patches/gaps.patch`, applied by
   `build-dwl` on top of the pinned checkout.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the

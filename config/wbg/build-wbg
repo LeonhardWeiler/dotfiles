@@ -1,29 +1,14 @@
 #!/bin/sh
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
-#
-# Build wbg from source and install the binary to /usr/local/bin/wbg. wbg is the
-# wallpaper program used by the dwl session (set via config/wallpaper/
-# change-wallpaper.sh). The AUR package builds with every image format enabled;
-# we only ever use jpg wallpapers, so this script exists to build wbg jpg-only
-# (via meson feature flags below) and thereby drop the png/webp/jxl/svg deps.
-# The source is cloned at build time from a pinned tag into ~/.local/src (not
-# committed); this script is the "install/update" step for wbg. Only the binary
-# is installed (not `ninja install`), matching the build-dwl convention.
 
 set -eu
 
-WBG_VERSION="1.3.0"                # pinned upstream release tag
+WBG_VERSION="1.3.0"
 SRC_DIR="${WBG_SRC_DIR:-$HOME/.local/src/wbg}"
-
-# Build/runtime dependencies for a jpg-only build. tllist is dnkl's tiny
-# linked-list header and lives in the AUR, so install it via yay; the rest are
-# official-repo packages. Only libjpeg-turbo is pulled in for image decoding -
-# png/webp/jxl are disabled below, and svg (bundled nanosvg) stays off.
 REPO_DEPS="pixman libjpeg-turbo wayland wayland-protocols meson ninja"
 
 if command -v pacman >/dev/null 2>&1; then
-	# shellcheck disable=SC2086 # word-splitting the dep list is intended
 	sudo pacman -S --needed --noconfirm $REPO_DEPS
 
 	if ! pkg-config --exists tllist 2>/dev/null; then
@@ -32,8 +17,6 @@ if command -v pacman >/dev/null 2>&1; then
 	fi
 fi
 
-# Clone (pinned) or reuse an existing checkout, always reset to a pristine tag so
-# builds are reproducible.
 if [ -d "$SRC_DIR/.git" ]; then
 	echo "build-wbg: resetting $SRC_DIR to a pristine $WBG_VERSION ..."
 	git -C "$SRC_DIR" fetch --tags --depth 1 origin "$WBG_VERSION"
@@ -45,14 +28,11 @@ else
 	git clone --depth 1 --branch "$WBG_VERSION" https://codeberg.org/dnkl/wbg.git "$SRC_DIR"
 fi
 
-# Configure + build (wipe any previous build dir so this stays idempotent).
-# jpg-only: enable jpeg, disable every other decoder so their deps aren't needed.
 rm -rf "$SRC_DIR/build"
 meson setup --buildtype=release \
 	-Djpeg=enabled -Dpng=disabled -Dwebp=disabled -Djxl=disabled -Dsvg=false \
 	"$SRC_DIR/build" "$SRC_DIR"
 ninja -C "$SRC_DIR/build"
 
-# Install the binary only (see header comment).
 sudo install -Dm755 "$SRC_DIR/build/wbg" /usr/local/bin/wbg
 echo "build-wbg: installed wbg $WBG_VERSION -> /usr/local/bin/wbg"

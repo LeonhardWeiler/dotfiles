@@ -14,8 +14,12 @@ leaves libjpeg-turbo as the sole image dep (plus `tllist` from the AUR).
 ## Build / apply
 
 ```sh
-./install --wbg      # build + install (also part of the `./install setup` menu)
-# or directly:
+./install --wbg
+```
+
+Or directly:
+
+```sh
 config/wbg/build-wbg
 ```
 

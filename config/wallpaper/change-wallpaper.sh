@@ -1,11 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
-#
-# change-wallpaper - pick a random wallpaper (excluding the previous one) and set
-# it via wbg. Wallpapers live in $WALLPAPER_DIR (default:
-# ~/.local/share/wallpapers, where links.conf points config/wallpaper/pictures).
-# The "previous" marker is kept in the XDG state dir, not in the repo.
 
 WALLPAPER_DIR="${WALLPAPER_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/wallpapers}"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}"
@@ -17,7 +12,6 @@ if [ ! -d "$WALLPAPER_DIR" ]; then
 fi
 mkdir -p "$STATE_DIR"
 
-# List all available images, excluding the previous one.
 if [ -f "$PREV_WALLPAPER_FILE" ]; then
   PREV_WALLPAPER=$(cat "$PREV_WALLPAPER_FILE")
   WALLPAPER=$(
@@ -29,7 +23,6 @@ else
   WALLPAPER=$(find -L "$WALLPAPER_DIR" -type f | shuf -n 1)
 fi
 
-# If nothing new was found, reshuffle over all images.
 [ -z "$WALLPAPER" ] && WALLPAPER=$(find -L "$WALLPAPER_DIR" -type f | shuf -n 1)
 
 if [ -z "$WALLPAPER" ]; then
@@ -37,11 +30,7 @@ if [ -z "$WALLPAPER" ]; then
   exit 1
 fi
 
-# Stop old wbg instances, then set the wallpaper. -s scales the image uniformly
-# to cover the whole output and crops the overflow (fill), instead of the default
-# fit that letterboxes with black bars on mismatched aspect ratios.
 pkill wbg
 wbg -s "$WALLPAPER" &
 
-# Remember the current wallpaper as the previous one.
 echo "$WALLPAPER" > "$PREV_WALLPAPER_FILE"

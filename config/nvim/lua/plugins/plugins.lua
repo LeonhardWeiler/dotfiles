@@ -11,9 +11,6 @@ return {
     version = false,
     lazy = true,
     opts = {
-      -- Eigenes Icon fuer AGENT-Ordner (KI-/Workflow-Dateien): Roboter-Glyph
-      -- (nf-md-robot) in Lila. Greift ueberall, wo mini.icons Directory-Icons
-      -- liefert (u. a. oil.nvim).
       directory = {
         AGENT = { glyph = "󰚩", hl = "MiniIconsPurple" },
       },

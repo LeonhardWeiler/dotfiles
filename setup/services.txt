@@ -1,6 +1,3 @@
-# services.txt - systemd units (re)activated by `./install` after linking
-# (self-healing), and deactivated by `--remove-systemd`.
-#
 # Format: one unit per line, two columns `<scope> <unit>`.
 #   scope = user     -> `systemctl --user enable <unit>`
 #   scope = system   -> `sudo systemctl enable <unit>`
@@ -8,17 +5,6 @@
 #   scope = mask     -> `sudo systemctl mask <unit>`     (static unit, no [Install]:
 #                       `disable` is a no-op; masking also blocks udev-triggered
 #                       starts. Undo by hand with `systemctl unmask`.)
-# `#` comments and blank lines are ignored.
-#
-# Only system units that really exist are listed. pipewire/wireplumber are user
-# services (package presets, not tracked) and swtpm is socket-activated - those
-# have no enable-able bare <name>.service. iptables loads the (default) rules
-# from /etc/iptables/; fstrim.timer does periodic SSD TRIM; timesyncd = NTP;
-# power-profiles-daemon = power profiles (laptop).
-#
-# There are currently no `user` units: the battery check and the config sync run
-# as plain commands from the dwl autostart (autostart[] in config/dwl/config.h)
-# instead of systemd user units.
 
 system  NetworkManager.service
 system  getty@tty1.service
@@ -30,27 +16,11 @@ system  power-profiles-daemon.service
 system  systemd-timesyncd.service
 system  fstrim.timer
 
-# libvirt: run the modular, socket-activated daemons instead of the monolithic
-# libvirtd.service - the sockets start virtqemud/virtnetworkd/virtstoraged on the
-# first `qemu:///system` connection, so nothing blocks boot. (These are usually
-# preset-enabled already; listed to make the intent explicit and reproducible.)
 system  virtqemud.socket
 system  virtnetworkd.socket
 system  virtstoraged.socket
 
-# Boot-time trims (disabled to cut startup latency):
-#   libvirtd.service              - monolithic libvirt daemon, ~1.8s on the
-#                                   critical path; replaced by the sockets above.
-#   NetworkManager-wait-online    - blocks network-online.target until a link is
-#                                   up; pointless on a laptop with NM.
 disable  libvirtd.service
 disable  NetworkManager-wait-online.service
 
-# Masked (static units - `disable` cannot touch them):
-#   systemd-vconsole-setup  - loads the TTY font/keymap (from /etc/vconsole.conf).
-#                             Unneeded here: getty@tty1 autologins and immediately
-#                             execs dwl (Wayland), whose keymap comes from XKB, so
-#                             the bare TTY is never typed into. At boot it also
-#                             raced the VT and failed (loadkeys I/O error, ~1s).
-#                             Masking removes the failure and the udev retrigger.
 mask     systemd-vconsole-setup.service

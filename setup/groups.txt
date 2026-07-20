@@ -1,9 +1,3 @@
-# groups.txt - groups the user is added to by `./install --groups` (usermod -aG).
-# One group per line; `#` comments and blank lines are ignored. Joined into a
-# comma list at load time (Bash reserves `GROUPS` for the current GIDs).
-# docker/wireshark are deliberately excluded (only needed if you also install
-# those packages).
-
 wheel
 input
 kvm

@@ -13,7 +13,6 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 vim.keymap.set("x", "<leader>r", '"_dp')
 
--- <leader>S (not <leader>s), so <leader>s… stays collision-free as the Telescope prefix
 vim.keymap.set(
   "n",
   "<leader>S",
@@ -21,7 +20,6 @@ vim.keymap.set(
   { desc = "Search & replace word under cursor" }
 )
 
--- Write diagnostics into the quickfix list (then shown via <leader>sq)
 vim.keymap.set("n", "<leader>sd", function()
   vim.diagnostic.setqflist({ open = false })
 end, { desc = "Diagnostics -> quickfix list" })

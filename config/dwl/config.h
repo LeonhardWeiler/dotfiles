@@ -1,11 +1,3 @@
-/* dwl configuration. dwl is configured at COMPILE time: edit this file and
- * rebuild (config/dwl/build-dwl, or `./install --dwl`). See config/dwl/README.md
- * for the keybind overview.
- *
- * Base: dwl 0.8 config.def.h (codeberg.org/dwl/dwl) plus the gaps patch
- * (config/dwl/patches/gaps.patch). Struct field order must match the dwl version
- * being built. */
-
 /* Taken from https://github.com/djpohly/dwl/issues/466 */
 #define COLOR(hex)    { ((hex >> 24) & 0xFF) / 255.0f, \
                         ((hex >> 16) & 0xFF) / 255.0f, \
