@@ -40,6 +40,8 @@ export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
 alias arst='sudo shutdown now'
+alias todo='nvim ./AGENT/TODO.md'
+
 export NIX_CONFIG="experimental-features = nix-command flakes"
 # Only source it if Nix is installed (otherwise an error in every shell without Nix).
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
