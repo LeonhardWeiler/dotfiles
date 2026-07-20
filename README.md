@@ -266,6 +266,13 @@ initramfs with `./install --initramfs`, or by hand:
 sudo mkinitcpio -P
 ```
 
+`mkinitcpio -P` now only rebuilds the stock `linux` preset. The custom kernel
+(`vmlinuz-custom-r17`) **boots without an initramfs** (`root=PARTUUID=…`; all boot
+drivers are `=y`), so its former `custom.preset` and the `initramfs-custom-r17.img`
+have been removed. The custom boot entry
+`/efi/loader/entries/arch-custom-r17.conf` has no `initrd` line. The `r14` entry
+keeps its existing static `initramfs-custom-r14.img` as a fallback.
+
 ## License
 
 Licensed under the ISC License - SPDX identifier
