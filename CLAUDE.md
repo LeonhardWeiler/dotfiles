@@ -12,7 +12,7 @@ scripts). The source->target mapping is stated explicitly in
 **`setup/links.conf`** (one line per link, two columns: `<source-in-repo> <target>`;
 `~` targets = user, `/etc/…` targets = system via sudo). Examples:
 `config/btop/btop.conf` -> `~/.config/btop/btop.conf`,
-`config/ly/config.ini` -> `/etc/ly/config.ini`. Details on contents/paths:
+`config/mkinitcpio/mkinitcpio.conf` -> `/etc/mkinitcpio.conf`. Details on contents/paths:
 `README.md`. No external dependencies (no Python, no dotbot).
 
 ## Installation & commands
@@ -40,7 +40,11 @@ scripts). The source->target mapping is stated explicitly in
     `GROUP_LIST`) via `usermod -aG`.
   - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).
   - `--locale` - `locale-gen`. _Default._
-  - `--ly-dropin` - deploy the ly@tty2 drop-ins as **real copies** to `/etc`.
+  - `--getty-autologin` - deploy the getty@tty1 autologin drop-in as a **real
+    copy** to `/etc`. There is no display manager: `getty@tty1` is overridden to
+    log `leo` in automatically (`agetty --autologin`), and `~/.bash_profile` then
+    execs the dwl session on tty1. Real copy (not symlinked) for the same reason
+    the ly drop-ins were - systemd reads unit drop-ins before `/home` is mounted.
   - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
   - `--initramfs` - `mkinitcpio -P`.
@@ -96,7 +100,7 @@ scripts). The source->target mapping is stated explicitly in
 ## Structure
 
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
-  `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `ly`, `mimeapps`,
+  `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `vconsole`, `wallpaper`, `wbg`, `wob`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
@@ -117,7 +121,7 @@ scripts). The source->target mapping is stated explicitly in
   `config/usrbin/update_programs_list` (the single source, also used by the
   pacman hook).
 - **`/etc` targets** (in `links.conf`, per file, `/etc/…` target path):
-  `ly/config.ini`, `mkinitcpio.conf`,
+  `mkinitcpio.conf`,
   `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
   `locale/locale.conf`, `locale/locale.gen` (-> `/etc/locale.gen`),
@@ -173,8 +177,10 @@ scripts). The source->target mapping is stated explicitly in
   and is **not** symlinked - it is compiled into the binary. Editing it means
   rebuilding (`./install --dwl`). Only the session glue is symlinked
   (`dwl.desktop`, `dwl-run` -> `/usr/local/…`); startup programs are spawned by
-  dwl itself (`autostart[]` in `config.h`, via `patches/autostart.patch`). ly finds
-  the session via the extra `waylandsessions` path in `config/ly/config.ini`. Gaps
+  dwl itself (`autostart[]` in `config.h`, via `patches/autostart.patch`). There
+  is **no display manager**: `getty@tty1` autologins `leo` and `~/.bash_profile`
+  execs `dwl-run` on tty1 (see the `--getty-autologin` step). `dwl.desktop` stays
+  linked as a plain wayland-session file but is unused without a DM. Gaps
   come from `config/dwl/patches/gaps.patch`, applied by
   `build-dwl` on top of the pinned checkout.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the

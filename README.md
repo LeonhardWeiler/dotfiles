@@ -52,7 +52,7 @@ The optional steps (menu entries; each also has a flag, see below):
 | Add user to the required groups (`usermod -aG`)     | `--groups`        |         |
 | Set the timezone (`/etc/localtime`)                 | `--timezone ZONE` |         |
 | Generate locales (`locale-gen`)                     | `--locale`        | ✓       |
-| Deploy the ly@tty2 drop-ins as real copies          | `--ly-dropin`     |         |
+| Deploy the getty@tty1 autologin drop-in             | `--getty-autologin` |       |
 | Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`       |         |
 | Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`     |         |
 | Install fonts + refresh the font cache (`fc-cache`) | `--fonts`         |         |
@@ -119,7 +119,7 @@ to activate). To do it by hand:
 
 ```bash
 sudo systemctl enable --now NetworkManager.service
-sudo systemctl enable --now ly@tty2.service
+sudo systemctl enable --now getty@tty1.service
 sudo systemctl enable --now dnsmasq.service
 sudo systemctl enable --now sshd.service
 sudo systemctl enable --now legion-conservation.service
@@ -187,7 +187,6 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | Git            | `~/.config/git`                    |
 | hyprlock       | `~/.config/hypr/hyprlock.conf`     |
 | KeePassXC      | `~/.config/keepassxc`              |
-| Ly             | `/etc/ly`                          |
 | MIME defaults  | `~/.config/mimeapps.list`          |
 | mkinitcpio     | `/etc/mkinitcpio.conf`             |
 | MPV            | `~/.config/mpv`                    |
@@ -258,25 +257,25 @@ commands are kept here as reference and for doing them by hand. Checklist:
 
   Apply without a reboot: `sudo systemctl daemon-reload && sudo umount /efi &&
   sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
-- **ly@tty2 drop-ins** (`./install --ly-dropin`;
-  `/etc/systemd/system/ly@tty2.service.d/`): the files in
-  `config/systemd-system/ly@tty2.service.d/` (`wait-home.conf`, `keymap.conf`)
-  must be deployed as **real copies on the root partition**, not symlinked via
+- **getty@tty1 autologin drop-in** (`./install --getty-autologin`;
+  `/etc/systemd/system/getty@tty1.service.d/autologin.conf`): there is **no
+  display manager**. `getty@tty1` is overridden to log `leo` in automatically
+  (`agetty --autologin leo`), and the login shell then execs the dwl session from
+  `~/.bash_profile` (only on tty1, only if no Wayland session is already up). The
+  drop-in must be a **real copy on the root partition**, not symlinked via
   `links.conf` - systemd reads unit drop-ins early at manager start, when a
   `/home` symlink would still be a dead link. Deploy by hand:
 
   ```bash
-  sudo install -d -m755 /etc/systemd/system/ly@tty2.service.d
-  sudo install -m644 config/systemd-system/ly@tty2.service.d/*.conf \
-      /etc/systemd/system/ly@tty2.service.d/
+  sudo install -d -m755 /etc/systemd/system/getty@tty1.service.d
+  sudo install -m644 config/systemd-system/getty@tty1.service.d/autologin.conf \
+      /etc/systemd/system/getty@tty1.service.d/
   sudo systemctl daemon-reload
   ```
 
-  `wait-home.conf` waits for the `/home` mount (the `/etc/ly/config.ini` symlink
-  lives there); `keymap.conf` reloads the console keymap right before `ly-dm`
-  (`ExecStartPre=loadkeys …`) to work around a boot-time KMS/vconsole-setup race
-  that otherwise leaves the ly login field on QWERTY instead of the
-  `/etc/vconsole.conf` `KEYMAP`.
+  Because dwl is started from a plain autologin shell (not a display manager),
+  the console keymap workaround that ly needed is unnecessary: no password is
+  typed on the VT, and dwl applies its own xkb layout once it starts.
 
 - **sudo** (`./install --sudoers`): this setup relies on passwordless sudo for
   the `wheel` group (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, written to

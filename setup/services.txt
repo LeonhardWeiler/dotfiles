@@ -18,7 +18,7 @@
 # instead of systemd user units.
 
 system  NetworkManager.service
-system  ly@tty2.service
+system  getty@tty1.service
 system  dnsmasq.service
 system  sshd.service
 system  legion-conservation.service

@@ -28,7 +28,6 @@ libnotify 0.8.8-1
 linux 7.1.4.arch1-1
 linux-firmware 20260622-1
 linux-headers 7.1.4.arch1-1
-ly 1.4.1-1
 mesa 1:26.1.5-1
 mesa-utils 9.0.0-7
 mpv 1:0.41.0-3

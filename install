@@ -26,7 +26,7 @@
 #   --timezone ZONE           set the timezone (e.g. --timezone Europe/Vienna);
 #                             without ZONE the menu asks interactively
 #   --locale                  generate the locales from /etc/locale.gen (locale-gen)
-#   --ly-dropin               deploy the ly@tty2 drop-ins as real copies to /etc
+#   --getty-autologin         deploy the getty@tty1 autologin drop-in to /etc
 #   --sudoers                 set up passwordless sudo for the wheel group
 #                             (/etc/sudoers.d/, validated with visudo)
 #   --initramfs               rebuild the initramfs (mkinitcpio -P)
@@ -144,7 +144,7 @@ while [ $# -gt 0 ]; do
     # ── Step flags: every registered optional step maps to SELECTED[<name>]
     # (see register_step). --timezone is special - it also takes an argument.
     --programs | --systemd | --groups | \
-    --locale | --ly-dropin | --sudoers | --initramfs | --fonts | --dwl | --wbg)
+    --locale | --getty-autologin | --sudoers | --initramfs | --fonts | --dwl | --wbg)
                         SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
@@ -370,20 +370,21 @@ do_timezone() {
 }
 register_step timezone do_timezone "Set timezone (/etc/localtime)"
 
-# Deploy the ly@tty2 drop-ins as REAL copies onto the root partition (not
-# symlinked via links.conf): systemd reads unit drop-ins early at manager start,
-# when a /home symlink would still be a dead link. Then daemon-reload.
-LY_DROPIN_DIR="/etc/systemd/system/ly@tty2.service.d"
-do_ly_dropin() {
-  local src="$BASEDIR/config/systemd-system/ly@tty2.service.d"
-  [ -d "$src" ] || { warn "ly@tty2 drop-in source missing: $src"; return 0; }
-  info "Copying ly@tty2 drop-ins to $LY_DROPIN_DIR"
-  run 1 install -d -m755 "$LY_DROPIN_DIR" || { warn "directory not creatable"; return 0; }
-  run 1 install -m644 "$src"/wait-home.conf "$src"/keymap.conf "$LY_DROPIN_DIR"/ \
+# Deploy the getty@tty1 autologin drop-in as a REAL copy onto the root partition
+# (not symlinked via links.conf): systemd reads unit drop-ins early at manager
+# start, when a /home symlink would still be a dead link. Then daemon-reload.
+# This is what logs `leo` into the dwl session at boot without a display manager.
+GETTY_DROPIN_DIR="/etc/systemd/system/getty@tty1.service.d"
+do_getty_autologin() {
+  local src="$BASEDIR/config/systemd-system/getty@tty1.service.d"
+  [ -d "$src" ] || { warn "getty@tty1 drop-in source missing: $src"; return 0; }
+  info "Copying getty@tty1 autologin drop-in to $GETTY_DROPIN_DIR"
+  run 1 install -d -m755 "$GETTY_DROPIN_DIR" || { warn "directory not creatable"; return 0; }
+  run 1 install -m644 "$src"/autologin.conf "$GETTY_DROPIN_DIR"/ \
     || warn "drop-in copy failed"
   run 1 systemctl daemon-reload || warn "daemon-reload failed"
 }
-register_step ly-dropin do_ly_dropin "Deploy ly@tty2 drop-ins (real copies)"
+register_step getty-autologin do_getty_autologin "Deploy getty@tty1 autologin drop-in (real copy)"
 
 # Passwordless sudo for the wheel group - a deliberate convenience choice of this
 # setup. As a drop-in in /etc/sudoers.d/ (0440), first checked with `visudo -c`
@@ -604,7 +605,7 @@ case "$CMD" in
     is_selected systemd && reactivate_units
     is_selected groups && do_groups
     is_selected timezone && do_timezone
-    is_selected ly-dropin && do_ly_dropin
+    is_selected getty-autologin && do_getty_autologin
     is_selected sudoers && do_sudoers
     is_selected initramfs && do_initramfs
     is_selected fonts && do_fonts
