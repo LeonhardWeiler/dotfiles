@@ -5,6 +5,9 @@
 #   scope = user     -> `systemctl --user enable <unit>`
 #   scope = system   -> `sudo systemctl enable <unit>`
 #   scope = disable  -> `sudo systemctl disable <unit>`  (preset-on unit we want OFF)
+#   scope = mask     -> `sudo systemctl mask <unit>`     (static unit, no [Install]:
+#                       `disable` is a no-op; masking also blocks udev-triggered
+#                       starts. Undo by hand with `systemctl unmask`.)
 # `#` comments and blank lines are ignored.
 #
 # Only system units that really exist are listed. pipewire/wireplumber are user
@@ -42,3 +45,12 @@ system  virtstoraged.socket
 #                                   up; pointless on a laptop with NM.
 disable  libvirtd.service
 disable  NetworkManager-wait-online.service
+
+# Masked (static units - `disable` cannot touch them):
+#   systemd-vconsole-setup  - loads the TTY font/keymap (from /etc/vconsole.conf).
+#                             Unneeded here: getty@tty1 autologins and immediately
+#                             execs dwl (Wayland), whose keymap comes from XKB, so
+#                             the bare TTY is never typed into. At boot it also
+#                             raced the VT and failed (loadkeys I/O error, ~1s).
+#                             Masking removes the failure and the udev retrigger.
+mask     systemd-vconsole-setup.service

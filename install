@@ -69,10 +69,13 @@ info() { printf '%sℹ %s%s\n'    "$C_INFO" "$*"     "$C_RST"; }
 usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
 
 # ── Data lists (kept out of the script, in setup/*.txt) ──────────────────────
-# systemd units, split by scope (`user`/`system`/`disable`) -> USER_UNITS /
-# SYSTEM_UNITS / DISABLE_UNITS. `disable` = a preset-enabled system unit we want
-# OFF at boot (e.g. NetworkManager-wait-online, monolithic libvirtd).
-USER_UNITS=(); SYSTEM_UNITS=(); DISABLE_UNITS=()
+# systemd units, split by scope (`user`/`system`/`disable`/`mask`) -> USER_UNITS
+# / SYSTEM_UNITS / DISABLE_UNITS / MASK_UNITS. `disable` = a preset-enabled
+# system unit we want OFF at boot (e.g. NetworkManager-wait-online, monolithic
+# libvirtd); `mask` = a static/always-on unit we want fully blocked - it has no
+# [Install] so `disable` is a no-op, and masking also defeats udev-triggered
+# starts (e.g. systemd-vconsole-setup via 90-vconsole.rules).
+USER_UNITS=(); SYSTEM_UNITS=(); DISABLE_UNITS=(); MASK_UNITS=()
 read_services() {
   local file="$1" line scope unit
   [ -f "$file" ] || { warn "services list missing: $file"; return 0; }
@@ -83,7 +86,8 @@ read_services() {
       user)    [ -n "${unit:-}" ] && USER_UNITS+=("$unit") ;;
       system)  [ -n "${unit:-}" ] && SYSTEM_UNITS+=("$unit") ;;
       disable) [ -n "${unit:-}" ] && DISABLE_UNITS+=("$unit") ;;
-      *) warn "$file: unknown scope '$scope' (expected user|system|disable)" ;;
+      mask)    [ -n "${unit:-}" ] && MASK_UNITS+=("$unit") ;;
+      *) warn "$file: unknown scope '$scope' (expected user|system|disable|mask)" ;;
     esac
   done < "$file"
 }
@@ -340,6 +344,14 @@ reactivate_units() {
   for u in "${DISABLE_UNITS[@]}"; do
     if [ "$DRYRUN" = 1 ]; then run 1 systemctl disable "$u"
     else run 1 systemctl disable "$u" >/dev/null 2>&1 || warn "system unit not disabled: $u"; fi
+  done
+  # Static/always-on units we want fully off: no [Install] means `disable` cannot
+  # touch them, so `mask` them (symlink to /dev/null) - this also blocks starts
+  # triggered by udev rules. Idempotent; unmask by hand to revert.
+  [ ${#MASK_UNITS[@]} -gt 0 ] && info "Masking system units (sudo)"
+  for u in "${MASK_UNITS[@]}"; do
+    if [ "$DRYRUN" = 1 ]; then run 1 systemctl mask "$u"
+    else run 1 systemctl mask "$u" >/dev/null 2>&1 || warn "system unit not masked: $u"; fi
   done
 }
 register_step systemd reactivate_units "Activate systemd units (enable)"
