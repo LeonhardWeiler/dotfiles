@@ -50,7 +50,7 @@ lua/plugins/             one file per plugin/area (auto-import)
 | Treesitter   | nvim-treesitter (`main`)                                                                  |
 | LSP          | mason.nvim, mason-lspconfig.nvim, nvim-lspconfig, lazydev.nvim, mason-tool-installer.nvim |
 | Completion   | blink.cmp, LuaSnip, friendly-snippets                                                     |
-| Formatter    | conform.nvim (stylua, biome, prettierd, goimports+gofumpt, typstyle)                      |
+| Formatter    | conform.nvim (stylua, biome, prettier, goimports+gofumpt, typstyle)                      |
 | Linter       | nvim-lint (biome, golangci-lint)                                                          |
 | Typst        | typst-preview.nvim                                                                        |
 
@@ -92,6 +92,6 @@ Leader = `<Space>`.
 - **Format-on-save** via conform.nvim (LSP fallback if no formatter is
   configured).
 - **Linting** via nvim-lint on `BufReadPost`/`BufWritePost`/`InsertLeave`.
-  Lua diagnostics come from `lua_ls` (LSP); Markdown is only formatted by prettierd.
+  Lua diagnostics come from `lua_ls` (LSP); Markdown is only formatted by prettier.
 - **Diagnostics** are shown multi-line under the affected line via
   `virtual_lines`; `<leader>e` additionally opens the diagnostic float.

@@ -53,6 +53,11 @@ Keep the indentation at 2 spaces (see `options.lua`/`stylua.toml`).
 - **Completion is blink.cmp** (not nvim-cmp). LSP capabilities come from
   `require("blink.cmp").get_lsp_capabilities()`.
 - **mason uses the `mason-org` organization** (no longer `williamboman`).
+- **`prettier`, deliberately not `prettierd`** (`plugins/conform.lua`):
+  prettierd is a daemon that outlives nvim and stays resident (~60 MB). css is
+  formatted by biome instead; html and markdown keep prettier because biome's
+  html formatter is experimental/off and biome has no markdown formatter. Do not
+  "optimize" this back to prettierd.
 
 ## Conventions
 
