@@ -99,7 +99,6 @@ static const char *termcmd[]    = { "foot", NULL };
 static const char *menucmd[]    = { "rofi", "-show", "drun", NULL };
 static const char *filescmd[]   = { "rofi", "-show", "filebrowser", NULL };
 static const char *browsercmd[] = { "zen-browser", NULL };
-/* waylock has no config file - it is configured entirely via these flags */
 static const char *lockcmd[]    = { "waylock", "-ignore-empty-password",
                                     "-init-color", "0x191414",
                                     "-input-color", "0xdddddd",
