@@ -1,7 +1,31 @@
-1. hyprlock -> waylock. It should as similar as possible and have as close the functionality as possible. Write all things that aren't possible in waylock. Remove hyprlock from all the readme and config files and replace it with waylock
+sec-1 absichtlich so und sollte auch der befehl bleiben. Bitte vermerken, dass das kein problem ist
 
-2. Is it possible to make the legion conservation mode a shellscript that fires on startup instead of a system unit? Does it even need to do that, because it should just put 1 in a file, nothing more so does it really need to be done every time? If yes then make a startup script instead of the system unit
+ux-1 ctrl + alt + backspace macht bei mir garnichts. Also kannst du eigentlich auch aus config.h rausnehmen. Und mach für alt + shift + q ein rofi bestätigungsmenü
 
-3. In neovim I use marksman for markdown files and prettierd, when have a neovim window with a markdown file open the marksman process runs. When I close the window, the marksman process went away, but a prettierd process came there instead and isn't going away. That is happening every time and is building up a lot of memory usage. Resolve this issue
+ux-2 layouts[] should stay like that, monorules[] should stay like that, increment master count mit mod + shift + i und decrement mit mod + shift + o, within stack moving should stay like that. Remove all the ununsed things if possible
 
-4. Improve the /review-and-report systems report, just do everything as in the skill provided
+cq-1 fix
+
+cq-2 keep like that, everyone should be able to think and do it right by their own
+
+doc-1 change the lock to mod + l, make the normal 9 tags. dont add keybindings to the readme
+
+doc-2 fix
+
+doc-3 update claude.md
+
+cq-3 fix
+
+cq-4 fix
+
+ux-3 fix
+
+cq-5 fix
+
+cq-6 fix
+
+ux-4 no, not wanted
+
+info-1 i don't care about colemak dh, i know both keyboard layout
+
+make a file in AGENT/ called keybinds and list all the keybinds on my system for all the progams and what they are doing, so that i can look over them
