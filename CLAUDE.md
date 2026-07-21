@@ -173,6 +173,15 @@ scripts). The source->target mapping is stated explicitly in
   `/usr/local/bin/update_programs_list` (its own `links.conf` line), because the
   pacman hook (`/etc/pacman.d/hooks`) knows no `$HOME` variables and calls it from
   there - so the hook stays portable for a foreign user too.
+- **Booting** is **EFISTUB**, not a bootloader: the custom kernel is built with
+  `CONFIG_EFI_STUB=y` and boots **without an initramfs**, so the firmware starts
+  `vmlinuz` on the ESP directly. `config/usrbin/efistub-entry <kernel-on-esp>
+  [<cmdline>]` writes the EFI NVRAM entry (needs root; without `<cmdline>` it
+  reuses `/proc/cmdline`) - idempotent, it deletes an existing entry of the same
+  label first. systemd-boot deliberately **stays** at the ESP fallback path
+  (`/efi/EFI/BOOT/BOOTX64.EFI`) as the safety net, since the firmware here keeps
+  no OS-created NVRAM entry of its own. A new kernel revision therefore needs one
+  `efistub-entry` run (README section "EFISTUB").
 - **`config/wallpaper/`** = the picture set (`pictures/`, linked as a dir symlink
   to `~/.local/share/wallpapers`) plus `change-wallpaper.sh` (linked to
   `~/.local/bin/change-wallpaper`, picks a random wallpaper via wbg; called
