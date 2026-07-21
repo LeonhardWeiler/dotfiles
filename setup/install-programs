@@ -18,17 +18,28 @@ PROGRAMS_TXT="$(cd "$(dirname "$0")" && pwd)/programs.txt"
 
 echo "Installing packages from programs.txt..."
 
-while IFS= read -r line
+failed=""
+
+# The list is read on FD 3, not on stdin: yay/pacman inherit stdin and would
+# happily swallow the rest of the package list, silently skipping its tail.
+while IFS= read -r line <&3
 do
     package=$(echo "$line" | awk '{print $1}')
+    [ -n "$package" ] || continue
 
     if yay -Q "$package" >/dev/null 2>&1
     then
         echo "$package is already installed."
     else
         echo "$package not installed, installing with yay..."
-        yay -S --noconfirm "$package"
+        # A package that vanished from the repos/AUR must not abort the run and
+        # leave the machine half-provisioned - note it and carry on.
+        yay -S --noconfirm "$package" </dev/null || failed="$failed $package"
     fi
-done < "$PROGRAMS_TXT"
+done 3< "$PROGRAMS_TXT"
 
 echo "All packages from programs.txt have been processed."
+if [ -n "$failed" ]; then
+    echo "install-programs: NOT installed:$failed" >&2
+    exit 1
+fi
