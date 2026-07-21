@@ -318,6 +318,11 @@
         KeePassXC <code>.kdbx</code> (excluded via
         <code>.gitignore</code>/<code>.claudeignore</code>) and the third-party
         mpv Lua scripts were only checked superficially.<br />
+        <b>Status:</b> all fifteen findings of the previous pass have since been
+        worked through - eleven fixed in code (one commit each), four confirmed
+        as intended and moved to
+        <a href="#deliberate">Deliberate decisions</a>. Section 1 is
+        consequently empty.<br />
         <b>Note:</b> the previous snapshot was substantially stale - it still
         described Hyprland, Mako, the ly display manager, a
         <code>--scrub</code>/owner prompt, a hidden <code>selftest</code>, a CI
@@ -332,13 +337,13 @@
           <span class="n">0</span><span class="l">Critical</span>
         </div>
         <div class="stat high">
-          <span class="n">1</span><span class="l">High</span>
+          <span class="n">0</span><span class="l">High</span>
         </div>
         <div class="stat med">
-          <span class="n">7</span><span class="l">Medium</span>
+          <span class="n">0</span><span class="l">Medium</span>
         </div>
         <div class="stat low">
-          <span class="n">6</span><span class="l">Low</span>
+          <span class="n">0</span><span class="l">Low</span>
         </div>
       </div>
 
@@ -358,449 +363,81 @@
 
       <!-- ================= OPEN FINDINGS ================= -->
       <section id="open">
-        <h2>1 · Open findings</h2>
+        <h2>1 &middot; Open findings</h2>
 
-        <div class="card high">
+        <div class="card good">
           <div class="card-head">
-            <span class="id">SEC-1</span>
-            <span class="badge high">high</span>
-            <span class="loc"
-              ><code>config/bash/.bashrc</code> ·
-              <code>config/claude/settings.json</code></span
-            >
+            <span class="badge good">clear</span>
+            <span class="loc">nothing open</span>
           </div>
           <p>
-            Two settings compound into "no guard rails at all" for the agent
-            that has write access to this machine.
-            <code>.bashrc</code> defines
-            <code>alias claude='claude --dangerously-skip-permissions'</code>,
-            so <em>every</em> invocation skips all permission prompts - and
-            because the alias shadows the binary, there is no ordinary way to
-            start it normally short of <code>\claude</code> or
-            <code>command claude</code>. <code>settings.json</code> then adds
-            <code>"skipDangerousModePermissionPrompt": true</code>, which also
-            removes the one-time warning about running in that mode. On a box
-            where <code>./install --sudoers</code> installs
-            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code>, an agent mistake
-            escalates to root without a single prompt. Neither setting is
-            mentioned in README or CLAUDE.md, so it does not currently read as a
-            deliberate decision.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> keep plain <code>claude</code> intact and put
-            the bypass behind a separate, explicitly-named alias (<code
-              >alias yolo='claude --dangerously-skip-permissions'</code
-            >). If the current behaviour is genuinely wanted, document it in the
-            README next to the passwordless-sudo note so the combined blast
-            radius is written down somewhere.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">UX-1</span>
-            <span class="badge med">medium</span>
-            <span class="loc"><code>config/dwl/config.h:113</code></span>
-          </div>
-          <p>
-            <code>Alt+Shift+Q</code> calls <code>quit</code> and tears down the
-            whole session immediately - no confirmation, everything unsaved is
-            gone. It sits on the same modifier as, and one key row from,
-            <code>Alt+Shift+C</code> (<code>killclient</code>), which is a key
-            you press all day.
-            <code>Ctrl+Alt+Backspace</code> (<code>Terminate_Server</code>) is a
-            second unconfirmed way to do the same thing. Since dwl is started
-            via <code>exec dwl</code> from <code>~/.bash_profile</code>,
-            quitting drops straight back to a bare tty1 shell.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> move <code>quit</code> to a chord that cannot
-            be hit by accident (e.g. add <code>WLR_MODIFIER_CTRL</code>), or
-            route it through a confirmation with the rofi that is already
-            installed:
-            <code
-              >SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx
-              yes &amp;&amp; pkill dwl")</code
-            >.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">UX-2</span>
-            <span class="badge med">medium</span>
-            <span class="loc"><code>config/dwl/config.h</code></span>
-          </div>
-          <p>
-            Several capabilities are compiled in but unreachable, because no key
-            is bound to them - the build itself warns about exactly these (<code
-              >setlayout / focusmon / tagmon / incnmaster / toggletag defined
-              but not used</code
-            >):
+            <b>No open findings.</b> Every finding of the previous pass has been
+            worked through: the ones that were real defects are fixed in code
+            (one commit each), the ones that turned out to be intended are
+            written down in
+            <a href="#deliberate">Deliberate decisions</a> below instead of being
+            carried around as debt. What was fixed, in commit order:
           </p>
           <ul class="tracklist">
             <li>
-              <code>layouts[]</code> defines three layouts (<code>[]=</code>
-              tile, <code>&gt;&lt;&gt;</code> floating,
-              <code>[M]</code> monocle) but nothing is bound to
-              <code>setlayout</code>, so
-              <b>floating and monocle can never be selected</b>. The comment in
-              the file claims they "stay available", which only holds for
-              per-window <code>togglefloating</code> and
-              <code>togglefullscreen</code>.
+              <b>UX-1</b> - <code>ALT+SHIFT+Q</code> now asks for confirmation in
+              rofi before quitting; the dead
+              <code>Ctrl+Alt+Backspace</code> binding is gone.
             </li>
             <li>
-              <code>monrules[]</code> carries a rule for an external output (the
-              <code>NULL</code> catch-all next to <code>eDP-1</code>), but
-              <code>focusmon</code>/<code>tagmon</code> are unbound - with a
-              second display attached there is
-              <b>no way to focus it or move a window to it</b>.
+              <b>UX-2</b> - <code>incnmaster</code> is bound to
+              <code>ALT+SHIFT+I</code> / <code>ALT+SHIFT+O</code>, so the master
+              count is no longer pinned at 1.
             </li>
             <li>
-              <code>incnmaster</code> is unbound, so the master count is
-              permanently pinned at 1.
+              <b>CQ-1</b> - <code>build-dwl</code> only contacts the remote when
+              the pinned tag is missing locally, so a codeberg outage cannot
+              block applying a <code>config.h</code> change.
             </li>
             <li>
-              There is no binding to move the focused window <em>within</em> the
-              stack - only <code>focusstack</code> (<code>Alt+j/k</code>) and
-              <code>zoom</code>.
+              <b>DOC-1</b> - the two surprises are removed rather than
+              documented: the lock moved off Super onto
+              <code>MODKEY+L</code> and <code>TAGCOUNT</code> went from 6 to the
+              customary 9. Every binding on the system is now listed in
+              <code>AGENT/keybinds.md</code>; keeping them out of the README is
+              deliberate.
+            </li>
+            <li>
+              <b>DOC-2</b> - <code>config/dwl/README</code> lists all three
+              applied patches (incl. <code>attachbottom</code>) and the real
+              apply path.
+            </li>
+            <li>
+              <b>DOC-3</b> - the vconsole mentions are out of CLAUDE.md, which
+              now records the actual state instead.
+            </li>
+            <li>
+              <b>CQ-3</b> - <code>install-programs</code> reads the list on FD 3
+              and gives yay <code>&lt;/dev/null</code>, so no tail of the package
+              list is silently skipped; a failed package is collected and
+              reported instead of aborting the run.
+            </li>
+            <li>
+              <b>CQ-4</b> - <code>register_step</code> is the single source of
+              truth: flags are matched against the registry and the help's step
+              list is generated from it.
+            </li>
+            <li>
+              <b>UX-3</b> - the setup menu warns about unrecognised input,
+              accepts commas and step names, and re-prompts when a non-empty
+              input selects nothing.
+            </li>
+            <li>
+              <b>CQ-5</b> - <code>vol_ctl</code> is free of
+              <code>grep -oP</code> and pins the pactl label lookups with
+              <code>LC_ALL=C</code>.
+            </li>
+            <li>
+              <b>CQ-6</b> - <code>.gitignore</code> / <code>.claudeignore</code>
+              are commented in English, with the reason instead of a dead
+              TRACK-2 reference.
             </li>
           </ul>
-          <div class="rec">
-            <b>Recommendation:</b> decide per item - either bind them (<code
-              >Alt+t/f/m</code
-            >
-            for the layouts, <code>Alt+,/.</code> for
-            <code>focusmon</code>/<code>tagmon</code>, <code>Alt+i/d</code> for
-            <code>incnmaster</code>) or delete the two unreachable layouts and
-            the external <code>monrules</code> entry so
-            <code>config.h</code> stops promising what it cannot do.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">CQ-1</span>
-            <span class="badge med">medium</span>
-            <span class="loc"><code>config/dwl/build-dwl:29-38</code></span>
-          </div>
-          <p>
-            The build unconditionally runs
-            <code>git fetch --tags --depth 1 origin v0.8</code> before touching
-            anything, and the script runs under <code>set -eu</code> - so if the
-            remote is unreachable the whole <code>./install --dwl</code> step
-            aborts,
-            <b
-              >even when a valid, pinned <code>v0.8</code> checkout is already
-              sitting in <code>~/.local/src/dwl</code></b
-            >. This is not theoretical: it happened during this review
-            (codeberg.org answered <code>HTTP 504</code>), and the intended way
-            to apply a <code>config.h</code> change was unavailable until the
-            build was reproduced by hand. Since dwl is configured at compile
-            time, this makes editing <code>config.h</code> dependent on a third
-            party being up.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> only fetch when the pinned tag does not
-            already resolve locally (<code
-              >git -C "$SRC_DIR" rev-parse -q --verify "refs/tags/$DWL_VERSION"
-              &gt;/dev/null || git fetch …</code
-            >), or make the fetch non-fatal (<code
-              >|| echo "offline - using the local checkout"</code
-            >) and let <code>reset --hard</code> do the rest.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">CQ-2</span>
-            <span class="badge med">medium</span>
-            <span class="loc"
-              ><code>install</code> · <code>setup/links.conf</code></span
-            >
-          </div>
-          <p>
-            There is no way to clean up links whose entry was
-            <b>removed</b> from <code>links.conf</code>. <code>unlink</code> and
-            <code>status</code> both iterate the <em>current</em> entries only,
-            so a deleted line leaves its symlink behind forever - invisible to
-            every command the script offers. Hit during this review: dropping
-            the hyprlock entry left <code>~/.config/hypr/hyprlock.conf</code>
-            dangling and it had to be removed by hand. The same applies to the
-            two commented-out wallpaper lines. An earlier
-            <code>clean</code> command apparently existed but is gone.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> reintroduce a prune command that walks the
-            managed target roots and removes symlinks pointing into
-            <code>$BASEDIR</code> that no entry claims any more - or, cheaper,
-            have <code>status</code> report such orphans so they at least become
-            visible.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">DOC-1</span>
-            <span class="badge med">medium</span>
-            <span class="loc"
-              ><code>README.md</code> · <code>config/dwl/README.md</code></span
-            >
-          </div>
-          <p>
-            <b>The keybindings are documented nowhere.</b> For a setup whose
-            entire premise is "keyboard-driven", the only description of its
-            primary interface is <code>config/dwl/config.h</code> itself. That
-            matters more than usual here because the choices are unusual:
-            <code>MODKEY</code> is <b>Alt</b>, not Super, while the screen lock
-            is the only binding on <b>Super</b> (<code>Super+L</code>) - and
-            there are exactly 6 tags, not the customary 9.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> add a keybinding table to
-            <code>config/dwl/README.md</code> (modifier, key, action), grouped
-            the way <code>config.h</code> already groups them, and link it from
-            the root README.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">DOC-2</span>
-            <span class="badge med">medium</span>
-            <span class="loc"><code>config/dwl/README.md:13-20,35</code></span>
-          </div>
-          <p>Two inaccuracies in the dwl README:</p>
-          <ul class="tracklist">
-            <li>
-              Line 35 says <b>"Log out and pick dwl in ly"</b> - there is no
-              display manager. ly is gone; <code>getty@tty1</code> autologins
-              and <code>~/.bash_profile</code> execs dwl. Following the
-              instruction is impossible.
-            </li>
-            <li>
-              The file list names only <code>patches/gaps.patch</code> and
-              <code>patches/autostart.patch</code>, but
-              <code>build-dwl:40</code> applies <b>every</b>
-              <code>patches/*.patch</code> - so
-              <code>patches/attachbottom.patch</code> is compiled in as well and
-              is documented nowhere (CLAUDE.md has the same gap). New windows
-              attaching at the bottom of the stack is user-visible behaviour.
-            </li>
-          </ul>
-          <div class="rec">
-            <b>Recommendation:</b> replace the ly sentence with the actual apply
-            path (rebuild, then log out of the session / reboot), and list all
-            three patches with a one-line description each in both
-            <code>config/dwl/README.md</code> and <code>CLAUDE.md</code>.
-          </div>
-        </div>
-
-        <div class="card med">
-          <div class="card-head">
-            <span class="id">DOC-3</span>
-            <span class="badge med">medium</span>
-            <span class="loc"><code>CLAUDE.md:115,135</code></span>
-          </div>
-          <p>
-            CLAUDE.md lists <code>vconsole</code> among the
-            <code>config/</code> sources and
-            <code>vconsole/vconsole.conf</code> among the tracked
-            <code>/etc</code> targets. <b>Neither exists.</b> There is no
-            <code>config/vconsole/</code> directory and no
-            <code>links.conf</code> line; <code>/etc/vconsole.conf</code> is now
-            the untouched systemd fallback (every line commented out),
-            <code>systemd-vconsole-setup.service</code> is <code>mask</code>ed
-            in <code>services.txt</code>, and the <code>keymap</code>/<code
-              >consolefont</code
-            >
-            hooks are gone from <code>HOOKS</code> in
-            <code>mkinitcpio.conf</code>. An agent reading CLAUDE.md will look
-            for a file that is not there.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> drop both mentions from CLAUDE.md. If the
-            Colemak-DH console keymap is still wanted on the TTY (see INFO-1),
-            re-add <code>config/vconsole/vconsole.conf</code> with a
-            <code>links.conf</code> line instead and unmask the unit.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="id">CQ-3</span>
-            <span class="badge low">low</span>
-            <span class="loc"><code>setup/install-programs:20-33</code></span>
-          </div>
-          <p>
-            The install loop reads <code>programs.txt</code> on stdin (<code
-              >done &lt; "$PROGRAMS_TXT"</code
-            >) and calls <code>yay -S --noconfirm "$package"</code> inside it.
-            yay/pacman inherit that stdin and can consume the remaining lines,
-            so an arbitrary tail of the package list is
-            <b>silently skipped</b> with no error - a classic read-loop stdin
-            leak. On top of that, <code>set -e</code> means a single package
-            that no longer exists in the repos or the AUR aborts the entire run,
-            leaving the machine half-provisioned.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> redirect the package manager's stdin (<code
-              >yay -S --noconfirm "$package" &lt;/dev/null</code
-            >) or read the file on a dedicated FD (<code
-              >while … done 3&lt; "$file"</code
-            >
-            with <code>read -u 3</code>), and let a failed package
-            <code>warn</code> and continue instead of killing the run - the way
-            <code>install</code>'s own step functions already do.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="id">CQ-4</span>
-            <span class="badge low">low</span>
-            <span class="loc"><code>install:150-152,20-45</code></span>
-          </div>
-          <p>
-            Adding an optional step is not a single-point change, which
-            undercuts the point of the <code>register_step</code> registry. The
-            registry supplies name, function and menu description, but the
-            <code>--flag</code> must <em>additionally</em> be hand-added to the
-            <code>case</code> list in the argument parser and, a third time, to
-            the usage comment block at the top of the file. Forgetting the
-            <code>case</code> entry produces
-            <code>unknown argument: --&lt;step&gt;</code> for a step that
-            <em>is</em> registered and does show up in the menu - encountered
-            while adding <code>--legion-conservation</code> during this cycle.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> drop the hardcoded flag list and match
-            generically in the fallback branch - if
-            <code>${STEP_FN[${1#--}]:-}</code> is set, select that step;
-            otherwise error. The help's step section can be generated from
-            <code>STEP_ORDER</code>/<code>STEP_DESC</code> the same way, leaving
-            <code>register_step</code> as the single source of truth.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="id">UX-3</span>
-            <span class="badge low">low</span>
-            <span class="loc"><code>install:316</code></span>
-          </div>
-          <p>
-            The setup menu discards unrecognised input without a word:
-            <code
-              >for n in $line; do [ -n "${idx[$n]:-}" ] &amp;&amp;
-              SELECTED[${idx[$n]}]=1; done</code
-            >. Typing <code>99</code>, a step name instead of its number, or a
-            comma-separated list (<code>1,2</code> - the prompt asks for spaces)
-            selects <b>nothing</b>, and <code>setup</code> then links the
-            configs and reports success while having silently run zero of the
-            steps the user asked for.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> <code>warn "unknown selection: $n"</code> in
-            the else branch, and re-prompt when the parsed selection ends up
-            empty although the input was not.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="id">CQ-5</span>
-            <span class="badge low">low</span>
-            <span class="loc"><code>config/usrbin/vol_ctl:15,38</code></span>
-          </div>
-          <p>
-            Two portability slips in a <code>#!/bin/sh</code> script, against
-            the repo's own convention that only <code>install</code> and
-            <code>update_programs_list</code> may use bashisms/GNU-isms. Line 38
-            uses <code>grep -oP</code> (PCRE - GNU grep only, and only when
-            compiled with PCRE support). Line 15 parses
-            <code>pactl info</code> by its English label (<code
-              >grep "Default Sink"</code
-            >), which breaks under a translated locale; it is safe here only
-            because <code>locale.gen</code> generates
-            <code>en_US.UTF-8</code> and nothing else.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> replace <code>grep -oP '\d+%'</code> with
-            <code>grep -o '[0-9]\+%'</code> or an <code>awk</code> field pick,
-            and pin the label lookup with <code>LC_ALL=C pactl info</code>.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="id">CQ-6</span>
-            <span class="badge low">low</span>
-            <span class="loc"
-              ><code>.gitignore</code> · <code>.claudeignore</code></span
-            >
-          </div>
-          <p>
-            Both files are commented in <b>German</b>, although CLAUDE.md fixes
-            the comment/doc language at English for this repo - and the German
-            is ASCII-mangled at that (<code>ausschliessen</code>,
-            <code>gehoeren</code>), which the language rules in use here
-            explicitly disallow. Both also point at
-            <b><code>Health-Report TRACK-2</code></b
-            >, a finding ID that no longer exists in this report, so the
-            justification for the entries is now a dead reference.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> translate both comment blocks to English and
-            replace the TRACK-2 pointer with the reason itself ("never track
-            secrets/runtime state that may end up under <code>config/</code>").
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="id">UX-4</span>
-            <span class="badge low">low</span>
-            <span class="loc"><code>config/dwl/config.h:149</code></span>
-          </div>
-          <p>
-            The screenshot binding
-            <code>Print → grim -g "$(slurp)" - | wl-copy</code> is completely
-            silent. There is no notification daemon in this setup (wob is a bar
-            OSD, not a notifier), so
-            <b>nothing confirms that a screenshot was taken</b> - the only way
-            to find out is to paste. Cancelling <code>slurp</code> with Escape
-            yields an empty geometry, whereupon <code>grim</code> fails equally
-            silently. There is also no variant that writes the image to a file,
-            so screenshots cannot be kept.
-          </p>
-          <div class="rec">
-            <b>Recommendation:</b> chain a short wob pulse on success (<code
-              >… &amp;&amp; ~/.local/bin/osd 100</code
-            >) and add a second binding (<code>Shift+Print</code>) writing to
-            <code>~/Pictures/screenshot-$(date +%F-%H%M%S).png</code>.
-          </div>
-        </div>
-
-        <div class="card info">
-          <div class="card-head">
-            <span class="id">INFO-1</span>
-            <span class="badge info">info</span>
-            <span class="loc"
-              ><code>/etc/vconsole.conf</code> ·
-              <code>setup/services.txt:25</code></span
-            >
-          </div>
-          <p>
-            Consequence of the vconsole removal, recorded so it is a conscious
-            state rather than a surprise: the TTY now runs the built-in
-            <code>us</code> QWERTY keymap. On a Colemak-DH keyboard, the tty1
-            fallback shell you land in when dwl fails to start is therefore
-            typed blind. The README argues correctly that this does not matter
-            for <em>login</em> (autologin, no password on the VT) - but it does
-            matter for repair. Not a bug, and cheap to accept; the point is that
-            CLAUDE.md still claims the opposite (see DOC-3).
-          </p>
         </div>
       </section>
 
@@ -1066,6 +703,85 @@
       <!-- ================= DELIBERATE ================= -->
       <section id="deliberate">
         <h2>4 · Deliberate decisions</h2>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"
+              ><code>config/bash/.bashrc</code> ·
+              <code>config/claude/settings.json</code></span
+            >
+          </div>
+          <p>
+            <b>Claude Code runs without permission prompts, on purpose</b>
+            (former SEC-1). The alias
+            <code>claude='claude --dangerously-skip-permissions'</code> is meant
+            to stay <em>the</em> command, and
+            <code>"skipDangerousModePermissionPrompt": true</code> drops the
+            one-time warning as well. Together with the passwordless
+            <code>wheel</code> sudo from <code>--sudoers</code> that means an
+            agent mistake reaches root without a prompt - so the combined blast
+            radius is now written down in the README next to the sudo note and
+            in CLAUDE.md, and <code>\\claude</code> / <code>command claude</code>
+            remain the way to start it with prompts. A conscious trade, not an
+            oversight.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"
+              ><code>install</code> · <code>setup/links.conf</code></span
+            >
+          </div>
+          <p>
+            <b>No prune command for removed entries</b> (former CQ-2).
+            <code>unlink</code> and <code>status</code> iterate the current
+            entries only, so deleting a line from <code>links.conf</code> leaves
+            its symlink behind, and cleaning that up is a manual
+            <code>rm</code>. Kept as is rather than growing the script for it:
+            whoever removes a line can see what it pointed at, and the file
+            already carries the instruction "prefer deleting a feature over
+            growing this file".
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"><code>config/dwl/config.h</code></span>
+          </div>
+          <p>
+            <b>Unbound by choice</b> (rest of former UX-2, and UX-4).
+            <code>layouts[]</code> keeps floating and monocle for
+            <code>togglefloating</code>/<code>togglefullscreen</code> without a
+            <code>setlayout</code> binding, <code>monrules[]</code> keeps its
+            external-output rule without
+            <code>focusmon</code>/<code>tagmon</code>, and there is no binding to
+            move a window <em>within</em> the stack - the compiler's
+            "defined but not used" warnings for those are expected, not a
+            regression. The screenshot binding likewise stays silent and
+            clipboard-only: no notification daemon is wanted just to confirm it.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"
+              ><code>/etc/vconsole.conf</code> ·
+              <code>setup/services.txt</code></span
+            >
+          </div>
+          <p>
+            <b>Plain <code>us</code> QWERTY on the TTY</b> (former INFO-1). With
+            <code>systemd-vconsole-setup.service</code> masked and no
+            <code>config/vconsole/</code>, the tty1 fallback shell is typed on
+            QWERTY rather than Colemak-DH. Accepted knowingly: both layouts are
+            fluent here, and no password is typed on the VT anyway (autologin).
+          </p>
+        </div>
 
         <div class="card info">
           <div class="card-head">
