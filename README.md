@@ -185,7 +185,6 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | dwl            | compiled + `/usr/local` session    |
 | foot           | `~/.config/foot`                   |
 | Git            | `~/.config/git`                    |
-| hyprlock       | `~/.config/hypr/hyprlock.conf`     |
 | KeePassXC      | `~/.config/keepassxc`              |
 | MIME defaults  | `~/.config/mimeapps.list`          |
 | mkinitcpio     | `/etc/mkinitcpio.conf`             |
@@ -290,6 +289,34 @@ commands are kept here as reference and for doing them by hand. Checklist:
 - To update the program list without relinking, run `update_programs_list` (on
   `PATH` via `~/.local/bin`; the same script the pacman hook uses).
 - To install all packages from `programs.txt`, run `./setup/install-programs`
+
+### Screen locker (waylock)
+
+dwl's `lockcmd` is [waylock](https://codeberg.org/ifreund/waylock), replacing the
+former hyprlock. waylock has **no config file** - it is configured entirely
+through CLI flags, so the whole configuration lives in `lockcmd[]` in
+`config/dwl/config.h` and changing it means rebuilding (`./install --dwl`):
+
+```c
+static const char *lockcmd[] = { "waylock", "-ignore-empty-password",
+                                 "-init-color", "0x191414",
+                                 "-input-color", "0xdddddd",
+                                 "-input-alt-color", "0x999999",
+                                 "-fail-color", "0xaa2222", NULL };
+```
+
+waylock only ever paints the whole screen in one solid color, which one
+depending on the state (locked / input received / authentication failed). The
+following hyprlock features therefore have **no equivalent** and are gone:
+
+- screenshot background and `blur_passes`
+- the input field as such - size, outline thickness, rounding, placeholder text,
+  font and font color, `fade_on_empty`, positioning
+- `hide_cursor`
+- `fail_timeout` (waylock has no configurable delay after a failed attempt)
+
+What carried over: `ignore_empty_input` -> `-ignore-empty-password`, the
+background color -> `-init-color`, the outline color -> `-input-color`.
 
 ### New Initramfs
 

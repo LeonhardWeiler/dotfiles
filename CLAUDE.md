@@ -105,12 +105,12 @@ scripts). The source->target mapping is stated explicitly in
 ## Structure
 
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
-  `dwl`, `foot`, `git`, `hyprlock`, `keepassxc`, `locale`, `logind`, `mimeapps`,
+  `dwl`, `foot`, `git`, `keepassxc`, `locale`, `logind`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `vconsole`, `wallpaper`, `wbg`, `wob`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
   wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
-  `claude`/`hyprlock` and `/etc` targets deliberately **only the single file**
+  `claude` and `/etc` targets deliberately **only the single file**
   is linked (parent directory stays real - app runtime, or to avoid hiding system
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
@@ -170,9 +170,13 @@ scripts). The source->target mapping is stated explicitly in
   the source end in `/*` (glob; links each entry into `<target>/<name>`) - see
   `config/usrbin/*`.
 - **`AGENT/` stays in the root** and outside the link logic.
-- **hyprlock** (`config/hyprlock/hyprlock.conf`) is kept as the dwl screen locker
-  (dwl's `lockcmd` in `config.h`). It reads `~/.config/hypr/hyprlock.conf`, so the
-  file is linked there per-file
+- **waylock** is the dwl screen locker (dwl's `lockcmd` in `config.h`), replacing
+  the former hyprlock. It has **no config file** - everything is CLI flags, so
+  there is no `config/waylock/` and no `links.conf` entry; the configuration is
+  the `lockcmd[]` array in `config/dwl/config.h` and changing it needs
+  `./install --dwl`. waylock only paints solid colors, so hyprlock's screenshot
+  background, blur, input field, `hide_cursor` and `fail_timeout` have no
+  equivalent (see README "Screen locker").
 - **dwl** (`config/dwl/`) is the Wayland compositor. Unlike everything else here it
   is **configured at compile time**: `config/dwl/config.h` is the source of truth
   and is **not** symlinked - it is compiled into the binary. Editing it means
