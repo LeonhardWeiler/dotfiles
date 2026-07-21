@@ -31,7 +31,13 @@ scripts). The source->target mapping is stated explicitly in
 - **Optional setup steps** (selectable in the `setup` menu, **runnable
   individually via a flag** - `./install --<step>` runs only those steps without
   linking; `./install setup --<step> …` skips the menu and selects exactly
-  those). Registry in the script: `register_step <name> <fn> "<description>"`,
+  those). Registry in the script:
+  `register_step <name> <fn> "<description>" [<arg-placeholder>]` - it is the
+  **single source of truth**: the `--<name>` flag is matched generically against
+  it during argument parsing (which therefore sits *below* the `register_step`
+  calls) and `--help` generates the step list from `STEP_ORDER`/`STEP_DESC`, so
+  adding a step is one `register_step` call and nothing else. The optional 4th
+  field names the value a flag takes (only `--timezone ZONE` has one).
   `DEFAULT_STEPS` = menu preselection:
   - `--programs` - install packages from `programs.txt` (delegates to
     `setup/install-programs`, bootstraps yay). _Default._
@@ -90,7 +96,9 @@ scripts). The source->target mapping is stated explicitly in
   `optional` field: `config/foo/* ~/dir optional`.
 - **Update the package list** (without re-linking): `update_programs_list` (from
   `config/usrbin/`, on the PATH; the same script the pacman hook uses).
-- **Install packages from `programs.txt`**: `./setup/install-programs` (uses `yay`).
+- **Install packages from `programs.txt`**: `./setup/install-programs` (uses
+  `yay`). A package that fails is collected and reported at the end instead of
+  aborting the run; the list is read on FD 3 so yay cannot eat it off stdin.
 - **Check shell scripts** (no test framework): syntax with `bash -n <script>`
   (or `sh -n` for the `#!/bin/sh` scripts); where available `shellcheck
   <script>`. Most scripts are POSIX `#!/bin/sh`; only `install` and
@@ -112,7 +120,7 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
   `dwl`, `foot`, `git`, `keepassxc`, `locale`, `logind`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `usrbin`, `vconsole`, `wallpaper`, `wbg`, `wob`.
+  `systemd-system`, `usrbin`, `wallpaper`, `wbg`, `wob`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
   wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `/etc` targets deliberately **only the single file**
@@ -132,10 +140,15 @@ scripts). The source->target mapping is stated explicitly in
   pacman hook).
 - **`/etc` targets** (in `links.conf`, per file, `/etc/…` target path):
   `mkinitcpio.conf`,
-  `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
+  `pacman/dotfiles-programs-list.hook`,
   `locale/locale.conf`, `locale/locale.gen` (-> `/etc/locale.gen`),
   `pacman/pacman.conf` (-> `/etc/pacman.conf`),
   `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
+  There is **no** `config/vconsole/`: `/etc/vconsole.conf` is left as the
+  untouched systemd fallback, `systemd-vconsole-setup.service` is `mask`ed in
+  `services.txt`, and the `keymap`/`consolefont` hooks are gone from `HOOKS` in
+  `mkinitcpio.conf`. The TTY therefore runs plain `us` QWERTY - accepted
+  knowingly (autologin, no password typed on the VT).
 - **System services**: activated by the `install` script after linking via
   `systemctl enable` - the unit lists live in `setup/services.txt` (loaded into
   `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the
@@ -187,12 +200,19 @@ scripts). The source->target mapping is stated explicitly in
 - **dwl** (`config/dwl/`) is the Wayland compositor. Unlike everything else here it
   is **configured at compile time**: `config/dwl/config.h` is the source of truth
   and is **not** symlinked - it is compiled into the binary. Editing it means
-  rebuilding (`./install --dwl`). Startup programs are spawned by
-  dwl itself (`autostart[]` in `config.h`, via `patches/autostart.patch`). There
-  is **no display manager**: `getty@tty1` autologins `leo` and `~/.bash_profile`
-  execs `dwl` on tty1 (see the `--getty-autologin` step). Gaps
-  come from `config/dwl/patches/gaps.patch`, applied by
-  `build-dwl` on top of the pinned checkout.
+  rebuilding (`./install --dwl`), and the new binary only takes effect in a
+  **new** session. There is **no display manager**: `getty@tty1` autologins
+  `leo` and `~/.bash_profile` execs `dwl` on tty1 (see the `--getty-autologin`
+  step). `build-dwl` applies **every** `config/dwl/patches/*.patch` on top of
+  the pinned checkout - currently three, all user-visible:
+  `attachbottom.patch` (new windows attach at the bottom of the stack),
+  `autostart.patch` (enables the `autostart[]` array in `config.h`, which is how
+  startup programs are spawned - there is no session script) and `gaps.patch`
+  (inner/outer gaps in the `tile` layout). `MODKEY` is **Alt**, there are **9
+  tags**, and `AGENT/keybinds.md` lists every binding on the system (snapshot -
+  `config.h` stays the authority). `build-dwl` only contacts the remote when the
+  pinned tag is missing locally, so an outage cannot block applying a `config.h`
+  change.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).
@@ -203,4 +223,11 @@ leonhardweiler/dotfiles Authors` line (the repo is ISC, see `LICENSE`). Add it t
   `config/mpv/scripts/thumbfast.lua`) keep their own header.
 - Two health/workflow skills write into `AGENT/`: `review-and-update-report`
   (health report) and `implement-todo` (work through `TODO.md`, one commit per
-  item).
+  item). `AGENT/keybinds.md` is a hand-kept overview of every keybinding on the
+  system - update it when a binding changes.
+- **Claude Code runs without permission prompts here, on purpose**: `.bashrc`
+  aliases `claude` to `claude --dangerously-skip-permissions` and
+  `config/claude/settings.json` sets `skipDangerousModePermissionPrompt`.
+  Together with the passwordless `wheel` sudo from `--sudoers` that means no
+  guard rails at all - documented in the README, and the alias is meant to stay
+  the command.
