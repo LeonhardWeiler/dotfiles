@@ -65,7 +65,7 @@ the battery check is **not** a `.timer`/`.service` pair anymore — it's a plain
 `while true; do bat_check; sleep 120; done` loop spawned from the dwl
 `autostart[]` in `config.h`. That is *precisely* the "prefer the one-liner over
 the unit" move he preaches. `services.txt` now only lists system units that
-genuinely need to be enabled (NetworkManager, ly, sshd, libvirtd, iptables,
+genuinely need to be enabled (NetworkManager, getty@tty1, power-profiles-daemon,
 fstrim.timer…). Not much left for him to swing at.
 
 ## 5. GUI passwords — but the 201-line script is dead

@@ -121,8 +121,7 @@ nachlädt (`lazy`), plus `mason` (lädt Tool-Binaries), `treesitter`, `telescope
 Das README verspricht **nicht mehr** „minimal". Es sagt jetzt _"meant to be
 practical, not minimalist"_ und listet unter **„Non-free packages"** offen auf,
 was drinsteckt: `unityhub`, `dotnet-sdk`, `plasticscm-client-gui`,
-`figma-agent-linux-bin`, `signal-desktop`, `thunderbird`, `zen-browser-bin`,
-`qemu-desktop`, `virt-manager`.
+`figma-agent-linux-bin`, `signal-desktop`, `thunderbird`, `zen-browser-bin`.
 
 > "Das Wort _minimal_ trug früher eine Last, für die es nicht gebaut war. Ihr
 > habt es fallengelassen und nennt es beim Namen: ein Arbeits-Laptop mit

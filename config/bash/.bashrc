@@ -26,7 +26,6 @@ export EDITOR="nvim"
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM=wayland
 export BROWSER=zen-browser
-export VIRSH_DEFAULT_CONNECT_URI="qemu:///system"
 
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'

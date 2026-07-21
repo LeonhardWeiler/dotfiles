@@ -158,8 +158,8 @@ scripts). The source->target mapping is stated explicitly in
   Deliberately `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
-  only contains system units that really exist - pipewire/wireplumber (user
-  scope) and swtpm (socket-activated) are **not** in it.
+  only contains system units that really exist - pipewire/wireplumber run in the
+  user scope and are **not** in it.
   PipeWire/WirePlumber/figma-agent come from their package presets and are
   **not** tracked (formerly `*.wants` links in the repo - now removed).
   There is also no `legion-conservation.service` any more: the ideapad

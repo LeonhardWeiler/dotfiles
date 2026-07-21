@@ -8,17 +8,10 @@
 
 system  NetworkManager.service
 system  getty@tty1.service
-system  dnsmasq.service
-system  iptables.service
 system  power-profiles-daemon.service
 system  systemd-timesyncd.service
 system  fstrim.timer
 
-system  virtqemud.socket
-system  virtnetworkd.socket
-system  virtstoraged.socket
-
-disable  libvirtd.service
 disable  NetworkManager-wait-online.service
 
 mask     systemd-vconsole-setup.service

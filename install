@@ -72,8 +72,7 @@ usage() {
 # ── Data lists (kept out of the script, in setup/*.txt) ──────────────────────
 # systemd units, split by scope (`user`/`system`/`disable`/`mask`) -> USER_UNITS
 # / SYSTEM_UNITS / DISABLE_UNITS / MASK_UNITS. `disable` = a preset-enabled
-# system unit we want OFF at boot (e.g. NetworkManager-wait-online, monolithic
-# libvirtd); `mask` = a static/always-on unit we want fully blocked - it has no
+# system unit we want OFF at boot (e.g. NetworkManager-wait-online); `mask` = a static/always-on unit we want fully blocked - it has no
 # [Install] so `disable` is a no-op, and masking also defeats udev-triggered
 # starts (e.g. systemd-vconsole-setup via 90-vconsole.rules).
 USER_UNITS=(); SYSTEM_UNITS=(); DISABLE_UNITS=(); MASK_UNITS=()

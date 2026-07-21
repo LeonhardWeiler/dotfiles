@@ -1,7 +1,5 @@
 wheel
 input
-kvm
-libvirt
 uucp
 disk
 lock

@@ -8,7 +8,6 @@ clinfo 3.0.25.02.14-1
 clpeak 2.0.18-1
 cpupower 7.1.4-1
 dmidecode 3.7-1
-dnsmasq 2.93-1
 dosfstools 4.2-5
 dotnet-sdk 10.0.10.sdk110-1
 efibootmgr 18-4
@@ -44,7 +43,6 @@ pipewire-alsa 1:1.6.8-1
 pipewire-pulse 1:1.6.8-1
 plasticscm-client-gui 11.0.16.10181-1
 power-profiles-daemon 0.30-1
-qemu-desktop 11.0.2-3
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
 restic 0.19.1-1
@@ -55,14 +53,12 @@ rt-tests 2.10-1
 signal-desktop 8.19.0-1
 slurp 1.5.0-2
 stress-ng 0.21.04-2
-swtpm 0.10.1-2
 sysbench 1.0.20-2
 thunderbird 152.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
 unityhub 3.19.5-1
 unzip 6.0-23
-virt-manager 5.1.0-4
 vulkan-radeon 1:26.1.5-1
 vulkan-tools 1.4.350.1-1
 wayland 1.25.0-1

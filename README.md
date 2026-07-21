@@ -2,7 +2,7 @@
 
 ![desktop screenshot](./images/desktop-screenshot.png)
 
-This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the dwl Wayland compositor. It is meant to be _practical_, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET, VMs) - see [Non-free packages](#non-free-packages) for what that pulls in.
+This repository contains my personal dotfiles for configuring my development environment. It includes settings for various tools and applications that I regularly use. The setup targets a fast, keyboard-driven workflow on GNU/Linux, specifically Arch GNU/Linux with the dwl Wayland compositor. It is meant to be _practical_, not minimalist: the lean, dependency-free tooling (the `./install` script, small POSIX-`sh` helpers) sits next to heavyweight applications I need for work (game engine, .NET) - see [Non-free packages](#non-free-packages) for what that pulls in.
 
 ## Requirements
 
@@ -123,20 +123,13 @@ to activate). To do it by hand:
 ```bash
 sudo systemctl enable --now NetworkManager.service
 sudo systemctl enable --now getty@tty1.service
-sudo systemctl enable --now dnsmasq.service
-sudo systemctl enable --now iptables.service
 sudo systemctl enable --now power-profiles-daemon.service
 sudo systemctl enable --now systemd-timesyncd.service
 sudo systemctl enable --now fstrim.timer
-# libvirt: modular, socket-activated daemons instead of monolithic libvirtd
-sudo systemctl enable --now virtqemud.socket
-sudo systemctl enable --now virtnetworkd.socket
-sudo systemctl enable --now virtstoraged.socket
 ```
 
-> Note: `swtpm` (socket-activated) and PipeWire/WirePlumber (user-scope, enabled
-> per-user by package presets) have no enable-able system `*.service` and are
-> therefore **not** in the list.
+> Note: PipeWire/WirePlumber (user-scope, enabled per-user by package presets)
+> have no enable-able system `*.service` and are therefore **not** in the list.
 
 ### Battery conservation mode (Legion)
 
@@ -163,15 +156,9 @@ These are preset-enabled by their packages but deliberately turned **off** by
 they sit on / needlessly delay the critical path. To do it by hand:
 
 ```bash
-sudo systemctl disable libvirtd.service            # ~1.8s on the critical path
 sudo systemctl disable NetworkManager-wait-online.service
 ```
 
-- **`libvirtd.service`** - the old _monolithic_ libvirt daemon. It is replaced by
-  the socket-activated _modular_ daemons (`virtqemud`/`virtnetworkd`/`virtstoraged`
-  above): they start on the first `qemu:///system` connection, so VMs still work
-  exactly as before - libvirt just isn't started at boot anymore. Verify with
-  `sudo virsh --connect qemu:///system list --all`.
 - **`NetworkManager-wait-online.service`** - blocks `network-online.target` until
   a link is up; pointless on a laptop where NetworkManager brings the link up
   asynchronously after login.
@@ -245,7 +232,7 @@ commands are kept here as reference and for doing them by hand. Checklist:
   tracked tools need:
 
   ```bash
-  sudo usermod -aG wheel,input,kvm,libvirt,uucp,disk,lock <user>
+  sudo usermod -aG wheel,input,uucp,disk,lock <user>
   ```
 
   Group changes take effect after re-login. Conversely, drop groups whose program
