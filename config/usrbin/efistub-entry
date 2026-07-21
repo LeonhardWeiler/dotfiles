@@ -1,0 +1,90 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Register a kernel on the ESP as an EFISTUB boot entry in EFI NVRAM.
+#
+# The custom kernels here are built with CONFIG_EFI_STUB=y and boot without an
+# initramfs, so the firmware can start vmlinuz directly - no bootloader in
+# between. The kernel command line is handed over as the entry's optional data.
+#
+# systemd-boot at the fallback path (<ESP>/EFI/BOOT/BOOTX64.EFI) is left alone
+# on purpose: should the firmware drop our NVRAM entry, the machine falls back
+# to it and boots exactly as before.
+#
+# Usage: efistub-entry <kernel-file-on-esp> [<cmdline>]
+#   e.g. efistub-entry vmlinuz-custom-r18
+# Without <cmdline> the command line of the running kernel is reused.
+
+set -eu
+
+PROG=efistub-entry
+
+usage() {
+  echo "usage: $PROG <kernel-file-on-esp> [<cmdline>]" >&2
+  exit 2
+}
+
+[ $# -ge 1 ] && [ $# -le 2 ] || usage
+KERNEL=$1
+
+command -v efibootmgr >/dev/null 2>&1 || {
+  echo "$PROG: 'efibootmgr' not found" >&2
+  exit 1
+}
+
+[ "$(id -u)" -eq 0 ] || {
+  echo "$PROG: needs root (writes EFI variables)" >&2
+  exit 1
+}
+
+[ -d /sys/firmware/efi ] || {
+  echo "$PROG: not booted in UEFI mode" >&2
+  exit 1
+}
+
+ESP=$(bootctl --print-esp-path)
+# Touch the ESP first - it is an x-systemd.automount, so findmnt only reports
+# the backing device once the automount has been triggered.
+ls "$ESP" >/dev/null
+
+[ -f "$ESP/$KERNEL" ] || {
+  echo "$PROG: $ESP/$KERNEL does not exist" >&2
+  exit 1
+}
+
+DEV=$(findmnt -nro SOURCE "$ESP" | grep '^/dev/' | head -n1)
+[ -n "$DEV" ] || {
+  echo "$PROG: cannot determine the block device of $ESP" >&2
+  exit 1
+}
+
+DISK=/dev/$(lsblk -no PKNAME "$DEV")
+PART=$(lsblk -no PARTN "$DEV")
+
+CMDLINE=${2:-$(cat /proc/cmdline)}
+LABEL="Arch EFISTUB $KERNEL"
+
+# Idempotent: drop entries we created earlier under the same label, otherwise
+# every run would add another duplicate to the boot menu.
+efibootmgr | sed -n "s/^Boot\([0-9A-Fa-f]\{4\}\)\*\{0,1\} $LABEL[[:space:]].*$/\1/p" |
+  while read -r num; do
+    echo "$PROG: removing existing entry Boot$num"
+    efibootmgr --quiet --delete-bootnum --bootnum "$num"
+  done
+
+echo "$PROG: creating '$LABEL'"
+echo "$PROG:   loader  $DISK part $PART -> \\$KERNEL"
+echo "$PROG:   cmdline $CMDLINE"
+
+# --create puts the new entry at the front of BootOrder. The command line is a
+# trailing positional arg, not the value of --unicode: efibootmgr turns its
+# extra args into the entry's optional data, and --unicode is the flag that
+# encodes them as UCS-2 (which is what the kernel's EFI stub reads).
+efibootmgr --quiet --create \
+  --disk "$DISK" --part "$PART" \
+  --label "$LABEL" \
+  --loader "\\$KERNEL" \
+  --unicode "$CMDLINE"
+
+efibootmgr
