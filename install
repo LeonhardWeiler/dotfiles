@@ -19,22 +19,9 @@
 #
 # Optional setup steps (selectable in the `setup` menu, runnable individually via
 # a flag for automation - e.g. `./install --groups` or
-# `./install setup --timezone Europe/Vienna`):
-#   --programs                install packages from setup/programs.txt (yay)
-#   --systemd                 activate systemd units (USER_UNITS + SYSTEM_UNITS)
-#   --groups                  add the user to the required groups (usermod -aG)
-#   --timezone ZONE           set the timezone (e.g. --timezone Europe/Vienna);
-#                             without ZONE the menu asks interactively
-#   --locale                  generate the locales from /etc/locale.gen (locale-gen)
-#   --getty-autologin         deploy the getty@tty1 autologin drop-in to /etc
-#   --sudoers                 set up passwordless sudo for the wheel group
-#                             (/etc/sudoers.d/, validated with visudo)
-#   --initramfs               rebuild the initramfs (mkinitcpio -P)
-#   --fonts                   install the font packages and refresh the font cache
-#   --dwl                     build + install dwl from config/dwl/config.h
-#   --wbg                     build + install wbg (wallpaper program) from source
-#   --legion-conservation     enable the Legion battery conservation mode (one-shot,
-#                             the setting persists in the embedded controller)
+# `./install setup --timezone Europe/Vienna`). The list is printed by
+# `./install --help`, generated from the register_step registry below - so a new
+# step is a single register_step call and nothing else.
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -68,7 +55,19 @@ ok()   { printf '  %s✔%s %s\n'  "$C_OK"   "$C_RST" "$*"; }
 warn() { printf '  %s!%s %s\n'  "$C_WARN" "$C_RST" "$*" >&2; }
 info() { printf '%sℹ %s%s\n'    "$C_INFO" "$*"     "$C_RST"; }
 
-usage() { awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"; exit "${1:-0}"; }
+# Help = the header comment block plus the step list generated from the registry
+# (STEP_ORDER/STEP_DESC), so the steps cannot drift out of sync with the code.
+usage() {
+  awk 'NR>1{ if ($0 !~ /^#/) exit; sub(/^# ?/,""); print }' "$0"
+  if [ "${#STEP_ORDER[@]}" -gt 0 ]; then
+    printf 'Optional setup steps:\n'
+    local s
+    for s in "${STEP_ORDER[@]}"; do
+      printf '  --%-23s %s\n' "$s${STEP_ARG[$s]:+ ${STEP_ARG[$s]}}" "${STEP_DESC[$s]}"
+    done
+  fi
+  exit "${1:-0}"
+}
 
 # ── Data lists (kept out of the script, in setup/*.txt) ──────────────────────
 # systemd units, split by scope (`user`/`system`/`disable`/`mask`) -> USER_UNITS
@@ -122,10 +121,14 @@ read_list "$BASEDIR/setup/fonts.txt" FONT_PACKAGES
 # `setup`. New steps are added below via register_step. SELECTED holds the
 # currently chosen steps.
 STEP_ORDER=()
-declare -A STEP_DESC STEP_FN SELECTED
+declare -A STEP_DESC STEP_FN STEP_ARG SELECTED
 # Steps preselected in `setup` (menu Enter / no TTY = these defaults).
 DEFAULT_STEPS=(programs systemd locale)
-register_step() { STEP_ORDER+=("$1"); STEP_FN[$1]="$2"; STEP_DESC[$1]="$3"; }
+# register_step <name> <fn> <description> [<arg-placeholder>]
+# The registry is the single source of truth: the `--<name>` flag, the help text
+# and the `setup` menu entry all come from here. The optional 4th field names the
+# value a step's flag takes (only --timezone has one).
+register_step() { STEP_ORDER+=("$1"); STEP_FN[$1]="$2"; STEP_DESC[$1]="$3"; STEP_ARG[$1]="${4:-}"; }
 is_selected()   { [ -n "${SELECTED[$1]:-}" ]; }
 
 # Interactive yes/no prompt. Without a TTY (scriptable) always "no".
@@ -136,37 +139,6 @@ confirm() {
   read -r reply || return 1
   case "$reply" in [yYjJ]*) return 0 ;; *) return 1 ;; esac
 }
-
-# ── Argument parsing ─────────────────────────────────────────────────────────
-while [ $# -gt 0 ]; do
-  case "$1" in
-    link|setup|unlink|status|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
-    -n|--dry-run)  DRYRUN=1 ;;
-    --user-only)   USER_ONLY=1 ;;
-    --no-units)    NO_UNITS=1 ;;
-    --force)       FORCE=1 ;;
-    -c|--config)   shift; CONFIG="${1:?--config needs a file}" ;;
-    -h|--help)     usage 0 ;;
-    # ── Step flags: every registered optional step maps to SELECTED[<name>]
-    # (see register_step). --timezone is special - it also takes an argument.
-    --programs | --systemd | --groups | \
-    --locale | --getty-autologin | --sudoers | --initramfs | --fonts | --dwl | --wbg | \
-    --legion-conservation)
-                        SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
-    --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
-                        SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
-    *) warn "unknown argument: $1"; usage 1 ;;
-  esac
-  shift
-done
-
-# No explicit subcommand but step flags given -> run only those steps
-# (scriptable, no linking, no menu).
-if [ "$EXPLICIT_CMD" = 0 ] && [ "$FLAG_STEPS_GIVEN" = 1 ]; then
-  CMD="run-steps"
-fi
-
-[ -f "$BASEDIR/$CONFIG" ] || { warn "mapping file not found: $CONFIG"; exit 1; }
 
 # ── Path helpers ─────────────────────────────────────────────────────────────
 # `~` -> the user's home.
@@ -383,7 +355,7 @@ do_timezone() {
   info "Setting timezone: $tz"
   run 1 ln -sf "/usr/share/zoneinfo/$tz" /etc/localtime || warn "setting timezone failed"
 }
-register_step timezone do_timezone "Set timezone (/etc/localtime)"
+register_step timezone do_timezone "Set timezone (/etc/localtime)" ZONE
 
 # Deploy the getty@tty1 autologin drop-in as a REAL copy onto the root partition
 # (not symlinked via links.conf): systemd reads unit drop-ins early at manager
@@ -498,6 +470,39 @@ do_wbg() {
   run 0 "$script" || warn "wbg build failed"
 }
 register_step wbg do_wbg "Build + install wbg (wallpaper program) from source"
+
+# ── Argument parsing ─────────────────────────────────────────────────────────
+# Runs AFTER the register_step calls above, so the step flags can be matched
+# against the registry instead of a hand-maintained list.
+while [ $# -gt 0 ]; do
+  case "$1" in
+    link|setup|unlink|status|validate) CMD="$1"; EXPLICIT_CMD=1 ;;
+    -n|--dry-run)  DRYRUN=1 ;;
+    --user-only)   USER_ONLY=1 ;;
+    --no-units)    NO_UNITS=1 ;;
+    --force)       FORCE=1 ;;
+    -c|--config)   shift; CONFIG="${1:?--config needs a file}" ;;
+    -h|--help)     usage 0 ;;
+    # --timezone is the one step whose flag carries a value (STEP_ARG).
+    --timezone)    shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
+                   SELECTED[timezone]=1; FLAG_STEPS_GIVEN=1 ;;
+    # Every registered optional step is its own `--<name>` flag - no separate
+    # list to keep in sync, register_step is enough.
+    --*) step="${1#--}"
+         if [ -n "${STEP_FN[$step]:-}" ]; then SELECTED[$step]=1; FLAG_STEPS_GIVEN=1
+         else warn "unknown argument: $1"; usage 1; fi ;;
+    *) warn "unknown argument: $1"; usage 1 ;;
+  esac
+  shift
+done
+
+# No explicit subcommand but step flags given -> run only those steps
+# (scriptable, no linking, no menu).
+if [ "$EXPLICIT_CMD" = 0 ] && [ "$FLAG_STEPS_GIVEN" = 1 ]; then
+  CMD="run-steps"
+fi
+
+[ -f "$BASEDIR/$CONFIG" ] || { warn "mapping file not found: $CONFIG"; exit 1; }
 
 # ── links.conf pipeline: parse -> validate -> build (globs) -> execute ────────
 # Explicit phases so execution never sees a malformed entry: the raw entries
