@@ -295,41 +295,35 @@
     <div class="wrap">
       <h1>Dotfiles - Health Report</h1>
       <div class="meta">
-        Snapshot · as of <strong>2026-07-14</strong> · branch
-        <code>main</code> · Arch Linux / Hyprland, managed via a
+        Snapshot · as of <strong>2026-07-21</strong> · branch
+        <code>main</code> · Arch GNU/Linux / <strong>dwl</strong> (Wayland),
+        managed via a
         <strong>custom, dependency-free symlink manager</strong>
         (<code>./install</code> + <code>setup/links.conf</code>, plain Bash).<br />
-        Reviewed: <code>install</code> script &amp;
-        <code>setup/links.conf</code> and its new strict
-        <b>parse → validate → build</b> pipeline (<code
-          >./install validate</code
-        >
-        green, crafted bad configs abort), the data lists now driving it
-        (<code>setup/services.txt</code>/<code>groups.txt</code>/<code>fonts.txt</code>),
-        the <code>setup</code> bootstrap with its
-        <b>owner prompt / <code>--scrub</code></b
-        >, the hidden <code>selftest</code> and the CI workflow,
+        Reviewed in this pass: the <code>install</code> script end to end (arg
+        parsing, step registry, links.conf pipeline, unit activation),
+        <code>setup/links.conf</code> (<code>./install validate</code> green,
+        <strong>28/28</strong> entries <code>ok</code>), the data lists
+        (<code>services.txt</code>/<code>groups.txt</code>/<code>fonts.txt</code>),
         <code>setup/install-programs</code> and the pacman hook
-        (<code>update_programs_list</code>, atomic writes), all shell scripts
-        (<code>bash -n</code> / <code>sh -n</code> green), Hyprland Lua (all
-        <code>luac -p</code> ok), nvim, systemd units, foot, Mako, Rofi,
-        Ly, mpv, Typst, git config, README and CLAUDE.md, plus the live linking
-        (<strong>40/40</strong> <code>ok</code>). No accidental secrets, no
-        <code>TODO/FIXME</code> markers in our own code; the KeePassXC
-        <code>.kdbx</code> (excluded via
-        <code>.gitignore</code>/<code>.claudeignore</code>) and third-party mpv
-        Lua scripts only checked superficially.<br />
-        Since the last snapshot the installer got markedly more robust and
-        maintainable: a strict validation phase now aborts on any malformed
-        <code>links.conf</code>, the systemd-unit/group/font lists moved out of
-        the script into <code>setup/*.txt</code>, a hidden <code>selftest</code>
-        links into a throwaway HOME and a CI workflow runs syntax +
-        <code>validate</code> + <code>selftest</code> on every push, and
-        <code>--only</code>/<code>--exclude</code> allow selective linking.
-        (Earlier this cycle: POSIX scripts, battery auto-detection, the
-        non-owner scrub and the owner-only GPU pin.)
-        <b>No open findings.</b> Section 3 lists what is still hardcoded to this
-        machine/user for a foreign Arch install.
+        (<code>update_programs_list</code>, atomic write), every shell script
+        (<code>bash -n</code> / <code>sh -n</code> green), the whole Neovim
+        config (all modules parse, <code>nvim --headless</code> loads clean,
+        <code>stylua --check</code> green), <code>config/dwl/config.h</code>
+        incl. an actual rebuild against the pinned <code>v0.8</code> checkout,
+        <code>build-dwl</code>/<code>build-wbg</code>, bash, foot, rofi, wob,
+        mpv, git, KeePassXC, pipewire, logind, pacman, mkinitcpio, the getty
+        drop-in, README and CLAUDE.md. No secrets found in tracked files; the
+        KeePassXC <code>.kdbx</code> (excluded via
+        <code>.gitignore</code>/<code>.claudeignore</code>) and the third-party
+        mpv Lua scripts were only checked superficially.<br />
+        <b>Note:</b> the previous snapshot was substantially stale - it still
+        described Hyprland, Mako, the ly display manager, a
+        <code>--scrub</code>/owner prompt, a hidden <code>selftest</code>, a CI
+        workflow and 40/40 links. None of that exists in the repo any more, so
+        this report was rebuilt from scratch against the current code. The
+        compositor is dwl, the locker is waylock, there is no display manager
+        and no CI.
       </div>
 
       <div class="summary">
@@ -337,13 +331,13 @@
           <span class="n">0</span><span class="l">Critical</span>
         </div>
         <div class="stat high">
-          <span class="n">0</span><span class="l">High</span>
+          <span class="n">1</span><span class="l">High</span>
         </div>
         <div class="stat med">
-          <span class="n">0</span><span class="l">Medium</span>
+          <span class="n">7</span><span class="l">Medium</span>
         </div>
         <div class="stat low">
-          <span class="n">0</span><span class="l">Low</span>
+          <span class="n">6</span><span class="l">Low</span>
         </div>
       </div>
 
@@ -365,22 +359,436 @@
       <section id="open">
         <h2>1 · Open findings</h2>
 
-        <div class="card good">
+        <div class="card high">
           <div class="card-head">
-            <span class="badge good">no open findings</span>
-            <span class="loc">nothing to do</span>
+            <span class="id">SEC-1</span>
+            <span class="badge high">high</span>
+            <span class="loc"
+              ><code>config/bash/.bashrc</code> ·
+              <code>config/claude/settings.json</code></span
+            >
           </div>
           <p>
-            This full scan surfaced no open problems - no
-            correctness/robustness, security, structure or docs findings. Shell
-            scripts are syntactically green (<code>bash -n</code> /
-            <code>sh -n</code>), the Hyprland Lua modules parse, the live
-            linking is complete (40/40) and README as well as CLAUDE.md match
-            the code. The earlier non-TTY scrub concern is resolved:
-            <code>setup</code> now keeps personal data non-interactively unless
-            <code>--scrub</code> is passed explicitly. What makes the repo
-            particularly solid, or is deliberately chosen that way, is in the
-            sections below.
+            Two settings compound into "no guard rails at all" for the agent
+            that has write access to this machine.
+            <code>.bashrc</code> defines
+            <code>alias claude='claude --dangerously-skip-permissions'</code>,
+            so <em>every</em> invocation skips all permission prompts - and
+            because the alias shadows the binary, there is no ordinary way to
+            start it normally short of <code>\claude</code> or
+            <code>command claude</code>. <code>settings.json</code> then adds
+            <code>"skipDangerousModePermissionPrompt": true</code>, which also
+            removes the one-time warning about running in that mode. On a box
+            where <code>./install --sudoers</code> installs
+            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code>, an agent mistake
+            escalates to root without a single prompt. Neither setting is
+            mentioned in README or CLAUDE.md, so it does not currently read as a
+            deliberate decision.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> keep plain <code>claude</code> intact and put
+            the bypass behind a separate, explicitly-named alias
+            (<code>alias yolo='claude --dangerously-skip-permissions'</code>).
+            If the current behaviour is genuinely wanted, document it in the
+            README next to the passwordless-sudo note so the combined blast
+            radius is written down somewhere.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">UX-1</span>
+            <span class="badge med">medium</span>
+            <span class="loc"><code>config/dwl/config.h:113</code></span>
+          </div>
+          <p>
+            <code>Alt+Shift+Q</code> calls <code>quit</code> and tears down the
+            whole session immediately - no confirmation, everything unsaved is
+            gone. It sits on the same modifier as, and one key row from,
+            <code>Alt+Shift+C</code> (<code>killclient</code>), which is a key
+            you press all day. <code>Ctrl+Alt+Backspace</code>
+            (<code>Terminate_Server</code>) is a second unconfirmed way to do
+            the same thing. Since dwl is started via <code>exec dwl</code> from
+            <code>~/.bash_profile</code>, quitting drops straight back to a bare
+            tty1 shell.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> move <code>quit</code> to a chord that cannot
+            be hit by accident (e.g. add <code>WLR_MODIFIER_CTRL</code>), or
+            route it through a confirmation with the rofi that is already
+            installed:
+            <code
+              >SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx
+              yes &amp;&amp; pkill dwl")</code
+            >.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">UX-2</span>
+            <span class="badge med">medium</span>
+            <span class="loc"><code>config/dwl/config.h</code></span>
+          </div>
+          <p>
+            Several capabilities are compiled in but unreachable, because no key
+            is bound to them - the build itself warns about exactly these
+            (<code>setlayout / focusmon / tagmon / incnmaster / toggletag
+            defined but not used</code>):
+          </p>
+          <ul class="tracklist">
+            <li>
+              <code>layouts[]</code> defines three layouts (<code>[]=</code>
+              tile, <code>&gt;&lt;&gt;</code> floating, <code>[M]</code>
+              monocle) but nothing is bound to <code>setlayout</code>, so
+              <b>floating and monocle can never be selected</b>. The comment in
+              the file claims they "stay available", which only holds for
+              per-window <code>togglefloating</code> and
+              <code>togglefullscreen</code>.
+            </li>
+            <li>
+              <code>monrules[]</code> carries a rule for an external output
+              (the <code>NULL</code> catch-all next to <code>eDP-1</code>), but
+              <code>focusmon</code>/<code>tagmon</code> are unbound - with a
+              second display attached there is <b>no way to focus it or move a
+              window to it</b>.
+            </li>
+            <li>
+              <code>incnmaster</code> is unbound, so the master count is
+              permanently pinned at 1.
+            </li>
+            <li>
+              There is no binding to move the focused window <em>within</em> the
+              stack - only <code>focusstack</code> (<code>Alt+j/k</code>) and
+              <code>zoom</code>.
+            </li>
+          </ul>
+          <div class="rec">
+            <b>Recommendation:</b> decide per item - either bind them
+            (<code>Alt+t/f/m</code> for the layouts, <code>Alt+,/.</code> for
+            <code>focusmon</code>/<code>tagmon</code>,
+            <code>Alt+i/d</code> for <code>incnmaster</code>) or delete the two
+            unreachable layouts and the external <code>monrules</code> entry so
+            <code>config.h</code> stops promising what it cannot do.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">CQ-1</span>
+            <span class="badge med">medium</span>
+            <span class="loc"><code>config/dwl/build-dwl:29-38</code></span>
+          </div>
+          <p>
+            The build unconditionally runs
+            <code>git fetch --tags --depth 1 origin v0.8</code> before touching
+            anything, and the script runs under <code>set -eu</code> - so if the
+            remote is unreachable the whole <code>./install --dwl</code> step
+            aborts, <b>even when a valid, pinned <code>v0.8</code> checkout is
+            already sitting in <code>~/.local/src/dwl</code></b
+            >. This is not theoretical: it happened during this review
+            (codeberg.org answered <code>HTTP 504</code>), and the intended way
+            to apply a <code>config.h</code> change was unavailable until the
+            build was reproduced by hand. Since dwl is configured at compile
+            time, this makes editing <code>config.h</code> dependent on a third
+            party being up.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> only fetch when the pinned tag does not
+            already resolve locally
+            (<code>git -C "$SRC_DIR" rev-parse -q --verify
+            "refs/tags/$DWL_VERSION" &gt;/dev/null || git fetch …</code>), or
+            make the fetch non-fatal (<code>|| echo "offline - using the local
+            checkout"</code>) and let <code>reset --hard</code> do the rest.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">CQ-2</span>
+            <span class="badge med">medium</span>
+            <span class="loc"
+              ><code>install</code> · <code>setup/links.conf</code></span
+            >
+          </div>
+          <p>
+            There is no way to clean up links whose entry was <b>removed</b>
+            from <code>links.conf</code>. <code>unlink</code> and
+            <code>status</code> both iterate the <em>current</em> entries only,
+            so a deleted line leaves its symlink behind forever - invisible to
+            every command the script offers. Hit during this review: dropping
+            the hyprlock entry left <code>~/.config/hypr/hyprlock.conf</code>
+            dangling and it had to be removed by hand. The same applies to the
+            two commented-out wallpaper lines. An earlier
+            <code>clean</code> command apparently existed but is gone.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> reintroduce a prune command that walks the
+            managed target roots and removes symlinks pointing into
+            <code>$BASEDIR</code> that no entry claims any more - or, cheaper,
+            have <code>status</code> report such orphans so they at least become
+            visible.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">DOC-1</span>
+            <span class="badge med">medium</span>
+            <span class="loc"
+              ><code>README.md</code> · <code>config/dwl/README.md</code></span
+            >
+          </div>
+          <p>
+            <b>The keybindings are documented nowhere.</b> For a setup whose
+            entire premise is "keyboard-driven", the only description of its
+            primary interface is <code>config/dwl/config.h</code> itself. That
+            matters more than usual here because the choices are unusual:
+            <code>MODKEY</code> is <b>Alt</b>, not Super, while the screen lock
+            is the only binding on <b>Super</b> (<code>Super+L</code>) - and
+            there are exactly 6 tags, not the customary 9.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> add a keybinding table to
+            <code>config/dwl/README.md</code> (modifier, key, action), grouped
+            the way <code>config.h</code> already groups them, and link it from
+            the root README.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">DOC-2</span>
+            <span class="badge med">medium</span>
+            <span class="loc"><code>config/dwl/README.md:13-20,35</code></span>
+          </div>
+          <p>
+            Two inaccuracies in the dwl README:
+          </p>
+          <ul class="tracklist">
+            <li>
+              Line 35 says <b>"Log out and pick dwl in ly"</b> - there is no
+              display manager. ly is gone;
+              <code>getty@tty1</code> autologins and
+              <code>~/.bash_profile</code> execs dwl. Following the instruction
+              is impossible.
+            </li>
+            <li>
+              The file list names only <code>patches/gaps.patch</code> and
+              <code>patches/autostart.patch</code>, but
+              <code>build-dwl:40</code> applies <b>every</b>
+              <code>patches/*.patch</code> - so
+              <code>patches/attachbottom.patch</code> is compiled in as well and
+              is documented nowhere (CLAUDE.md has the same gap). New windows
+              attaching at the bottom of the stack is user-visible behaviour.
+            </li>
+          </ul>
+          <div class="rec">
+            <b>Recommendation:</b> replace the ly sentence with the actual apply
+            path (rebuild, then log out of the session / reboot), and list all
+            three patches with a one-line description each in both
+            <code>config/dwl/README.md</code> and <code>CLAUDE.md</code>.
+          </div>
+        </div>
+
+        <div class="card med">
+          <div class="card-head">
+            <span class="id">DOC-3</span>
+            <span class="badge med">medium</span>
+            <span class="loc"><code>CLAUDE.md:115,135</code></span>
+          </div>
+          <p>
+            CLAUDE.md lists <code>vconsole</code> among the
+            <code>config/</code> sources and
+            <code>vconsole/vconsole.conf</code> among the tracked
+            <code>/etc</code> targets. <b>Neither exists.</b> There is no
+            <code>config/vconsole/</code> directory and no
+            <code>links.conf</code> line; <code>/etc/vconsole.conf</code> is now
+            the untouched systemd fallback (every line commented out),
+            <code>systemd-vconsole-setup.service</code> is
+            <code>mask</code>ed in <code>services.txt</code>, and the
+            <code>keymap</code>/<code>consolefont</code> hooks are gone from
+            <code>HOOKS</code> in <code>mkinitcpio.conf</code>. An agent reading
+            CLAUDE.md will look for a file that is not there.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> drop both mentions from CLAUDE.md. If the
+            Colemak-DH console keymap is still wanted on the TTY (see INFO-1),
+            re-add <code>config/vconsole/vconsole.conf</code> with a
+            <code>links.conf</code> line instead and unmask the unit.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="id">CQ-3</span>
+            <span class="badge low">low</span>
+            <span class="loc"><code>setup/install-programs:20-33</code></span>
+          </div>
+          <p>
+            The install loop reads <code>programs.txt</code> on stdin
+            (<code>done &lt; "$PROGRAMS_TXT"</code>) and calls
+            <code>yay -S --noconfirm "$package"</code> inside it. yay/pacman
+            inherit that stdin and can consume the remaining lines, so an
+            arbitrary tail of the package list is <b>silently skipped</b> with
+            no error - a classic read-loop stdin leak. On top of that,
+            <code>set -e</code> means a single package that no longer exists in
+            the repos or the AUR aborts the entire run, leaving the machine
+            half-provisioned.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> redirect the package manager's stdin
+            (<code>yay -S --noconfirm "$package" &lt;/dev/null</code>) or read
+            the file on a dedicated FD (<code>while … done 3&lt; "$file"</code>
+            with <code>read -u 3</code>), and let a failed package
+            <code>warn</code> and continue instead of killing the run - the way
+            <code>install</code>'s own step functions already do.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="id">CQ-4</span>
+            <span class="badge low">low</span>
+            <span class="loc"><code>install:150-152,20-45</code></span>
+          </div>
+          <p>
+            Adding an optional step is not a single-point change, which
+            undercuts the point of the <code>register_step</code> registry. The
+            registry supplies name, function and menu description, but the
+            <code>--flag</code> must <em>additionally</em> be hand-added to the
+            <code>case</code> list in the argument parser and, a third time, to
+            the usage comment block at the top of the file. Forgetting the
+            <code>case</code> entry produces
+            <code>unknown argument: --&lt;step&gt;</code> for a step that
+            <em>is</em> registered and does show up in the menu - encountered
+            while adding <code>--legion-conservation</code> during this cycle.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> drop the hardcoded flag list and match
+            generically in the fallback branch - if
+            <code>${STEP_FN[${1#--}]:-}</code> is set, select that step;
+            otherwise error. The help's step section can be generated from
+            <code>STEP_ORDER</code>/<code>STEP_DESC</code> the same way, leaving
+            <code>register_step</code> as the single source of truth.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="id">UX-3</span>
+            <span class="badge low">low</span>
+            <span class="loc"><code>install:316</code></span>
+          </div>
+          <p>
+            The setup menu discards unrecognised input without a word:
+            <code>for n in $line; do [ -n "${idx[$n]:-}" ] &amp;&amp;
+            SELECTED[${idx[$n]}]=1; done</code>. Typing <code>99</code>, a step
+            name instead of its number, or a comma-separated list
+            (<code>1,2</code> - the prompt asks for spaces) selects
+            <b>nothing</b>, and <code>setup</code> then links the configs and
+            reports success while having silently run zero of the steps the user
+            asked for.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> <code>warn "unknown selection: $n"</code> in
+            the else branch, and re-prompt when the parsed selection ends up
+            empty although the input was not.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="id">CQ-5</span>
+            <span class="badge low">low</span>
+            <span class="loc"><code>config/usrbin/vol_ctl:15,38</code></span>
+          </div>
+          <p>
+            Two portability slips in a <code>#!/bin/sh</code> script, against
+            the repo's own convention that only <code>install</code> and
+            <code>update_programs_list</code> may use bashisms/GNU-isms. Line 38
+            uses <code>grep -oP</code> (PCRE - GNU grep only, and only when
+            compiled with PCRE support). Line 15 parses
+            <code>pactl info</code> by its English label
+            (<code>grep "Default Sink"</code>), which breaks under a translated
+            locale; it is safe here only because
+            <code>locale.gen</code> generates <code>en_US.UTF-8</code> and
+            nothing else.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> replace <code>grep -oP '\d+%'</code> with
+            <code>grep -o '[0-9]\+%'</code> or an <code>awk</code> field pick,
+            and pin the label lookup with <code>LC_ALL=C pactl info</code>.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="id">CQ-6</span>
+            <span class="badge low">low</span>
+            <span class="loc"
+              ><code>.gitignore</code> · <code>.claudeignore</code></span
+            >
+          </div>
+          <p>
+            Both files are commented in <b>German</b>, although CLAUDE.md fixes
+            the comment/doc language at English for this repo - and the German
+            is ASCII-mangled at that (<code>ausschliessen</code>,
+            <code>gehoeren</code>), which the language rules in use here
+            explicitly disallow. Both also point at
+            <b><code>Health-Report TRACK-2</code></b
+            >, a finding ID that no longer exists in this report, so the
+            justification for the entries is now a dead reference.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> translate both comment blocks to English and
+            replace the TRACK-2 pointer with the reason itself ("never track
+            secrets/runtime state that may end up under <code>config/</code>").
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="id">UX-4</span>
+            <span class="badge low">low</span>
+            <span class="loc"><code>config/dwl/config.h:149</code></span>
+          </div>
+          <p>
+            The screenshot binding
+            <code>Print → grim -g "$(slurp)" - | wl-copy</code> is completely
+            silent. There is no notification daemon in this setup (wob is a bar
+            OSD, not a notifier), so <b>nothing confirms that a screenshot was
+            taken</b> - the only way to find out is to paste. Cancelling
+            <code>slurp</code> with Escape yields an empty geometry, whereupon
+            <code>grim</code> fails equally silently. There is also no variant
+            that writes the image to a file, so screenshots cannot be kept.
+          </p>
+          <div class="rec">
+            <b>Recommendation:</b> chain a short wob pulse on success
+            (<code>… &amp;&amp; ~/.local/bin/osd 100</code>) and add a second
+            binding (<code>Shift+Print</code>) writing to
+            <code>~/Pictures/screenshot-$(date +%F-%H%M%S).png</code>.
+          </div>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="id">INFO-1</span>
+            <span class="badge info">info</span>
+            <span class="loc"
+              ><code>/etc/vconsole.conf</code> ·
+              <code>setup/services.txt:25</code></span
+            >
+          </div>
+          <p>
+            Consequence of the vconsole removal, recorded so it is a conscious
+            state rather than a surprise: the TTY now runs the built-in
+            <code>us</code> QWERTY keymap. On a Colemak-DH keyboard, the tty1
+            fallback shell you land in when dwl fails to start is therefore
+            typed blind. The README argues correctly that this does not matter
+            for <em>login</em> (autologin, no password on the VT) - but it does
+            matter for repair. Not a bug, and cheap to accept; the point is that
+            CLAUDE.md still claims the opposite (see DOC-3).
           </p>
         </div>
       </section>
@@ -397,22 +805,27 @@
             >
           </div>
           <p>
-            The custom symlink manager is lean and safe:
-            <b>one</b> mapping file (<code>setup/links.conf</code>, two columns)
-            plus plain Bash <b>with no dependencies</b> (no Python/dotbot/Stow).
-            Commands
-            <code>link</code
-            >/<code>setup</code>/<code>unlink</code>/<code>status</code>/<code>clean</code>,
-            plus <code>-n/--dry-run</code>, <code>--user-only</code> and
-            <code>--force</code> (backs up real targets to <code>.bak</code>);
-            the <code>setup</code> command bundles the first-time setup
-            (packages -> link -> units -> <code>locale-gen</code> -> checklist).
-            Real files are never overwritten unasked, <code>unlink</code> only
-            removes symlinks to our own sources, <code>/etc</code> targets run
-            per file via <code>sudo</code>, glob sources
-            (<code>config/usrbin/*</code>) link per file so foreign entries in
-            <code>~/.local/bin</code> (e.g. <code>claude</code>) are preserved.
-            Live-verified: 40/40 entries <code>ok</code>.
+            The symlink manager is lean and genuinely safe. <b>One</b> mapping
+            file, two columns, plain Bash with <b>no dependencies</b> (no
+            Python, no dotbot, no Stow). The pipeline is explicitly phased -
+            <b>parse → validate → build → execute</b> - and
+            <em>every</em> command validates first, so a malformed
+            <code>links.conf</code> aborts the run before anything is touched
+            rather than silently skipping a line. Validation is fatal and
+            precise (<code>links.conf:&lt;line&gt;: &lt;msg&gt;</code>) for
+            missing targets, absolute or non-existent sources, duplicate
+            expanded targets, targets outside the
+            <code>~</code>/<code>/etc</code>/<code>/usr/local</code> allowlist
+            and globs that match nothing - with an
+            <code>optional</code> keyword as the escape hatch for a
+            legitimately empty glob. Real files are never overwritten unasked
+            (<code>--force</code> backs up to <code>.bak</code>, with a
+            timestamp suffix if a <code>.bak</code> already exists),
+            <code>unlink</code> removes only symlinks that actually point at our
+            own sources, and glob entries link per file so foreign files in
+            <code>~/.local/bin</code> survive. Verified live:
+            <code>validate</code> green, <b>28/28</b> entries
+            <code>ok</code>.
           </p>
         </div>
 
@@ -420,30 +833,42 @@
           <div class="card-head">
             <span class="badge good">strong</span>
             <span class="loc"
-              ><code>install</code> · <code>validate_links</code> /
-              <code>./install validate</code></span
+              ><code>setup/services.txt</code> ·
+              <code>groups.txt</code> · <code>fonts.txt</code></span
             >
           </div>
           <p>
-            The <code>links.conf</code> handling is a strict
-            <b>parse → validate → build → execute</b> pipeline: every command
-            validates first and <b>aborts on any problem</b> (nothing changed),
-            reporting <code>links.conf:&lt;line&gt;: &lt;msg&gt;</code>. It
-            rejects a missing target, stray fields, an absolute or repo-escaping
-            source (<code>realpath</code> vs the repo root), a non-existent
-            source, duplicate sources/targets (expanded), a target outside the
-            allowlist (<code>~</code> / <code>/etc</code> /
-            <code>/usr/local</code>) and an unmatched glob (<code
-              >optional</code
-            >
-            opts out). A read-only <code>./install validate</code> and a hidden
-            <code>selftest</code> (links into a throwaway
-            <code>mktemp -d</code> HOME, verifies the symlinks, unlinks and
-            verifies removal - never touching the real home) are both wired into
-            a CI workflow (<code>.github/workflows/validate.yml</code>).
-            Verified: the real config passes, crafted bad configs abort with the
-            right message, and <code>selftest</code> creates and removes 30/30
-            links.
+            Data lives in data files, not in the script. Units, groups and fonts
+            are read into <code>USER_UNITS</code>/<code>SYSTEM_UNITS</code>/<code
+              >DISABLE_UNITS</code
+            >/<code>MASK_UNITS</code>, <code>GROUP_LIST</code> and
+            <code>FONT_PACKAGES</code> by two small readers, with a
+            <code>read_list</code> that uses a Bash nameref so the same six
+            lines serve every list. <code>services.txt</code> even models
+            <em>intent</em> rather than just names: the four scopes distinguish
+            "enable", "we want this preset-on unit off" and "this one is static
+            with no <code>[Install]</code>, so it has to be masked" - and the
+            comments explain why each distinction exists.
+          </p>
+        </div>
+
+        <div class="card good">
+          <div class="card-head">
+            <span class="badge good">strong</span>
+            <span class="loc"><code>install</code> - comment quality</span>
+          </div>
+          <p>
+            The script comments the <em>reasoning</em>, not the syntax, and
+            repeatedly pre-empts exactly the change a future maintainer would
+            otherwise make and regret: why <code>enable</code> and not
+            <code>reenable</code> (<code>reenable</code>'s internal
+            <code>disable</code> would delete our linked unit symlink), why a
+            dead symlink in the parent path is removed before
+            <code>mkdir -p</code> (it would otherwise fail with "File exists"
+            and abort the whole run under <code>set -e</code>), why the getty
+            drop-in is a real copy and not a symlink (systemd reads drop-ins
+            before <code>/home</code> is mounted). That last one is the kind of
+            thing you only learn by being bitten, and it is written down.
           </p>
         </div>
 
@@ -451,105 +876,65 @@
           <div class="card-head">
             <span class="badge good">strong</span>
             <span class="loc"
-              ><code>setup/services.txt</code> · <code>groups.txt</code> ·
-              <code>fonts.txt</code></span
+              ><code>config/usrbin/update_programs_list</code> ·
+              <code>config/pacman/dotfiles-programs-list.hook</code></span
             >
           </div>
           <p>
-            The installer is now almost entirely <b>data-driven</b>: the systemd
-            unit lists (<code>services.txt</code>,
-            <code>&lt;scope&gt; &lt;unit&gt;</code>), the group list
-            (<code>groups.txt</code>) and the font packages
-            (<code>fonts.txt</code>) live in plain
-            <code>setup/*.txt</code> files read by small loaders instead of
-            being hardcoded in the script - matching the existing
-            <code>links.conf</code>/<code>programs.txt</code>
-            pattern. Empty/missing lists degrade gracefully. Combined with
-            <code>--only</code>/<code>--exclude</code> for selective linking,
-            the installer stays generic and easy to retarget.
+            The package manifest maintains itself: a pacman
+            <code>PostTransaction</code> hook regenerates
+            <code>setup/programs.txt</code> after every
+            <code>pacman</code>/<code>yay</code> transaction, so it cannot drift.
+            The script writes <b>atomically</b> (<code>mktemp</code> in the
+            target directory, <code>trap</code> cleanup, <code>mv -f</code>), so
+            an interrupted transaction cannot leave a truncated manifest, and it
+            <code>chown</code>s back to the owner when invoked as root by the
+            hook. It also subtracts <code>pacman -Qq base</code> from
+            <code>pacman -Qe</code>, keeping the list to what was actually
+            chosen. Confirmed working during this review: installing waylock and
+            removing hyprlock updated the file with no manual step.
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
             <span class="badge good">strong</span>
-            <span class="loc"
-              ><code>install</code> · <code>do_scrub</code> /
-              <code>--scrub</code></span
-            >
+            <span class="loc"><code>config/nvim/</code></span>
           </div>
           <p>
-            The non-owner path is a clean addition: the <code>setup</code>
-            command asks "Are you the repository owner?" and, on "no", runs an
-            <b>idempotent</b> scrub over the working copy
-            <em>before</em> linking - blanking the git identity and removing
-            commit signing, replacing the restic backup host with a showcase
-            placeholder (<code>sftp:user@ip:drive/path/to/your/backup</code>)
-            and dropping the <code>WLR_DRM_DEVICES</code> iGPU pin so wlroots
-            auto-detects the GPU. It is a tri-state (<code>--scrub</code> /
-            <code>--no-scrub</code>, also runnable standalone) that honours
-            <code>-n/--dry-run</code> and <b>never scrubs silently</b> in a
-            non-interactive run. This closes the biggest portability gap - a
-            foreign clone no longer deploys the owner's identity, a broken
-            signing key or a wrong GPU path.
+            The Neovim config is the tidiest corner of the repo: one file per
+            plugin under <code>lua/plugins/</code> collected automatically by
+            lazy.nvim, versions pinned in <code>lazy-lock.json</code>, tools
+            provisioned declaratively (<code>mason-lspconfig</code> for servers,
+            <code>mason-tool-installer</code> for formatters/linters), its own
+            <code>CLAUDE.md</code> with its own verification commands, and
+            formatting fixed by a checked-in <code>stylua.toml</code>. All
+            modules parse, <code>nvim --headless</code> starts clean and
+            <code>stylua --check</code> is green. The
+            <code>CLAUDE.md</code> there also records the non-obvious traps
+            (treesitter on <code>main</code>, the
+            <code>nvim-web-devicons</code> preload mock, blink.cmp instead of
+            nvim-cmp).
           </p>
         </div>
 
         <div class="card good">
           <div class="card-head">
             <span class="badge good">strong</span>
-            <span class="loc"><code>config/usrbin/rofi_keepassxc</code></span>
+            <span class="loc">repo hygiene</span>
           </div>
           <p>
-            The decrypted entry listing is reliably removed via a
-            <code>trap 'rm -f "$CACHE/tmp"' EXIT</code> - even on any early
-            abort (Escape, wrong password). So no plaintext metadata of the
-            password DB is left behind. Clean handling of sensitive intermediate
-            data.
-          </p>
-        </div>
-
-        <div class="card good">
-          <div class="card-head">
-            <span class="badge good">strong</span>
-            <span class="loc"><code>config/git/.gitconfig</code></span>
-          </div>
-          <p>
-            SSH-based commit signing (<code>gpg.format = ssh</code>,
-            <code>commit.gpgsign = true</code>, <code>signingkey</code> as
-            <code>id_ed25519.pub</code>) is set up - good security hygiene for
-            commit authenticity.
-          </p>
-        </div>
-
-        <div class="card good">
-          <div class="card-head">
-            <span class="badge good">strong</span>
-            <span class="loc">foot · mako · rofi · hyprland.lua</span>
-          </div>
-          <p>
-            A consistently dark colour scheme throughout (<code>#141414</code> /
-            <code>#dddddd</code> / accent <code>#768e84</code>) across all UI
-            components - feels all of a piece. The health report itself uses the
-            same scheme.
-          </p>
-        </div>
-
-        <div class="card good">
-          <div class="card-head">
-            <span class="badge good">keep</span>
-            <span class="loc">lean, deliberate configs</span>
-          </div>
-          <p>
-            Without any need for change (every option earns its place):
-            <b>foot</b>, <b>mako</b>, <b>rofi</b>, <b>mpv</b> (deliberate
-            cache/screenshot profiles, third-party Lua scripts untouched),
-            <b>typst</b> (local package <code>school-theme</code>),
-            <b>systemd</b> (battery-check timer, dotfiles-sync),
-            <b>pacman</b> hook (minimal trigger). <b>keepassxc</b>: only config
-            tracked, the <code>.kdbx</code> is gitignored (present locally).
-            <b>nvim</b> has its own <code>CLAUDE.md</code> and is covered in
-            more depth there.
+            No secrets in any tracked file (swept for password/token/key
+            patterns and private-key headers). Every script carries the two-line
+            SPDX/copyright header so the license travels with a single copied
+            file, and third-party files (mpv scripts) keep their own. Shell
+            style is consistent and defensive - <code>set -eu</code> throughout,
+            dependency checks before use
+            (<code>command -v … || exit</code>), battery detection that iterates
+            <code>/sys/class/power_supply/*</code> instead of hardcoding
+            <code>BAT0</code>, and numeric input validated before arithmetic in
+            <code>bat_check</code>. No <code>TODO</code>/<code>FIXME</code>
+            markers anywhere in our own code.
           </p>
         </div>
       </section>
@@ -559,36 +944,59 @@
         <h2>3 · Machine-specific - won't work as-is for another user</h2>
 
         <p style="color: var(--fg-dim); font-size: 13px; margin: 0 0 20px">
-          Personal dotfiles: the following values are hardcoded to this exact
-          machine/user (hostname "leo", a specific laptop + LAN). On a fresh
-          Arch install for someone else they are wrong and need adjusting. None
-          of these are bugs - they are listed so a foreign user knows what to
-          change before running <code>./install</code>.
+          Personal dotfiles: the values below are hardcoded to this exact
+          machine and user (a Lenovo Legion laptop, user <code>leo</code>, a
+          specific LAN). They are not bugs - they are listed so a foreign user
+          knows what to change before running <code>./install</code>. Note that
+          the automatic scrub described in earlier snapshots
+          (<code>--scrub</code> / owner prompt) <b>no longer exists</b>, so all
+          of this now has to be adjusted by hand.
         </p>
 
         <div class="card low">
           <div class="card-head">
             <span class="badge low">machine-specific</span>
-            <span class="loc"><code>config/git/.gitconfig</code></span>
+            <span class="loc"><code>config/git/config</code></span>
           </div>
           <p>
-            Hardcoded git identity and signing key:
+            Hardcoded identity and signing key:
             <code>name = Leonhard Weiler</code>,
-            <code>email = leonhard-weiler@hotmail.com</code> and
+            <code>email = leonhard-weiler@hotmail.com</code>,
             <code>signingkey = /home/leo/.ssh/id_ed25519.pub</code> with
-            <code>commit.gpgsign = true</code>. A foreign user would commit
-            under <em>my</em> name and, worse, <b>every commit fails to sign</b>
-            because that key path does not exist for them. This is now handled
-            automatically: answering "no" to the owner prompt (or
-            <code>./install --scrub</code>) blanks the identity and removes the
-            signing block before linking.
+            <code>commit.gpgsign = true</code>. A foreign user commits under
+            someone else's name and, worse,
+            <b>every commit fails outright</b> because that absolute key path
+            does not exist for them - with an error that does not obviously
+            point at this file.
           </p>
           <div class="rec">
-            <b>Adjust:</b> run <code>setup</code> as a non-owner (or
-            <code>--scrub</code>), then set your own <code>name</code>/<code
-              >email</code
-            >
-            and point <code>signingkey</code> at your own key.
+            <b>Adjust:</b> set your own <code>name</code>/<code>email</code> and
+            point <code>signingkey</code> at your own key - as
+            <code>~/.ssh/…</code> rather than <code>/home/leo/…</code>, which
+            would at least make the path user-agnostic.
+          </div>
+        </div>
+
+        <div class="card low">
+          <div class="card-head">
+            <span class="badge low">machine-specific</span>
+            <span class="loc"><code>config/usrbin/restic-backup</code></span>
+          </div>
+          <p>
+            The backup target defaults to a private NAS
+            (<code>sftp:Leo@192.168.178.23:D:\ResticBackup</code>) and the
+            backed-up paths are fixed to
+            <code>~/files/projects</code> and <code>~/files/school</code>. The
+            repository is at least overridable via
+            <code>RESTIC_REPOSITORY</code>; the paths are not. The
+            <code>restic forget --prune</code> branch behind the
+            <code>y/n</code> prompt is destructive, and under
+            <code>set -eu</code> a non-interactive run simply exits at the
+            <code>read</code> instead of pruning - safe, but only by accident.
+          </p>
+          <div class="rec">
+            <b>Adjust:</b> export <code>RESTIC_REPOSITORY</code> and lift the
+            two backup paths into overridable variables.
           </div>
         </div>
 
@@ -596,91 +1004,70 @@
           <div class="card-head">
             <span class="badge low">machine-specific</span>
             <span class="loc"
-              ><code>config/hypr/monitors.lua</code> ·
-              <code>config/hypr/env.lua</code></span
+              ><code>config/dwl/config.h</code> ·
+              <code>install</code> (legion step)</span
             >
           </div>
           <p>
-            The monitors are fixed outputs (<code>HDMI-A-1</code> at
-            <code>2560x0</code>, <code>eDP-1</code> at
-            <code>2560x1600@60</code>, scale <code>1.6</code>) with specific
-            positions/scales. On different hardware the outputs are named
-            differently, so <b>monitors may be left unconfigured</b>.
-            <code>env.lua</code> also pins <code>WLR_DRM_DEVICES</code> to this
-            machine's integrated GPU (<code>pci-0000:34:00.0</code>) - but that
-            line is <b>auto-removed by the non-owner scrub</b> (owner prompt /
-            <code>--scrub</code>), so on foreign hardware wlroots falls back to
-            auto-detection. Only <code>monitors.lua</code> still needs a manual
-            edit.
+            <code>monrules[]</code> pins the internal panel by name
+            (<code>eDP-1</code>) at scale <code>1.6</code> - on other hardware
+            the output is named differently and falls through to the
+            <code>NULL</code> catch-all at scale <code>1.0</code>. The
+            <code>--legion-conservation</code> step writes to the
+            <code>ideapad_acpi</code> sysfs path
+            (<code>VPC2004:00</code>), which only exists on Lenovo
+            Legion/IdeaPad hardware - it detects this and skips itself
+            elsewhere, so it is harmless, just inert.
           </p>
           <div class="rec">
-            <b>Adjust:</b> rewrite <code>monitors.lua</code> for your outputs
-            (<code>hyprctl monitors</code>); the GPU pin is handled by the
-            scrub.
+            <b>Adjust:</b> set your own output name and scale in
+            <code>monrules[]</code> and rebuild with
+            <code>./install --dwl</code>.
           </div>
         </div>
 
         <div class="card low">
           <div class="card-head">
             <span class="badge low">machine-specific</span>
-            <span class="loc"><code>config/vconsole/vconsole.conf</code></span>
+            <span class="loc"
+              ><code>config/systemd-system/getty@tty1.service.d/autologin.conf</code>
+              · <code>config/keepassxc/keepassxc.ini</code></span
+            >
           </div>
           <p>
-            The console keymap is
-            <code>KEYMAP=mod-dh-iso-uk</code> (Colemak-DH). A QWERTY user gets a
-            <b>Colemak TTY and ly login</b>, which is unusable until changed
-            (and baked into the initramfs, see the keymap note under "Deliberate
-            decisions").
+            The autologin drop-in hardcodes the username
+            <code>leo</code> in its
+            <code>agetty --autologin</code> line - on a foreign machine tty1
+            then tries to log in a user that does not exist. KeePassXC's
+            <code>BackupFilePathPattern</code> likewise points at
+            <code>/home/leo/.config/keepassxc/…</code>.
           </p>
           <div class="rec">
-            <b>Adjust:</b> set your layout in <code>vconsole.conf</code>, then
-            <code>sudo mkinitcpio -P</code>.
-          </div>
-        </div>
-
-        <div class="card low">
-          <div class="card-head">
-            <span class="badge low">machine-specific</span>
-            <span class="loc"><code>config/usrbin/restic-backup:10</code></span>
-          </div>
-          <p>
-            The restic default repo is
-            <code>sftp:Leo@192.168.178.23:D:\ResticBackup</code> (my LAN NAS,
-            Windows path, user "Leo") and it backs up
-            <code>$HOME/files/projects</code> and
-            <code>$HOME/files/school</code>. For anyone else the target host is
-            unreachable and those source directories don't exist. The repo is
-            overridable via <code>RESTIC_REPOSITORY</code>, but the default and
-            the backed-up paths are mine. The host default is scrubbed to a
-            showcase placeholder for non-owners (owner prompt /
-            <code>--scrub</code>); the backup <em>source</em> paths
-            (<code>$HOME/files/projects</code>, <code>$HOME/files/school</code>)
-            are not scrubbed and stay mine.
-          </p>
-          <div class="rec">
-            <b>Adjust:</b> set <code>RESTIC_REPOSITORY</code> (env) and change
-            the backup source directories.
+            <b>Adjust:</b> replace the username in the drop-in before running
+            <code>./install --getty-autologin</code>, and repoint the KeePassXC
+            backup pattern at your own home.
           </div>
         </div>
       </section>
 
-      <!-- ================= DELIBERATE DECISIONS ================= -->
+      <!-- ================= DELIBERATE ================= -->
       <section id="deliberate">
         <h2>4 · Deliberate decisions</h2>
 
         <div class="card info">
           <div class="card-head">
             <span class="badge info">deliberate</span>
-            <span class="loc"
-              ><code>/etc/sudoers</code> · <code>%wheel</code></span
-            >
+            <span class="loc"><code>config/dwl/</code></span>
           </div>
           <p>
-            <code>%wheel ALL=(ALL:ALL) NOPASSWD: ALL</code> - passwordless sudo
-            for the <code>wheel</code> group. Deliberate convenience decision
-            (recorded in the README under "Manual system state"). Note: every
-            process of the user thereby becomes root without any further hurdle;
-            the sudo file stays unchanged on purpose.
+            dwl is configured at <b>compile time</b>:
+            <code>config.h</code> is the source of truth and is deliberately
+            <em>not</em> symlinked - it is compiled into the binary, so
+            <code>./install --dwl</code> is the apply step. The suckless
+            trade-off is accepted knowingly: no runtime reload, but no config
+            parser and no runtime IPC either. dwl itself is pinned to
+            <code>v0.8</code> and cloned at build time rather than vendored;
+            only the built binary is installed.
           </p>
         </div>
 
@@ -688,42 +1075,38 @@
           <div class="card-head">
             <span class="badge info">deliberate</span>
             <span class="loc"
-              ><code>config/hypr/looknfeel.lua:31</code> ·
-              <code>config/nvim/lua/config/options.lua:3</code></span
+              ><code>config/bash/.bash_profile</code> ·
+              <code>--getty-autologin</code></span
             >
           </div>
           <p>
-            Animations disabled in Hyprland (<code>enabled = false</code> in
-            <code>looknfeel.lua</code>) and the mouse turned off in nvim (<code
-              >vim.opt.mouse = ""</code
-            >) - deliberately minimalist, keyboard-centric workflow. The
-            animation curves stay defined in <code>animations.lua</code>, so
-            enabling only requires flipping the flag.
+            <b>No display manager.</b> <code>getty@tty1</code> autologins via an
+            <code>agetty --autologin</code> drop-in and
+            <code>~/.bash_profile</code> execs dwl on tty1 - guarded so it only
+            fires on tty1 and only when no Wayland session is already running.
+            The drop-in is deployed as a <b>real copy</b>, not a symlink,
+            because systemd reads unit drop-ins before <code>/home</code> is
+            mounted, when a symlink into the repo would still be dangling. That
+            constraint is the reason the step exists at all.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
             <span class="badge info">deliberate</span>
-            <span class="loc"><code>config/mpv/mpv.conf</code></span>
+            <span class="loc"><code>config/dwl/config.h</code> (lockcmd)</span>
           </div>
           <p>
-            Very large demuxer caches (several GB readahead) - deliberate per
-            the comment, "plenty of RAM available". Legitimate for a desktop
-            setup with ample memory.
-          </p>
-        </div>
-
-        <div class="card info">
-          <div class="card-head">
-            <span class="badge info">deliberate</span>
-            <span class="loc"><code>config/usrbin/restic-backup</code></span>
-          </div>
-          <p>
-            <code>RESTIC_PASSWORD</code> is deliberately not in the script - it
-            is prompted interactively. Fine as long as the script is not meant
-            to run non-interactively (e.g. via a timer). (The repo target and
-            backup paths are machine-specific - see section 3.)
+            The screen locker is <b>waylock</b>, replacing hyprlock. waylock has
+            no config file - it is configured purely through CLI flags, so the
+            whole configuration is the <code>lockcmd[]</code> array. The cost is
+            accepted and written down in the README: waylock only ever paints
+            one solid colour, so the screenshot background, blur, the input
+            field (size, outline, rounding, placeholder, font),
+            <code>hide_cursor</code> and <code>fail_timeout</code> are gone. In
+            exchange the dependency drops from the Hyprland stack
+            (hyprlang/hyprutils/hyprgraphics/sdbus-cpp/pugixml) to a single ISC
+            binary.
           </p>
         </div>
 
@@ -731,20 +1114,87 @@
           <div class="card-head">
             <span class="badge info">deliberate</span>
             <span class="loc"
-              ><code>config/mkinitcpio/mkinitcpio.conf:55</code> ·
-              <code>config/vconsole/vconsole.conf</code></span
+              ><code>config/nvim/lua/plugins/conform.lua</code></span
             >
           </div>
           <p>
-            The console keymap (<code>KEYMAP=mod-dh-iso-uk</code>, Colemak-DH)
-            is loaded via the initramfs <code>keymap</code> hook (in
-            <code>HOOKS=(… keyboard keymap consolefont …)</code>), not (only)
-            via <code>systemd-vconsole-setup</code> - the latter skips the first
-            VT on boot ("Configuration of first virtual console was skipped").
-            The <code>keymap</code> hook bakes the keymap in at initramfs
-            <strong>build time</strong>. Note: after every change to
-            <code>vconsole.conf</code> run <code>sudo mkinitcpio -P</code> once,
-            otherwise the old keymap keeps applying at the ly / TTY login.
+            <b>prettier, not prettierd.</b> The daemon variant deliberately
+            outlives Neovim and stayed resident at ~60 MB after the last buffer
+            was closed. css moved to biome (which already formats the
+            JS/TS/JSON side); html and markdown stay on plain prettier because
+            biome's html formatter is experimental and off by default and biome
+            has no markdown formatter at all - both verified against biome
+            2.5.2 during this review. The trade is a few hundred ms per format
+            against no permanently resident process.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"><code>install</code> (legion step)</span>
+          </div>
+          <p>
+            The battery conservation mode is a <b>one-shot setup step</b>, not a
+            boot-time unit. The <code>ideapad_acpi</code> driver writes the flag
+            through to the embedded controller, which keeps it across reboots
+            and power-offs - verified by disabling and removing the former
+            <code>legion-conservation.service</code> and re-reading the sysfs
+            value. A service firing at every
+            <code>multi-user.target</code> to write a value that was already
+            there was pure boot-time cost.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"
+              ><code>config/wbg/</code> · <code>config/wallpaper/</code></span
+            >
+          </div>
+          <p>
+            The wallpaper feature is <b>stood down, not deleted</b>: nothing is
+            installed, linked or autostarted, but the
+            <code>build-wbg</code> script and the picture set stay in the repo,
+            with the disabled <code>links.conf</code> lines and the disabled
+            <code>autostart[]</code> line commented in place and the revival
+            path spelled out in CLAUDE.md. Reversible by uncommenting three
+            lines plus <code>./install --wbg --dwl</code>.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc">no test framework</span>
+          </div>
+          <p>
+            There is no test suite and no CI. For a config repo whose "logic" is
+            one Bash script, the gates are the cheap ones:
+            <code>bash -n</code>/<code>sh -n</code> for scripts,
+            <code>luajit -bl</code> and a headless Neovim start for the Lua,
+            <code>stylua --check</code> for formatting, and above all
+            <code>./install validate</code> plus <code>./install -n</code> as a
+            true dry run for the link map. Deliberate, and adequate at this
+            size - the one thing it does not cover is the
+            <code>/etc</code> side, which only shows up on a real machine.
+          </p>
+        </div>
+
+        <div class="card info">
+          <div class="card-head">
+            <span class="badge info">deliberate</span>
+            <span class="loc"><code>.gitignore</code> · <code>.claudeignore</code></span>
+          </div>
+          <p>
+            The KeePassXC database (<code>*.kdbx</code>) is git-ignored and the
+            whole <code>config/keepassxc/</code> directory is additionally
+            excluded from agent access via <code>.claudeignore</code>, while the
+            (secret-free) <code>keepassxc.ini</code> stays tracked. The Claude
+            config is tracked selectively for the same reason:
+            <code>settings.json</code> and <code>skills/</code> only, never
+            <code>.claude.json</code>, sessions, history or cache.
           </p>
         </div>
       </section>
