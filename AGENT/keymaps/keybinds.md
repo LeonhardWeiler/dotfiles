@@ -9,6 +9,11 @@ Note on the keyboard: dwl loads **us / colemak_dh** with `caps:swapescape`
 they are **labelled on a Colemak-DH layout**, which is how they are written in
 `config.h`.
 
+The bindings are not historical accidents — they are allocated by the cost model
+in `design.md` (key position weights + chord penalties), on the standing rule
+that **`hjkl` means the same thing everywhere**: `h`/`l` the horizontal axis,
+`j`/`k` the vertical one, in dwl, Neovim and mpv alike.
+
 ---
 
 ## dwl (compositor) — `config/dwl/config.h`
@@ -20,14 +25,18 @@ they are **labelled on a Colemak-DH layout**, which is how they are written in
 
 | Keys               | Action                                         |
 | ------------------ | ---------------------------------------------- |
-| `MOD+Shift+Return` | Terminal (foot)                                |
-| `MOD+Shift+P`      | App launcher (`rofi -show drun`)               |
-| `MOD+Shift+N`      | Browser (zen-browser)                          |
-| `MOD+Shift+C`      | Close the focused window                       |
-| `MOD+Shift+Q`      | Quit dwl — asks for confirmation in rofi first |
-| `MOD+L`            | Lock the screen (waylock)                      |
+| `MOD+Space`        | Terminal (foot)                                |
+| `MOD+I`            | App launcher (`rofi -show drun`)               |
+| `MOD+W`            | Browser (zen-browser) — _w_eb                  |
+| `MOD+O`            | Close the focused window                       |
+| `MOD+E`            | Toggle fullscreen                              |
 | `MOD+V`            | Toggle floating for the focused window         |
-| `MOD+M`            | Toggle fullscreen                              |
+| `MOD+Shift+U`      | Lock the screen (waylock)                      |
+| `MOD+Shift+Q`      | Quit dwl — asks for confirmation in rofi first |
+
+Close sits on the right pinky, three columns away from the `hjkl` cluster, so a
+navigation slip cannot reach it. Lock is on a key that is **unbound** on the
+plain `MOD` layer, so no stray Shift can lock the screen.
 
 ### Layout / focus
 
@@ -35,11 +44,14 @@ they are **labelled on a Colemak-DH layout**, which is how they are written in
 | ------------- | --------------------------------------------------- |
 | `MOD+J`       | Focus next window in the stack                      |
 | `MOD+K`       | Focus previous window in the stack                  |
-| `MOD+Return`  | Zoom — swap the focused window into the master area |
-| `MOD+Shift+H` | Shrink the master area (−2 %)                       |
-| `MOD+Shift+L` | Grow the master area (+2 %)                         |
-| `MOD+Shift+I` | One more window in the master area                  |
-| `MOD+Shift+O` | One fewer window in the master area                 |
+| `MOD+H`       | Shrink the master area (−2 %)                       |
+| `MOD+L`       | Grow the master area (+2 %)                         |
+| `MOD+N`       | Zoom — swap the focused window into the master area |
+| `MOD+Shift+H` | One fewer window in the master area                 |
+| `MOD+Shift+L` | One more window in the master area                  |
+
+`h`/`l` is the horizontal axis: plain it resizes the master area, with Shift it
+changes how many windows live in it.
 
 New windows attach at the **bottom** of the stack (`attachbottom.patch`), so
 opening one never displaces what you are looking at.
@@ -87,16 +99,16 @@ mode on purpose, so a stray press does not do something surprising.
 
 | Keys              | Mode   | Action                                                    |
 | ----------------- | ------ | --------------------------------------------------------- |
-| `<leader>pv`      | n      | Open Oil (file browser)                                   |
+| `<leader>e`       | n      | Open Oil (file _e_xplorer)                                |
 | `J` / `K`         | visual | Move the selection down / up, reindented                  |
 | `J`               | n      | Join lines, keeping the cursor where it was               |
 | `<C-d>` / `<C-u>` | n      | Half page down / up, recentred                            |
 | `<C-f>` / `<C-b>` | n      | Full page down / up, recentred                            |
 | `n` / `N`         | n      | Next / previous search hit, recentred and unfolded        |
-| `<leader>r`       | x      | Replace the selection with the yank register (no clobber) |
+| `<leader>p`       | x      | Paste over the selection from the yank register (no clobber) |
 | `<leader>S`       | n      | Search & replace the word under the cursor                |
 | `<leader>sd`      | n      | Put diagnostics into the quickfix list                    |
-| `<leader>ob`      | n      | Open the link under the cursor in the browser             |
+| `<leader>o`       | n      | Open the link under the cursor in the browser             |
 | `j` / `k`         | n      | Move by _display_ line — markdown/text buffers only       |
 
 ### LSP (active in a buffer with a server) — `lua/plugins/lsp.lua`
@@ -106,16 +118,16 @@ mode on purpose, so a stray press does not do something surprising.
 | `gd`         | Go to definition               |
 | `gr`         | References                     |
 | `K`          | Hover documentation            |
-| `<leader>rn` | Rename symbol                  |
-| `<leader>ca` | Code action                    |
-| `<leader>e`  | Show the diagnostic in a float |
+| `<leader>r`  | Rename symbol                  |
+| `<leader>c`  | Code action                    |
+| `<leader>d`  | Show the diagnostic in a float |
 | `[d` / `]d`  | Previous / next diagnostic     |
 
 ### Telescope — `lua/plugins/telescope.lua`
 
 | Keys         | Action            |
 | ------------ | ----------------- |
-| `<leader>sf` | Find files        |
+| `<leader>f`  | Find files        |
 | `<leader>sg` | Live grep         |
 | `<leader>sh` | Help tags         |
 | `<leader>sc` | Colorschemes      |
@@ -164,25 +176,32 @@ snippet placeholders.
 Only these are overridden; everything else is mpv's default (`Space` pause,
 `f` fullscreen, `q` quit, `9`/`0` volume, …).
 
-| Keys                     | Action    |
-| ------------------------ | --------- |
-| `←` / `→`                | Seek ∓5 s |
-| `Shift+←` / `Shift+→`    | Seek ∓1 s |
-| `↑` / `↓`                | Volume ±5 |
-| Mouse wheel up / down    | Volume ±5 |
-| Mouse wheel left / right | Seek ±5 s |
+| Keys                     | Action                          |
+| ------------------------ | ------------------------------- |
+| `h` / `l`                | Seek ∓5 s                       |
+| `H` / `L`                | Seek ∓1 s                       |
+| `j` / `k`                | Volume ∓5                       |
+| `←` / `→`                | Seek ∓5 s                       |
+| `Shift+←` / `Shift+→`    | Seek ∓1 s                       |
+| `↑` / `↓`                | Volume ±5                       |
+| Mouse wheel up / down    | Volume ±5                       |
+| Mouse wheel left / right | Seek ±5 s                       |
+| `Ctrl+j` / `Ctrl+J`      | Cycle the subtitle track ± (was `j` / `J`) |
+| `Ctrl+l` / `Ctrl+L`      | A-B loop / loop file (was `l` / `L`)       |
 
 ---
 
 ## Programs running on their defaults
 
-These carry **no** custom bindings in this repo — listed so it is clear that
-nothing was changed, with the handful of keys worth remembering:
+These run on their upstream bindings — listed so it is clear that nothing was
+changed, with the handful of keys worth remembering. The one exception is rofi,
+where `Ctrl+J`/`Ctrl+K` were added to `config.rasi` for the sake of the
+system-wide `hjkl` axes:
 
 | Program   | Config                         | Notable defaults                                                                                                        |
 | --------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | foot      | `config/foot/foot.ini`         | `Ctrl+Shift+C`/`V` copy & paste, `Ctrl+Shift+R` search, `Ctrl+Shift+N` new window, `Ctrl++`/`-` font size               |
-| rofi      | `config/rofi/`                 | Type to filter, `↑`/`↓` or `Ctrl+N`/`Ctrl+P` to move, `Enter` to run, `Esc` to cancel, `Shift+Enter` runs in a terminal |
+| rofi      | `config/rofi/`                 | Type to filter, `↑`/`↓`, `Ctrl+J`/`Ctrl+K` or `Ctrl+N`/`Ctrl+P` to move, `Enter` to run, `Esc` to cancel, `Shift+Enter` runs in a terminal |
 | btop      | `config/btop/btop.conf`        | `Esc`/`m` menu, `q` quit, `+`/`-` update interval, `f` filter, `k` kill process                                         |
 | waylock   | none (CLI flags in `config.h`) | Type the password, `Enter` to unlock — no other input                                                                   |
 | KeePassXC | `config/keepassxc/`            | `Ctrl+C` copy password, `Ctrl+B` copy username, `Ctrl+F` search, `Ctrl+L` lock database                                 |

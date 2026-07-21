@@ -5,6 +5,15 @@ configuration {
   modes: [drun,filebrowser];
   show-icons: false;
   drun-display-format: "{name}";
+
+  /* Ctrl+j/k move the selection, matching vim / dwl / mpv. Both keys carry a
+     default elsewhere and rofi refuses duplicate bindings, so those defaults
+     have to be released first: Ctrl+j from kb-accept-entry (Return and Ctrl+m
+     still accept) and Ctrl+k from kb-remove-to-eol. */
+  kb-accept-entry: "Control+m,Return,KP_Enter";
+  kb-remove-to-eol: "";
+  kb-row-down: "Down,Control+n,Control+j";
+  kb-row-up: "Up,Control+p,Control+k";
 }
 
 * {

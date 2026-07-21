@@ -1,4 +1,4 @@
-vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
+vim.keymap.set("n", "<leader>e", vim.cmd.Oil, { desc = "Oil (file explorer)" })
 
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
@@ -11,7 +11,7 @@ vim.keymap.set("n", "<C-b>", "<C-b>zz")
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
 
-vim.keymap.set("x", "<leader>r", '"_dp')
+vim.keymap.set("x", "<leader>p", '"_dp', { desc = "Paste over selection (no clobber)" })
 
 vim.keymap.set(
   "n",
@@ -29,4 +29,4 @@ vim.keymap.set("n", "<F1>", "<Nop>")
 vim.keymap.set("n", "<Space>", "<Nop>")
 
 local autocmds = require("config.autocmds")
-vim.keymap.set("n", "<leader>ob", autocmds.OpenBrowser, { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>o", autocmds.OpenBrowser, { noremap = true, silent = true, desc = "Open link in browser" })

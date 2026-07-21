@@ -218,7 +218,7 @@ scripts). The source->target mapping is stated explicitly in
   `autostart.patch` (enables the `autostart[]` array in `config.h`, which is how
   startup programs are spawned - there is no session script) and `gaps.patch`
   (inner/outer gaps in the `tile` layout). `MODKEY` is **Alt**, there are **9
-  tags**, and `AGENT/keybinds.md` lists every binding on the system (snapshot -
+  tags**, and `AGENT/keymaps/keybinds.md` lists every binding on the system (snapshot -
   `config.h` stays the authority). `build-dwl` only contacts the remote when the
   pinned tag is missing locally, so an outage cannot block applying a `config.h`
   change.
@@ -232,7 +232,7 @@ leonhardweiler/dotfiles Authors` line (the repo is ISC, see `LICENSE`). Add it t
   `config/mpv/scripts/thumbfast.lua`) keep their own header.
 - Two health/workflow skills write into `AGENT/`: `review-and-update-report`
   (health report) and `implement-todo` (work through `TODO.md`, one commit per
-  item). `AGENT/keybinds.md` is a hand-kept overview of every keybinding on the
+  item). `AGENT/keymaps/keybinds.md` is a hand-kept overview of every keybinding on the
   system - update it when a binding changes.
 - **Claude Code runs without permission prompts here, on purpose**: `.bashrc`
   aliases `claude` to `claude --dangerously-skip-permissions` and

@@ -106,33 +106,48 @@ static const char *lockcmd[]    = { "waylock", "-ignore-empty-password",
 
 static const Key keys[] = {
 	/* modifier                     key              function          argument */
-	/* Launch programs / control windows */
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_Return,  spawn,            {.v = termcmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_c,       killclient,       {0} },
-	/* Quit goes through a rofi confirmation - it sits one key row from
-	 * ALT+SHIFT+C (killclient) and tears down the whole session, so it must not
-	 * be a single accidental chord. `pkill dwl` is the confirmed path. */
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       spawn, SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx yes && pkill dwl") },
-	{ MODKEY,                       XKB_KEY_v,       togglefloating,   {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_p,       spawn,            {.v = menucmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_n,       spawn,            {.v = browsercmd} },
-	{ MODKEY,                       XKB_KEY_l,       spawn,            {.v = lockcmd} },
+	/* Key positions follow the cost model in AGENT/keymaps/design.md: the letters
+	 * below are Colemak-DH labels, and what is optimised is the position they
+	 * sit on, not the letter. Rebuild with `./install --dwl` after editing.
+	 *
+	 * Launch programs. The terminal is the most-spawned thing on the system and
+	 * gets the cheapest chord on the board (right thumb on space against the
+	 * left thumb on ALT). */
+	{ MODKEY,                       XKB_KEY_space,   spawn,            {.v = termcmd} },
+	{ MODKEY,                       XKB_KEY_i,       spawn,            {.v = menucmd} },
+	{ MODKEY,                       XKB_KEY_w,       spawn,            {.v = browsercmd} },
 
-	/* Focus in the master/stack */
+	/* Window operations on the right-hand home row - the hand already rests
+	 * there for ALT+HJKL below. killclient sits on the pinky (o), three columns
+	 * away from the navigation cluster, so slipping while navigating cannot
+	 * close a window. */
+	{ MODKEY,                       XKB_KEY_n,       zoom,             {0} },
+	{ MODKEY,                       XKB_KEY_e,       togglefullscreen, {0} },
+	{ MODKEY,                       XKB_KEY_o,       killclient,       {0} },
+	{ MODKEY,                       XKB_KEY_v,       togglefloating,   {0} },
+
+	/* Navigation: ALT+HJKL mirrors vim's axes on the whole system (nvim keeps
+	 * its defaults, mpv is bound to match). j/k = focus down/up the stack,
+	 * h/l = the horizontal axis, i.e. the master area. */
 	{ MODKEY,                       XKB_KEY_j,       focusstack,       {.i = +1} },
 	{ MODKEY,                       XKB_KEY_k,       focusstack,       {.i = -1} },
+	{ MODKEY,                       XKB_KEY_h,       setmfact,         {.f = -0.02f} },
+	{ MODKEY,                       XKB_KEY_l,       setmfact,         {.f = +0.02f} },
 
-	/* Master area width */
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_h,       setmfact,         {.f = -0.02f} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_l,       setmfact,         {.f = +0.02f} },
+	/* Same axis with SHIFT: fewer/more windows in the master area. A stray
+	 * SHIFT here is harmless and undone by the opposite chord. */
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_h,       incnmaster,       {.i = -1} },
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_l,       incnmaster,       {.i = +1} },
 
-	/* Number of windows in the master area */
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_i,       incnmaster,       {.i = +1} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_o,       incnmaster,       {.i = -1} },
+	/* Lock. Deliberately on a key that is unbound on the plain ALT layer, so no
+	 * stray SHIFT on a frequent chord can ever lock the screen. */
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_u,       spawn,            {.v = lockcmd} },
 
-	/* Fullscreen / master swap */
-	{ MODKEY,                       XKB_KEY_m,       togglefullscreen, {0} },
-	{ MODKEY,                       XKB_KEY_Return,  zoom,             {0} },
+	/* Quit goes through a rofi confirmation - it tears down the whole session,
+	 * so it must not be a single accidental chord. It also sits on the far left
+	 * pinky, away from every frequent binding. `pkill dwl` is the confirmed
+	 * path. */
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       spawn, SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx yes && pkill dwl") },
 
 	/* Tags 1-9 */
 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                       0),

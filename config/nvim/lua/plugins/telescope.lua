@@ -4,7 +4,7 @@ return {
   config = function()
     local builtin = require("telescope.builtin")
 
-    vim.keymap.set("n", "<leader>sf", function()
+    vim.keymap.set("n", "<leader>f", function()
       builtin.find_files({ hidden = true })
     end, { desc = "Find files (inkl. hidden, ohne gitignore)" })
 
