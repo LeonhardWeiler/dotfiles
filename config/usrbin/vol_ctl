@@ -12,7 +12,9 @@ for cmd in pactl; do
   }
 done
 
-SINK=$(pactl info | grep "Default Sink" | awk '{print $3}')
+# LC_ALL=C pins pactl's output to English - the label lookups below would
+# otherwise break under a translated locale.
+SINK=$(LC_ALL=C pactl info | grep "Default Sink" | awk '{print $3}')
 if [ -z "$SINK" ]; then
   echo "Error: no default sink found"
   exit 1
@@ -34,8 +36,10 @@ case "$1" in
     ;;
 esac
 
-IS_MUTED=$(pactl get-sink-mute "$SINK" | awk '{print $2}')
-VOLUME_RAW=$(pactl get-sink-volume "$SINK" | grep -oP '\d+%' | head -n1)
+IS_MUTED=$(LC_ALL=C pactl get-sink-mute "$SINK" | awk '{print $2}')
+# grep -o with a BRE, not -oP: PCRE is a GNU-grep-only extension and this is a
+# POSIX sh script.
+VOLUME_RAW=$(LC_ALL=C pactl get-sink-volume "$SINK" | grep -o '[0-9]\{1,3\}%' | head -n1)
 VOLUME=${VOLUME_RAW%\%}
 
 if [ "$VOLUME" -gt 100 ]; then
