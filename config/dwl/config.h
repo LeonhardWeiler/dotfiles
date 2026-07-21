@@ -110,7 +110,10 @@ static const Key keys[] = {
 	/* Launch programs / control windows */
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_Return,  spawn,            {.v = termcmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_c,       killclient,       {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       quit,             {0} },
+	/* Quit goes through a rofi confirmation - it sits one key row from
+	 * ALT+SHIFT+C (killclient) and tears down the whole session, so it must not
+	 * be a single accidental chord. `pkill dwl` is the confirmed path. */
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       spawn, SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx yes && pkill dwl") },
 	{ MODKEY,                       XKB_KEY_v,       togglefloating,   {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_p,       spawn,            {.v = menucmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_t,       spawn,            {.v = filescmd} },
@@ -147,8 +150,9 @@ static const Key keys[] = {
 	/* Screenshot (region -> clipboard) */
 	{ 0,                            XKB_KEY_Print,   spawn, SHCMD("grim -g \"$(slurp)\" - | wl-copy") },
 
-	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx: VT-switch escape hatches. */
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
+	/* Ctrl-Alt-Fx: VT-switch escape hatches. (Ctrl-Alt-Backspace is deliberately
+	 * unbound - the keyboard does not emit Terminate_Server here, and a second
+	 * unconfirmed way to kill the session is not wanted.) */
 #define CHVT(n) { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_XF86Switch_VT_##n, chvt, {.ui = (n)} }
 	CHVT(1), CHVT(2), CHVT(3), CHVT(4), CHVT(5), CHVT(6),
 	CHVT(7), CHVT(8), CHVT(9), CHVT(10), CHVT(11), CHVT(12),
