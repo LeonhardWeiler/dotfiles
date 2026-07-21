@@ -122,7 +122,6 @@ sudo systemctl enable --now NetworkManager.service
 sudo systemctl enable --now getty@tty1.service
 sudo systemctl enable --now dnsmasq.service
 sudo systemctl enable --now sshd.service
-sudo systemctl enable --now legion-conservation.service
 sudo systemctl enable --now iptables.service
 sudo systemctl enable --now power-profiles-daemon.service
 sudo systemctl enable --now systemd-timesyncd.service
@@ -136,6 +135,24 @@ sudo systemctl enable --now virtstoraged.socket
 > Note: `swtpm` (socket-activated) and PipeWire/WirePlumber (user-scope, enabled
 > per-user by package presets) have no enable-able system `*.service` and are
 > therefore **not** in the list.
+
+### Battery conservation mode (Legion)
+
+Charging stops at ~60% to spare the battery. This used to be a
+`legion-conservation.service` run at every boot, which was unnecessary: the
+`ideapad_acpi` driver writes the flag through to the embedded controller, and
+the EC keeps it across reboots and power-offs. It is a one-shot setup step now:
+
+```bash
+./install --legion-conservation
+```
+
+The step is idempotent (a no-op when the flag is already set) and skips itself
+when the sysfs entry is missing, i.e. on non-Legion hardware. By hand:
+
+```bash
+echo 1 | sudo tee /sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode
+```
 
 ### Disabled at boot (startup-time trims)
 

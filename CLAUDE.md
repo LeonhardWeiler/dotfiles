@@ -48,6 +48,11 @@ scripts). The source->target mapping is stated explicitly in
   - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
   - `--initramfs` - `mkinitcpio -P`.
+  - `--legion-conservation` - enable the Lenovo Legion battery conservation mode
+    (write `1` to the `ideapad_acpi` `conservation_mode` sysfs entry). **One-shot**,
+    not a boot-time job: the driver writes the flag through to the embedded
+    controller, which keeps it across reboots. Idempotent (no-op when already
+    set) and self-skipping when the sysfs entry is missing. Not a default step.
   - `--fonts` - install the font packages from `setup/fonts.txt` (loaded into
     `FONT_PACKAGES`) and rebuild the fontconfig cache (`fc-cache -f`).
   - `--dwl` - build + install **dwl** (Wayland compositor, compiled config) from
@@ -127,7 +132,6 @@ scripts). The source->target mapping is stated explicitly in
   pacman hook).
 - **`/etc` targets** (in `links.conf`, per file, `/etc/…` target path):
   `mkinitcpio.conf`,
-  `systemd-system/legion-conservation.service`,
   `pacman/dotfiles-programs-list.hook`, `vconsole/vconsole.conf`,
   `locale/locale.conf`, `locale/locale.gen` (-> `/etc/locale.gen`),
   `pacman/pacman.conf` (-> `/etc/pacman.conf`),
@@ -145,6 +149,9 @@ scripts). The source->target mapping is stated explicitly in
   scope) and swtpm (socket-activated) are **not** in it.
   PipeWire/WirePlumber/figma-agent come from their package presets and are
   **not** tracked (formerly `*.wants` links in the repo - now removed).
+  There is also no `legion-conservation.service` any more: the ideapad
+  `conservation_mode` flag persists in the embedded controller, so it is set
+  once via the `--legion-conservation` step instead of at every boot.
 - **Not linked**: `AGENT/` (work/workflow files) stays in the repo root.
 - Custom scripts: **`config/usrbin/*`** -> `~/.local/bin` (per file, on the
   `PATH` via `.bashrc`). `update_programs_list` writes
