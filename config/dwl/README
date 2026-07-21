@@ -13,11 +13,14 @@ means editing it and rebuilding.
 - `build-dwl` — clone/pin dwl (v0.8), reset to a pristine checkout, apply
   `patches/*.patch`, drop in `config.h`, `make`, install the binary to
   `/usr/local/bin/dwl`.
-- `patches/gaps.patch` — adds inner/outer gaps to the `tile` layout
-  (`gappih/gappiv/gappoh/gappov` in `config.h`)
-- Startup programs are spawned by dwl
-  itself via the `autostart[]` array in `config.h` (enabled by
-  `patches/autostart.patch`)
+- `patches/*.patch` — applied by `build-dwl` on top of the pinned checkout, all
+  of them, in glob order:
+  - `attachbottom.patch` — new windows attach at the **bottom** of the stack
+    instead of the top, so opening a window never displaces the focused one
+  - `autostart.patch` — enables the `autostart[]` array in `config.h`; dwl
+    spawns those programs itself, so no session script is needed
+  - `gaps.patch` — adds inner/outer gaps to the `tile` layout
+    (`gappih/gappiv/gappoh/gappov` in `config.h`)
 
 ## Build / apply changes
 
@@ -33,3 +36,8 @@ config/dwl/build-dwl
 
 `./install` sets up the symlinks; `./install --dwl` compiles and installs
 the binary.
+
+The new binary only takes effect in a **new** session: there is no display
+manager to pick dwl from. Quit the running session (`ALT+SHIFT+Q`, confirmed
+via rofi) to drop back to the autologin shell on tty1 and start `dwl` again -
+or simply reboot.
