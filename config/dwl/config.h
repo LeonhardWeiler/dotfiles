@@ -20,9 +20,9 @@ static const unsigned int gappiv = 3;  /* inner vertical */
 static const unsigned int gappoh = 6;  /* outer horizontal */
 static const unsigned int gappov = 6;  /* outer vertical */
 
-/* tagging - 6 tags. TAGCOUNT must be <= 31. ALT+1..6 view a tag, ALT+SHIFT+1..6
+/* tagging - 9 tags. TAGCOUNT must be <= 31. ALT+1..9 view a tag, ALT+SHIFT+1..9
  * move the focused window to a tag. */
-#define TAGCOUNT (6)
+#define TAGCOUNT (9)
 
 /* logging */
 static int log_level = WLR_ERROR;
@@ -118,7 +118,7 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_p,       spawn,            {.v = menucmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_t,       spawn,            {.v = filescmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_n,       spawn,            {.v = browsercmd} },
-	{ WLR_MODIFIER_LOGO,            XKB_KEY_l,       spawn,            {.v = lockcmd} },
+	{ MODKEY,                       XKB_KEY_l,       spawn,            {.v = lockcmd} },
 
 	/* Focus in the master/stack */
 	{ MODKEY,                       XKB_KEY_j,       focusstack,       {.i = +1} },
@@ -136,13 +136,16 @@ static const Key keys[] = {
 	{ MODKEY,                       XKB_KEY_m,       togglefullscreen, {0} },
 	{ MODKEY,                       XKB_KEY_Return,  zoom,             {0} },
 
-	/* Tags 1-6 */
+	/* Tags 1-9 */
 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                       0),
 	TAGKEYS(          XKB_KEY_2, XKB_KEY_at,                           1),
 	TAGKEYS(          XKB_KEY_3, XKB_KEY_numbersign,                   2),
 	TAGKEYS(          XKB_KEY_4, XKB_KEY_dollar,                       3),
 	TAGKEYS(          XKB_KEY_5, XKB_KEY_percent,                      4),
 	TAGKEYS(          XKB_KEY_6, XKB_KEY_asciicircum,                  5),
+	TAGKEYS(          XKB_KEY_7, XKB_KEY_ampersand,                    6),
+	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                     7),
+	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                    8),
 
 	/* Multimedia keys */
 	{ MODKEY,                       XKB_KEY_F3,      spawn, SHCMD("~/.local/bin/vol_ctl up") },
