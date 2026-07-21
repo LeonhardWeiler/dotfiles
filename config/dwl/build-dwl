@@ -28,7 +28,13 @@ fi
 
 if [ -d "$SRC_DIR/.git" ]; then
 	echo "build-dwl: resetting $SRC_DIR to a pristine $DWL_VERSION ..."
-	git -C "$SRC_DIR" fetch --tags --depth 1 origin "$DWL_VERSION"
+	# Only talk to the remote when the pinned tag is not already here, and never
+	# let that abort the build: config.h is applied by recompiling, so an
+	# unreachable codeberg must not make editing config.h impossible.
+	if ! git -C "$SRC_DIR" rev-parse -q --verify "refs/tags/$DWL_VERSION" >/dev/null; then
+		git -C "$SRC_DIR" fetch --tags --depth 1 origin "$DWL_VERSION" \
+			|| { echo "build-dwl: fetch failed and $DWL_VERSION is not in $SRC_DIR" >&2; exit 1; }
+	fi
 	git -C "$SRC_DIR" checkout -q "$DWL_VERSION"
 	git -C "$SRC_DIR" reset -q --hard "$DWL_VERSION"
 else
