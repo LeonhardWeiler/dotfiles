@@ -97,7 +97,6 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 /* commands */
 static const char *termcmd[]    = { "foot", NULL };
 static const char *menucmd[]    = { "rofi", "-show", "drun", NULL };
-static const char *filescmd[]   = { "rofi", "-show", "filebrowser", NULL };
 static const char *browsercmd[] = { "zen-browser", NULL };
 static const char *lockcmd[]    = { "waylock", "-ignore-empty-password",
                                     "-init-color", "0x191414",
@@ -116,7 +115,6 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       spawn, SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx yes && pkill dwl") },
 	{ MODKEY,                       XKB_KEY_v,       togglefloating,   {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_p,       spawn,            {.v = menucmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_t,       spawn,            {.v = filescmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_n,       spawn,            {.v = browsercmd} },
 	{ MODKEY,                       XKB_KEY_l,       spawn,            {.v = lockcmd} },
 
