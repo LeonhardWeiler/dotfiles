@@ -256,10 +256,12 @@ commands are kept here as reference and for doing them by hand. Checklist:
   `sudo ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime`
 - **Locales** (`./install --locale`): `/etc/locale.conf` and `/etc/locale.gen`
   are tracked, but the locales still have to be generated once: `sudo locale-gen`.
-- **Bootloader / kernel cmdline**: systemd-boot (ESP at `/efi`); the kernel
-  options `amd_pstate=active usbcore.autosuspend=1 quiet` live in
-  `/efi/loader/entries/arch.conf` (`options` line) - machine-specific
-  (`root=UUID=…`), so set them by hand rather than tracking the file.
+- **Bootloader / kernel cmdline**: the custom kernel is started via **EFISTUB**
+  (see below); systemd-boot remains installed on the ESP (`/efi`) as the
+  fallback. The kernel options `amd_pstate=active usbcore.autosuspend=1 quiet`
+  live in the EFI boot entry resp. in `/efi/loader/entries/arch.conf`
+  (`options` line) - machine-specific (`root=UUID=…`), so set them by hand
+  rather than tracking the file.
 - **Not tracked on purpose** (machine-specific / secrets): `/etc/hostname`,
   `/etc/fstab` (UUIDs), and NetworkManager Wi-Fi profiles
   (`/etc/NetworkManager/system-connections/*.nmconnection`, contain PSKs).
@@ -368,6 +370,52 @@ drivers are `=y`), so its former `custom.preset` and the `initramfs-custom-r17.i
 have been removed. The custom boot entry
 `/efi/loader/entries/arch-custom-r17.conf` has no `initrd` line. The `r14` entry
 keeps its existing static `initramfs-custom-r14.img` as a fallback.
+
+### EFISTUB
+
+The custom kernel is booted **directly by the firmware**, without a bootloader
+in between. Two properties make that trivial here: the kernel is built with
+`CONFIG_EFI_STUB=y` (so `vmlinuz` *is* a valid EFI binary) and it boots
+**without an initramfs**, so there is nothing to chain-load. The kernel command
+line travels as the boot entry's optional data (UCS-2), which is what the stub
+reads.
+
+Register a kernel on the ESP with `efistub-entry` (`config/usrbin/`, needs root):
+
+```bash
+sudo efistub-entry vmlinuz-custom-r18
+```
+
+Without a second argument it reuses the command line of the **running** kernel
+(`/proc/cmdline`); pass one explicitly to change it:
+
+```bash
+sudo efistub-entry vmlinuz-custom-r18 'root=PARTUUID=… rw quiet amd_pstate=active'
+```
+
+The script derives disk and partition from the ESP itself (`bootctl
+--print-esp-path`, triggering the automount first) and is idempotent: an
+existing entry with the same label is deleted before the new one is created, so
+repeated runs do not pile up duplicates in the boot menu. `efibootmgr --create`
+puts the new entry at the front of `BootOrder`.
+
+**systemd-boot stays installed** at the ESP fallback path
+(`/efi/EFI/BOOT/BOOTX64.EFI`), and that is the point: this Insyde firmware
+carries no OS-created NVRAM entry of its own (it boots the disk through the
+generic `EFI Hard Drive` entry). Should it ever drop our EFISTUB entry, the
+machine falls back to systemd-boot and boots exactly as before. Removing the
+EFISTUB entry by hand does the same:
+
+```bash
+sudo efibootmgr --delete-bootnum --bootnum <NNNN>
+```
+
+Trade-off versus systemd-boot: a new kernel is no longer a new `.conf` file in
+`/efi/loader/entries/` but a new NVRAM entry, i.e. one `efistub-entry` run per
+kernel revision (the old entry has a different label and has to be deleted by
+hand). Also note that **CPU microcode cannot be loaded early** on this path -
+without an initramfs there is nowhere to put `amd-ucode.img`. That is unchanged
+from before: neither boot entry ever referenced it.
 
 ## License
 
