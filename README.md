@@ -124,7 +124,6 @@ to activate). To do it by hand:
 sudo systemctl enable --now NetworkManager.service
 sudo systemctl enable --now getty@tty1.service
 sudo systemctl enable --now dnsmasq.service
-sudo systemctl enable --now sshd.service
 sudo systemctl enable --now iptables.service
 sudo systemctl enable --now power-profiles-daemon.service
 sudo systemctl enable --now systemd-timesyncd.service
