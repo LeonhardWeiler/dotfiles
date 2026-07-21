@@ -6,7 +6,7 @@ return {
       "tree-sitter-cli",
       "stylua",
       "biome",
-      "prettierd",
+      "prettier",
       "goimports",
       "gofumpt",
       "typstyle",
