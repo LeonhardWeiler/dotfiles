@@ -10,7 +10,6 @@ system  NetworkManager.service
 system  getty@tty1.service
 system  dnsmasq.service
 system  sshd.service
-system  legion-conservation.service
 system  iptables.service
 system  power-profiles-daemon.service
 system  systemd-timesyncd.service

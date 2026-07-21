@@ -33,6 +33,8 @@
 #   --fonts                   install the font packages and refresh the font cache
 #   --dwl                     build + install dwl from config/dwl/config.h
 #   --wbg                     build + install wbg (wallpaper program) from source
+#   --legion-conservation     enable the Legion battery conservation mode (one-shot,
+#                             the setting persists in the embedded controller)
 #
 # Options:
 #   -n, --dry-run             only show what would happen - change nothing
@@ -148,7 +150,8 @@ while [ $# -gt 0 ]; do
     # ── Step flags: every registered optional step maps to SELECTED[<name>]
     # (see register_step). --timezone is special - it also takes an argument.
     --programs | --systemd | --groups | \
-    --locale | --getty-autologin | --sudoers | --initramfs | --fonts | --dwl | --wbg)
+    --locale | --getty-autologin | --sudoers | --initramfs | --fonts | --dwl | --wbg | \
+    --legion-conservation)
                         SELECTED["${1#--}"]=1;       FLAG_STEPS_GIVEN=1 ;;
     --timezone)         shift; TIMEZONE="${1:?--timezone needs a zone (Region/City)}"
                         SELECTED[timezone]=1;        FLAG_STEPS_GIVEN=1 ;;
@@ -446,6 +449,30 @@ do_fonts() {
   else warn "fc-cache missing - font cache not refreshed"; fi
 }
 register_step fonts do_fonts "Install fonts + refresh font cache (fc-cache)"
+
+# Enable the Lenovo Legion battery conservation mode (charge stops at ~60%).
+# The ideapad_acpi driver writes the flag through to the embedded controller,
+# which keeps it across reboots and power-offs - so this is a one-shot setup
+# step, not something that has to run on every boot (it used to be a
+# legion-conservation.service run at every multi-user.target). Not a default
+# step: it is Legion hardware specific.
+LEGION_CONSERVATION=/sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode
+do_legion_conservation() {
+  [ -e "$LEGION_CONSERVATION" ] || {
+    warn "no ideapad conservation_mode (not a Legion?) - skipped"; return 0; }
+  if [ "$(cat "$LEGION_CONSERVATION" 2>/dev/null)" = 1 ]; then
+    info "Battery conservation mode already enabled - nothing to do"; return 0
+  fi
+  info "Enabling battery conservation mode ($LEGION_CONSERVATION)"
+  if [ "$DRYRUN" = 1 ]; then
+    printf "    [dry] sudo sh -c 'echo 1 > %s'\n" "$LEGION_CONSERVATION"; return 0
+  fi
+  # tee, not a redirect: the redirect would be opened by our unprivileged shell.
+  printf '1\n' | sudo tee "$LEGION_CONSERVATION" >/dev/null \
+    || warn "could not enable conservation mode"
+}
+register_step legion-conservation do_legion_conservation \
+  "Enable Legion battery conservation mode (persists in the EC, one-shot)"
 
 # Build + install dwl (compiled-config Wayland compositor) from the tracked
 # config/dwl/config.h. dwl is configured at compile time, so this IS the "apply"
