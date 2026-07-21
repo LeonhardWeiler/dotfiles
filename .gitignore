@@ -1,12 +1,11 @@
-# KeePassXC-Passwortdatenbanken niemals versionieren
+# Never version KeePassXC password databases
 *.kdbx
 
-# Editor-/Backup-Reste
+# Editor/backup leftovers
 *.bak
 
-# Secrets/Runtime-State defensiv ausschliessen (analog zu *.kdbx) - falls solche
-# Verzeichnisse/Dateien je unter config/ landen, gehoeren sie NICHT ins Repo.
-# Siehe Health-Report TRACK-2 (Signal/ssh/pulse u. a.).
+# Defensive exclusions (same reasoning as *.kdbx): never track secrets or
+# runtime state that may end up under config/.
 Signal/
 pulse/
 ssh/
