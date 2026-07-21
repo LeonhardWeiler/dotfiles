@@ -283,9 +283,29 @@ choose_steps() {
     in_array "$s" "${DEFAULT_STEPS[@]}" && def=" (default)" || def=""
     printf '  [%d] %s%s\n' "$i" "${STEP_DESC[$s]}" "$def"; idx[$i]="$s"; i=$((i+1))
   done
-  printf '> '; local line n; read -r line || line=""
-  if [ -z "$line" ]; then select_defaults; return 0; fi
-  for n in $line; do [ -n "${idx[$n]:-}" ] && SELECTED[${idx[$n]}]=1; done
+  # Loop until the input actually selects something: silently dropping a typo
+  # (`99`, a step name, `1,2` when the prompt asks for spaces) used to run zero
+  # steps and still report success.
+  local line n hit
+  while :; do
+    printf '> '; read -r line || line=""
+    if [ -z "$line" ]; then select_defaults; return 0; fi
+    hit=0
+    for n in ${line//,/ }; do
+      case "$n" in
+        # Not a number: accept the step name too, that is what people type.
+        # (Also keeps arbitrary text out of the arithmetic array subscript.)
+        ''|*[!0-9]*)
+          if [ -n "${STEP_FN[$n]:-}" ]; then SELECTED[$n]=1; hit=1
+          else warn "unknown selection: $n"; fi ;;
+        *)
+          if [ -n "${idx[$n]:-}" ]; then SELECTED[${idx[$n]}]=1; hit=1
+          else warn "unknown selection: $n"; fi ;;
+      esac
+    done
+    [ "$hit" = 1 ] && return 0
+    warn "nothing selected - enter numbers from the list, or press Enter for the defaults"
+  done
 }
 
 # Linking core (symlinks only). Package/unit steps run separately.
