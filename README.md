@@ -302,6 +302,19 @@ sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
   `/etc/sudoers.d/10-wheel-nopasswd` and validated with `visudo -c`) - a
   deliberate convenience choice; adjust to taste.
 
+- **Claude Code runs without permission prompts** - also deliberate, and worth
+  reading together with the passwordless sudo above, because the two compound.
+  `config/bash/.bashrc` aliases the binary
+  (`alias claude='claude --dangerously-skip-permissions'`), so every invocation
+  skips the permission prompts, and `config/claude/settings.json` sets
+  `"skipDangerousModePermissionPrompt": true` to drop the one-time warning about
+  that mode as well. The combined blast radius is therefore "the agent can do
+  anything this user can, including root via NOPASSWD sudo, without asking".
+  That is the intended workflow here and the alias is meant to stay the command;
+  to start Claude with prompts anyway, bypass the alias with `\claude` or
+  `command claude`. If you adopt this repo, this is a decision to make
+  consciously rather than inherit.
+
 ## Notes
 
 - Some applications may require additional dependencies not covered by this repository.
