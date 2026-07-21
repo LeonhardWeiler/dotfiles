@@ -309,8 +309,9 @@
         (<code>update_programs_list</code>, atomic write), every shell script
         (<code>bash -n</code> / <code>sh -n</code> green), the whole Neovim
         config (all modules parse, <code>nvim --headless</code> loads clean,
-        <code>stylua --check</code> green), <code>config/dwl/config.h</code>
-        incl. an actual rebuild against the pinned <code>v0.8</code> checkout,
+        <code>stylua --check</code> green),
+        <code>config/dwl/config.h</code> incl. an actual rebuild against the
+        pinned <code>v0.8</code> checkout,
         <code>build-dwl</code>/<code>build-wbg</code>, bash, foot, rofi, wob,
         mpv, git, KeePassXC, pipewire, logind, pacman, mkinitcpio, the getty
         drop-in, README and CLAUDE.md. No secrets found in tracked files; the
@@ -387,9 +388,9 @@
           </p>
           <div class="rec">
             <b>Recommendation:</b> keep plain <code>claude</code> intact and put
-            the bypass behind a separate, explicitly-named alias
-            (<code>alias yolo='claude --dangerously-skip-permissions'</code>).
-            If the current behaviour is genuinely wanted, document it in the
+            the bypass behind a separate, explicitly-named alias (<code
+              >alias yolo='claude --dangerously-skip-permissions'</code
+            >). If the current behaviour is genuinely wanted, document it in the
             README next to the passwordless-sudo note so the combined blast
             radius is written down somewhere.
           </div>
@@ -406,11 +407,11 @@
             whole session immediately - no confirmation, everything unsaved is
             gone. It sits on the same modifier as, and one key row from,
             <code>Alt+Shift+C</code> (<code>killclient</code>), which is a key
-            you press all day. <code>Ctrl+Alt+Backspace</code>
-            (<code>Terminate_Server</code>) is a second unconfirmed way to do
-            the same thing. Since dwl is started via <code>exec dwl</code> from
-            <code>~/.bash_profile</code>, quitting drops straight back to a bare
-            tty1 shell.
+            you press all day.
+            <code>Ctrl+Alt+Backspace</code> (<code>Terminate_Server</code>) is a
+            second unconfirmed way to do the same thing. Since dwl is started
+            via <code>exec dwl</code> from <code>~/.bash_profile</code>,
+            quitting drops straight back to a bare tty1 shell.
           </p>
           <div class="rec">
             <b>Recommendation:</b> move <code>quit</code> to a chord that cannot
@@ -432,26 +433,28 @@
           </div>
           <p>
             Several capabilities are compiled in but unreachable, because no key
-            is bound to them - the build itself warns about exactly these
-            (<code>setlayout / focusmon / tagmon / incnmaster / toggletag
-            defined but not used</code>):
+            is bound to them - the build itself warns about exactly these (<code
+              >setlayout / focusmon / tagmon / incnmaster / toggletag defined
+              but not used</code
+            >):
           </p>
           <ul class="tracklist">
             <li>
               <code>layouts[]</code> defines three layouts (<code>[]=</code>
-              tile, <code>&gt;&lt;&gt;</code> floating, <code>[M]</code>
-              monocle) but nothing is bound to <code>setlayout</code>, so
+              tile, <code>&gt;&lt;&gt;</code> floating,
+              <code>[M]</code> monocle) but nothing is bound to
+              <code>setlayout</code>, so
               <b>floating and monocle can never be selected</b>. The comment in
               the file claims they "stay available", which only holds for
               per-window <code>togglefloating</code> and
               <code>togglefullscreen</code>.
             </li>
             <li>
-              <code>monrules[]</code> carries a rule for an external output
-              (the <code>NULL</code> catch-all next to <code>eDP-1</code>), but
+              <code>monrules[]</code> carries a rule for an external output (the
+              <code>NULL</code> catch-all next to <code>eDP-1</code>), but
               <code>focusmon</code>/<code>tagmon</code> are unbound - with a
-              second display attached there is <b>no way to focus it or move a
-              window to it</b>.
+              second display attached there is
+              <b>no way to focus it or move a window to it</b>.
             </li>
             <li>
               <code>incnmaster</code> is unbound, so the master count is
@@ -464,11 +467,13 @@
             </li>
           </ul>
           <div class="rec">
-            <b>Recommendation:</b> decide per item - either bind them
-            (<code>Alt+t/f/m</code> for the layouts, <code>Alt+,/.</code> for
-            <code>focusmon</code>/<code>tagmon</code>,
-            <code>Alt+i/d</code> for <code>incnmaster</code>) or delete the two
-            unreachable layouts and the external <code>monrules</code> entry so
+            <b>Recommendation:</b> decide per item - either bind them (<code
+              >Alt+t/f/m</code
+            >
+            for the layouts, <code>Alt+,/.</code> for
+            <code>focusmon</code>/<code>tagmon</code>, <code>Alt+i/d</code> for
+            <code>incnmaster</code>) or delete the two unreachable layouts and
+            the external <code>monrules</code> entry so
             <code>config.h</code> stops promising what it cannot do.
           </div>
         </div>
@@ -484,8 +489,10 @@
             <code>git fetch --tags --depth 1 origin v0.8</code> before touching
             anything, and the script runs under <code>set -eu</code> - so if the
             remote is unreachable the whole <code>./install --dwl</code> step
-            aborts, <b>even when a valid, pinned <code>v0.8</code> checkout is
-            already sitting in <code>~/.local/src/dwl</code></b
+            aborts,
+            <b
+              >even when a valid, pinned <code>v0.8</code> checkout is already
+              sitting in <code>~/.local/src/dwl</code></b
             >. This is not theoretical: it happened during this review
             (codeberg.org answered <code>HTTP 504</code>), and the intended way
             to apply a <code>config.h</code> change was unavailable until the
@@ -495,11 +502,12 @@
           </p>
           <div class="rec">
             <b>Recommendation:</b> only fetch when the pinned tag does not
-            already resolve locally
-            (<code>git -C "$SRC_DIR" rev-parse -q --verify
-            "refs/tags/$DWL_VERSION" &gt;/dev/null || git fetch …</code>), or
-            make the fetch non-fatal (<code>|| echo "offline - using the local
-            checkout"</code>) and let <code>reset --hard</code> do the rest.
+            already resolve locally (<code
+              >git -C "$SRC_DIR" rev-parse -q --verify "refs/tags/$DWL_VERSION"
+              &gt;/dev/null || git fetch …</code
+            >), or make the fetch non-fatal (<code
+              >|| echo "offline - using the local checkout"</code
+            >) and let <code>reset --hard</code> do the rest.
           </div>
         </div>
 
@@ -512,8 +520,8 @@
             >
           </div>
           <p>
-            There is no way to clean up links whose entry was <b>removed</b>
-            from <code>links.conf</code>. <code>unlink</code> and
+            There is no way to clean up links whose entry was
+            <b>removed</b> from <code>links.conf</code>. <code>unlink</code> and
             <code>status</code> both iterate the <em>current</em> entries only,
             so a deleted line leaves its symlink behind forever - invisible to
             every command the script offers. Hit during this review: dropping
@@ -562,16 +570,13 @@
             <span class="badge med">medium</span>
             <span class="loc"><code>config/dwl/README.md:13-20,35</code></span>
           </div>
-          <p>
-            Two inaccuracies in the dwl README:
-          </p>
+          <p>Two inaccuracies in the dwl README:</p>
           <ul class="tracklist">
             <li>
               Line 35 says <b>"Log out and pick dwl in ly"</b> - there is no
-              display manager. ly is gone;
-              <code>getty@tty1</code> autologins and
-              <code>~/.bash_profile</code> execs dwl. Following the instruction
-              is impossible.
+              display manager. ly is gone; <code>getty@tty1</code> autologins
+              and <code>~/.bash_profile</code> execs dwl. Following the
+              instruction is impossible.
             </li>
             <li>
               The file list names only <code>patches/gaps.patch</code> and
@@ -605,11 +610,13 @@
             <code>config/vconsole/</code> directory and no
             <code>links.conf</code> line; <code>/etc/vconsole.conf</code> is now
             the untouched systemd fallback (every line commented out),
-            <code>systemd-vconsole-setup.service</code> is
-            <code>mask</code>ed in <code>services.txt</code>, and the
-            <code>keymap</code>/<code>consolefont</code> hooks are gone from
-            <code>HOOKS</code> in <code>mkinitcpio.conf</code>. An agent reading
-            CLAUDE.md will look for a file that is not there.
+            <code>systemd-vconsole-setup.service</code> is <code>mask</code>ed
+            in <code>services.txt</code>, and the <code>keymap</code>/<code
+              >consolefont</code
+            >
+            hooks are gone from <code>HOOKS</code> in
+            <code>mkinitcpio.conf</code>. An agent reading CLAUDE.md will look
+            for a file that is not there.
           </p>
           <div class="rec">
             <b>Recommendation:</b> drop both mentions from CLAUDE.md. If the
@@ -626,20 +633,22 @@
             <span class="loc"><code>setup/install-programs:20-33</code></span>
           </div>
           <p>
-            The install loop reads <code>programs.txt</code> on stdin
-            (<code>done &lt; "$PROGRAMS_TXT"</code>) and calls
-            <code>yay -S --noconfirm "$package"</code> inside it. yay/pacman
-            inherit that stdin and can consume the remaining lines, so an
-            arbitrary tail of the package list is <b>silently skipped</b> with
-            no error - a classic read-loop stdin leak. On top of that,
-            <code>set -e</code> means a single package that no longer exists in
-            the repos or the AUR aborts the entire run, leaving the machine
-            half-provisioned.
+            The install loop reads <code>programs.txt</code> on stdin (<code
+              >done &lt; "$PROGRAMS_TXT"</code
+            >) and calls <code>yay -S --noconfirm "$package"</code> inside it.
+            yay/pacman inherit that stdin and can consume the remaining lines,
+            so an arbitrary tail of the package list is
+            <b>silently skipped</b> with no error - a classic read-loop stdin
+            leak. On top of that, <code>set -e</code> means a single package
+            that no longer exists in the repos or the AUR aborts the entire run,
+            leaving the machine half-provisioned.
           </p>
           <div class="rec">
-            <b>Recommendation:</b> redirect the package manager's stdin
-            (<code>yay -S --noconfirm "$package" &lt;/dev/null</code>) or read
-            the file on a dedicated FD (<code>while … done 3&lt; "$file"</code>
+            <b>Recommendation:</b> redirect the package manager's stdin (<code
+              >yay -S --noconfirm "$package" &lt;/dev/null</code
+            >) or read the file on a dedicated FD (<code
+              >while … done 3&lt; "$file"</code
+            >
             with <code>read -u 3</code>), and let a failed package
             <code>warn</code> and continue instead of killing the run - the way
             <code>install</code>'s own step functions already do.
@@ -682,13 +691,14 @@
           </div>
           <p>
             The setup menu discards unrecognised input without a word:
-            <code>for n in $line; do [ -n "${idx[$n]:-}" ] &amp;&amp;
-            SELECTED[${idx[$n]}]=1; done</code>. Typing <code>99</code>, a step
-            name instead of its number, or a comma-separated list
-            (<code>1,2</code> - the prompt asks for spaces) selects
-            <b>nothing</b>, and <code>setup</code> then links the configs and
-            reports success while having silently run zero of the steps the user
-            asked for.
+            <code
+              >for n in $line; do [ -n "${idx[$n]:-}" ] &amp;&amp;
+              SELECTED[${idx[$n]}]=1; done</code
+            >. Typing <code>99</code>, a step name instead of its number, or a
+            comma-separated list (<code>1,2</code> - the prompt asks for spaces)
+            selects <b>nothing</b>, and <code>setup</code> then links the
+            configs and reports success while having silently run zero of the
+            steps the user asked for.
           </p>
           <div class="rec">
             <b>Recommendation:</b> <code>warn "unknown selection: $n"</code> in
@@ -709,11 +719,11 @@
             <code>update_programs_list</code> may use bashisms/GNU-isms. Line 38
             uses <code>grep -oP</code> (PCRE - GNU grep only, and only when
             compiled with PCRE support). Line 15 parses
-            <code>pactl info</code> by its English label
-            (<code>grep "Default Sink"</code>), which breaks under a translated
-            locale; it is safe here only because
-            <code>locale.gen</code> generates <code>en_US.UTF-8</code> and
-            nothing else.
+            <code>pactl info</code> by its English label (<code
+              >grep "Default Sink"</code
+            >), which breaks under a translated locale; it is safe here only
+            because <code>locale.gen</code> generates
+            <code>en_US.UTF-8</code> and nothing else.
           </p>
           <div class="rec">
             <b>Recommendation:</b> replace <code>grep -oP '\d+%'</code> with
@@ -757,16 +767,17 @@
             The screenshot binding
             <code>Print → grim -g "$(slurp)" - | wl-copy</code> is completely
             silent. There is no notification daemon in this setup (wob is a bar
-            OSD, not a notifier), so <b>nothing confirms that a screenshot was
-            taken</b> - the only way to find out is to paste. Cancelling
-            <code>slurp</code> with Escape yields an empty geometry, whereupon
-            <code>grim</code> fails equally silently. There is also no variant
-            that writes the image to a file, so screenshots cannot be kept.
+            OSD, not a notifier), so
+            <b>nothing confirms that a screenshot was taken</b> - the only way
+            to find out is to paste. Cancelling <code>slurp</code> with Escape
+            yields an empty geometry, whereupon <code>grim</code> fails equally
+            silently. There is also no variant that writes the image to a file,
+            so screenshots cannot be kept.
           </p>
           <div class="rec">
-            <b>Recommendation:</b> chain a short wob pulse on success
-            (<code>… &amp;&amp; ~/.local/bin/osd 100</code>) and add a second
-            binding (<code>Shift+Print</code>) writing to
+            <b>Recommendation:</b> chain a short wob pulse on success (<code
+              >… &amp;&amp; ~/.local/bin/osd 100</code
+            >) and add a second binding (<code>Shift+Print</code>) writing to
             <code>~/Pictures/screenshot-$(date +%F-%H%M%S).png</code>.
           </div>
         </div>
@@ -816,15 +827,14 @@
             missing targets, absolute or non-existent sources, duplicate
             expanded targets, targets outside the
             <code>~</code>/<code>/etc</code>/<code>/usr/local</code> allowlist
-            and globs that match nothing - with an
-            <code>optional</code> keyword as the escape hatch for a
-            legitimately empty glob. Real files are never overwritten unasked
-            (<code>--force</code> backs up to <code>.bak</code>, with a
-            timestamp suffix if a <code>.bak</code> already exists),
-            <code>unlink</code> removes only symlinks that actually point at our
-            own sources, and glob entries link per file so foreign files in
-            <code>~/.local/bin</code> survive. Verified live:
-            <code>validate</code> green, <b>28/28</b> entries
+            and globs that match nothing - with an <code>optional</code> keyword
+            as the escape hatch for a legitimately empty glob. Real files are
+            never overwritten unasked (<code>--force</code> backs up to
+            <code>.bak</code>, with a timestamp suffix if a
+            <code>.bak</code> already exists), <code>unlink</code> removes only
+            symlinks that actually point at our own sources, and glob entries
+            link per file so foreign files in <code>~/.local/bin</code> survive.
+            Verified live: <code>validate</code> green, <b>28/28</b> entries
             <code>ok</code>.
           </p>
         </div>
@@ -833,22 +843,22 @@
           <div class="card-head">
             <span class="badge good">strong</span>
             <span class="loc"
-              ><code>setup/services.txt</code> ·
-              <code>groups.txt</code> · <code>fonts.txt</code></span
+              ><code>setup/services.txt</code> · <code>groups.txt</code> ·
+              <code>fonts.txt</code></span
             >
           </div>
           <p>
             Data lives in data files, not in the script. Units, groups and fonts
-            are read into <code>USER_UNITS</code>/<code>SYSTEM_UNITS</code>/<code
-              >DISABLE_UNITS</code
-            >/<code>MASK_UNITS</code>, <code>GROUP_LIST</code> and
-            <code>FONT_PACKAGES</code> by two small readers, with a
-            <code>read_list</code> that uses a Bash nameref so the same six
-            lines serve every list. <code>services.txt</code> even models
-            <em>intent</em> rather than just names: the four scopes distinguish
-            "enable", "we want this preset-on unit off" and "this one is static
-            with no <code>[Install]</code>, so it has to be masked" - and the
-            comments explain why each distinction exists.
+            are read into
+            <code>USER_UNITS</code
+            >/<code>SYSTEM_UNITS</code>/<code>DISABLE_UNITS</code>/<code>MASK_UNITS</code>,
+            <code>GROUP_LIST</code> and <code>FONT_PACKAGES</code> by two small
+            readers, with a <code>read_list</code> that uses a Bash nameref so
+            the same six lines serve every list. <code>services.txt</code> even
+            models <em>intent</em> rather than just names: the four scopes
+            distinguish "enable", "we want this preset-on unit off" and "this
+            one is static with no <code>[Install]</code>, so it has to be
+            masked" - and the comments explain why each distinction exists.
           </p>
         </div>
 
@@ -884,15 +894,16 @@
             The package manifest maintains itself: a pacman
             <code>PostTransaction</code> hook regenerates
             <code>setup/programs.txt</code> after every
-            <code>pacman</code>/<code>yay</code> transaction, so it cannot drift.
-            The script writes <b>atomically</b> (<code>mktemp</code> in the
-            target directory, <code>trap</code> cleanup, <code>mv -f</code>), so
-            an interrupted transaction cannot leave a truncated manifest, and it
-            <code>chown</code>s back to the owner when invoked as root by the
-            hook. It also subtracts <code>pacman -Qq base</code> from
-            <code>pacman -Qe</code>, keeping the list to what was actually
-            chosen. Confirmed working during this review: installing waylock and
-            removing hyprlock updated the file with no manual step.
+            <code>pacman</code>/<code>yay</code> transaction, so it cannot
+            drift. The script writes <b>atomically</b> (<code>mktemp</code> in
+            the target directory, <code>trap</code> cleanup,
+            <code>mv -f</code>), so an interrupted transaction cannot leave a
+            truncated manifest, and it <code>chown</code>s back to the owner
+            when invoked as root by the hook. It also subtracts
+            <code>pacman -Qq base</code> from <code>pacman -Qe</code>, keeping
+            the list to what was actually chosen. Confirmed working during this
+            review: installing waylock and removing hyprlock updated the file
+            with no manual step.
           </p>
         </div>
 
@@ -929,8 +940,8 @@
             SPDX/copyright header so the license travels with a single copied
             file, and third-party files (mpv scripts) keep their own. Shell
             style is consistent and defensive - <code>set -eu</code> throughout,
-            dependency checks before use
-            (<code>command -v … || exit</code>), battery detection that iterates
+            dependency checks before use (<code>command -v … || exit</code>),
+            battery detection that iterates
             <code>/sys/class/power_supply/*</code> instead of hardcoding
             <code>BAT0</code>, and numeric input validated before arithmetic in
             <code>bat_check</code>. No <code>TODO</code>/<code>FIXME</code>
@@ -948,9 +959,11 @@
           machine and user (a Lenovo Legion laptop, user <code>leo</code>, a
           specific LAN). They are not bugs - they are listed so a foreign user
           knows what to change before running <code>./install</code>. Note that
-          the automatic scrub described in earlier snapshots
-          (<code>--scrub</code> / owner prompt) <b>no longer exists</b>, so all
-          of this now has to be adjusted by hand.
+          the automatic scrub described in earlier snapshots (<code
+            >--scrub</code
+          >
+          / owner prompt) <b>no longer exists</b>, so all of this now has to be
+          adjusted by hand.
         </p>
 
         <div class="card low">
@@ -1004,8 +1017,8 @@
           <div class="card-head">
             <span class="badge low">machine-specific</span>
             <span class="loc"
-              ><code>config/dwl/config.h</code> ·
-              <code>install</code> (legion step)</span
+              ><code>config/dwl/config.h</code> · <code>install</code> (legion
+              step)</span
             >
           </div>
           <p>
@@ -1014,10 +1027,9 @@
             the output is named differently and falls through to the
             <code>NULL</code> catch-all at scale <code>1.0</code>. The
             <code>--legion-conservation</code> step writes to the
-            <code>ideapad_acpi</code> sysfs path
-            (<code>VPC2004:00</code>), which only exists on Lenovo
-            Legion/IdeaPad hardware - it detects this and skips itself
-            elsewhere, so it is harmless, just inert.
+            <code>ideapad_acpi</code> sysfs path (<code>VPC2004:00</code>),
+            which only exists on Lenovo Legion/IdeaPad hardware - it detects
+            this and skips itself elsewhere, so it is harmless, just inert.
           </p>
           <div class="rec">
             <b>Adjust:</b> set your own output name and scale in
@@ -1030,17 +1042,18 @@
           <div class="card-head">
             <span class="badge low">machine-specific</span>
             <span class="loc"
-              ><code>config/systemd-system/getty@tty1.service.d/autologin.conf</code>
+              ><code
+                >config/systemd-system/getty@tty1.service.d/autologin.conf</code
+              >
               · <code>config/keepassxc/keepassxc.ini</code></span
             >
           </div>
           <p>
             The autologin drop-in hardcodes the username
-            <code>leo</code> in its
-            <code>agetty --autologin</code> line - on a foreign machine tty1
-            then tries to log in a user that does not exist. KeePassXC's
-            <code>BackupFilePathPattern</code> likewise points at
-            <code>/home/leo/.config/keepassxc/…</code>.
+            <code>leo</code> in its <code>agetty --autologin</code> line - on a
+            foreign machine tty1 then tries to log in a user that does not
+            exist. KeePassXC's <code>BackupFilePathPattern</code> likewise
+            points at <code>/home/leo/.config/keepassxc/…</code>.
           </p>
           <div class="rec">
             <b>Adjust:</b> replace the username in the drop-in before running
@@ -1060,14 +1073,13 @@
             <span class="loc"><code>config/dwl/</code></span>
           </div>
           <p>
-            dwl is configured at <b>compile time</b>:
-            <code>config.h</code> is the source of truth and is deliberately
-            <em>not</em> symlinked - it is compiled into the binary, so
-            <code>./install --dwl</code> is the apply step. The suckless
-            trade-off is accepted knowingly: no runtime reload, but no config
-            parser and no runtime IPC either. dwl itself is pinned to
-            <code>v0.8</code> and cloned at build time rather than vendored;
-            only the built binary is installed.
+            dwl is configured at <b>compile time</b>: <code>config.h</code> is
+            the source of truth and is deliberately <em>not</em> symlinked - it
+            is compiled into the binary, so <code>./install --dwl</code> is the
+            apply step. The suckless trade-off is accepted knowingly: no runtime
+            reload, but no config parser and no runtime IPC either. dwl itself
+            is pinned to <code>v0.8</code> and cloned at build time rather than
+            vendored; only the built binary is installed.
           </p>
         </div>
 
@@ -1120,12 +1132,12 @@
           <p>
             <b>prettier, not prettierd.</b> The daemon variant deliberately
             outlives Neovim and stayed resident at ~60 MB after the last buffer
-            was closed. css moved to biome (which already formats the
-            JS/TS/JSON side); html and markdown stay on plain prettier because
-            biome's html formatter is experimental and off by default and biome
-            has no markdown formatter at all - both verified against biome
-            2.5.2 during this review. The trade is a few hundred ms per format
-            against no permanently resident process.
+            was closed. css moved to biome (which already formats the JS/TS/JSON
+            side); html and markdown stay on plain prettier because biome's html
+            formatter is experimental and off by default and biome has no
+            markdown formatter at all - both verified against biome 2.5.2 during
+            this review. The trade is a few hundred ms per format against no
+            permanently resident process.
           </p>
         </div>
 
@@ -1140,9 +1152,8 @@
             through to the embedded controller, which keeps it across reboots
             and power-offs - verified by disabling and removing the former
             <code>legion-conservation.service</code> and re-reading the sysfs
-            value. A service firing at every
-            <code>multi-user.target</code> to write a value that was already
-            there was pure boot-time cost.
+            value. A service firing at every <code>multi-user.target</code> to
+            write a value that was already there was pure boot-time cost.
           </p>
         </div>
 
@@ -1176,16 +1187,18 @@
             <code>luajit -bl</code> and a headless Neovim start for the Lua,
             <code>stylua --check</code> for formatting, and above all
             <code>./install validate</code> plus <code>./install -n</code> as a
-            true dry run for the link map. Deliberate, and adequate at this
-            size - the one thing it does not cover is the
-            <code>/etc</code> side, which only shows up on a real machine.
+            true dry run for the link map. Deliberate, and adequate at this size
+            - the one thing it does not cover is the <code>/etc</code> side,
+            which only shows up on a real machine.
           </p>
         </div>
 
         <div class="card info">
           <div class="card-head">
             <span class="badge info">deliberate</span>
-            <span class="loc"><code>.gitignore</code> · <code>.claudeignore</code></span>
+            <span class="loc"
+              ><code>.gitignore</code> · <code>.claudeignore</code></span
+            >
           </div>
           <p>
             The KeePassXC database (<code>*.kdbx</code>) is git-ignored and the

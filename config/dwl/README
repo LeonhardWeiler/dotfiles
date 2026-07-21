@@ -1,7 +1,7 @@
 # dwl
 
 [dwl](https://codeberg.org/dwl/dwl) — a simple, hackable dynamic tiling Wayland
-compositor (dwm for Wayland).
+compositor.
 
 dwl is configured at **compile time**: there is no runtime
 config file. The tracked source of truth is **`config.h`**; changing behaviour
@@ -32,4 +32,4 @@ config/dwl/build-dwl
 ```
 
 `./install` sets up the symlinks; `./install --dwl` compiles and installs
-the binary. Log out and pick **dwl** in ly.
+the binary.

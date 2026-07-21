@@ -45,20 +45,20 @@ runs the selected steps:
 
 The optional steps (menu entries; each also has a flag, see below):
 
-| Step                                                | Flag              | Default |
-| --------------------------------------------------- | ----------------- | ------- |
-| Install packages from `programs.txt`                | `--programs`      | ✓       |
-| (Re)activate systemd units                          | `--systemd`       | ✓       |
-| Add user to the required groups (`usermod -aG`)     | `--groups`        |         |
-| Set the timezone (`/etc/localtime`)                 | `--timezone ZONE` |         |
-| Generate locales (`locale-gen`)                     | `--locale`        | ✓       |
-| Deploy the getty@tty1 autologin drop-in             | `--getty-autologin` |       |
-| Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`       |         |
-| Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`     |         |
-| Install fonts + refresh the font cache (`fc-cache`) | `--fonts`         |         |
-| Enable the Legion battery conservation mode         | `--legion-conservation` |   |
-| Build + install dwl from `config/dwl/config.h`      | `--dwl`           |         |
-| Build + install wbg (wallpaper program)             | `--wbg`           |         |
+| Step                                                | Flag                    | Default |
+| --------------------------------------------------- | ----------------------- | ------- |
+| Install packages from `programs.txt`                | `--programs`            | ✓       |
+| (Re)activate systemd units                          | `--systemd`             | ✓       |
+| Add user to the required groups (`usermod -aG`)     | `--groups`              |         |
+| Set the timezone (`/etc/localtime`)                 | `--timezone ZONE`       |         |
+| Generate locales (`locale-gen`)                     | `--locale`              | ✓       |
+| Deploy the getty@tty1 autologin drop-in             | `--getty-autologin`     |         |
+| Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`             |         |
+| Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`           |         |
+| Install fonts + refresh the font cache (`fc-cache`) | `--fonts`               |         |
+| Enable the Legion battery conservation mode         | `--legion-conservation` |         |
+| Build + install dwl from `config/dwl/config.h`      | `--dwl`                 |         |
+| Build + install wbg (wallpaper program)             | `--wbg`                 |         |
 
 Each step is also runnable on its own for automation: `./install --<step>` runs
 just those steps (no linking, no menu), e.g. `./install --timezone Europe/Vienna`
@@ -168,8 +168,8 @@ sudo systemctl disable libvirtd.service            # ~1.8s on the critical path
 sudo systemctl disable NetworkManager-wait-online.service
 ```
 
-- **`libvirtd.service`** - the old *monolithic* libvirt daemon. It is replaced by
-  the socket-activated *modular* daemons (`virtqemud`/`virtnetworkd`/`virtstoraged`
+- **`libvirtd.service`** - the old _monolithic_ libvirt daemon. It is replaced by
+  the socket-activated _modular_ daemons (`virtqemud`/`virtnetworkd`/`virtstoraged`
   above): they start on the first `qemu:///system` connection, so VMs still work
   exactly as before - libvirt just isn't started at boot anymore. Verify with
   `sudo virsh --connect qemu:///system list --all`.
@@ -275,7 +275,8 @@ commands are kept here as reference and for doing them by hand. Checklist:
   ```
 
   Apply without a reboot: `sudo systemctl daemon-reload && sudo umount /efi &&
-  sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
+sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
+
 - **getty@tty1 autologin drop-in** (`./install --getty-autologin`;
   `/etc/systemd/system/getty@tty1.service.d/autologin.conf`): there is **no
   display manager**. `getty@tty1` is overridden to log `leo` in automatically

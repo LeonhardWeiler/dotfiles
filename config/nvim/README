@@ -1,0 +1,23 @@
+# Neovim configuration
+
+![neovim screenshot](./images/neovim-screenshot.png)
+
+Personal, keyboard-first Neovim config based on
+[lazy.nvim](https://github.com/folke/lazy.nvim).
+
+## Installation
+
+Run the install command of thee dotfiles repo to symlink it automatically or do it manually.
+
+On the first start lazy.nvim installs all plugins automatically; mason and
+mason-tool-installer pull in the LSP servers, formatters, linters and the
+`tree-sitter` CLI.
+
+### Requirements
+
+- **Neovim >= 0.11**
+- **git** and a **C compiler** (to compile the Treesitter parsers)
+- **Nerd Font** (icons via mini.icons)
+- **ripgrep** / **fd** (recommended for Telescope)
+- **xdg-open** (for `<leader>ob`, opens the current file in the default program)
+- Node.js/Go/etc. depending on the LSP/formatter you use (managed via mason)
