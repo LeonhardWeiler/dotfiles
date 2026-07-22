@@ -1,0 +1,40 @@
+free -h
+               total        used        free      shared  buff/cache   available
+Mem:            14Gi       592Mi        13Gi        24Mi       555Mi        14Gi
+Swap:            9Gi          0B         9Gi
+
+smem -tk
+  PID User     Command                         Swap      USS      PSS      RSS 
+  672 leo      sleep 120                          0   148.0K   605.0K     3.9M 
+  535 leo      sh -c while true; do "$HOME        0   304.0K     1.3M     5.3M 
+  568 leo      /usr/bin/bash                      0     1.2M     2.3M     6.4M 
+  695 leo      python /usr/bin/smem -tk           0    13.9M    14.6M    18.7M 
+  567 leo      foot                               0    13.5M    22.3M    34.7M 
+  486 leo      dwl                                0    52.1M    62.1M    75.0M 
+-------------------------------------------------------------------------------
+    6 1                                           0    81.1M   103.2M   144.0M 
+
+ps_mem
+ Private  +   Shared  =  RAM used	Program
+
+148.0 KiB + 402.5 KiB = 550.5 KiB	sleep
+580.0 KiB + 306.5 KiB = 886.5 KiB	systemd-userdbd
+304.0 KiB +   1.0 MiB =   1.3 MiB	sh
+880.0 KiB + 497.5 KiB =   1.3 MiB	dbus-broker-launch
+  1.2 MiB + 145.5 KiB =   1.3 MiB	dbus-broker
+  1.6 MiB + 194.5 KiB =   1.8 MiB	(sd-pam)
+  1.2 MiB + 700.5 KiB =   1.9 MiB	systemd-logind
+  1.2 MiB +   1.0 MiB =   2.2 MiB	bash
+  2.0 MiB +   1.4 MiB =   3.4 MiB	systemd-userwork (3)
+  3.0 MiB + 475.5 KiB =   3.5 MiB	systemd-journald
+  2.4 MiB +   1.2 MiB =   3.6 MiB	login
+  1.2 MiB +   3.5 MiB =   4.7 MiB	sudo (2)
+  5.0 MiB + 964.5 KiB =   5.9 MiB	systemd-udevd
+  6.5 MiB +   1.3 MiB =   7.8 MiB	wpa_supplicant
+  5.7 MiB +   4.6 MiB =  10.3 MiB	systemd (2)
+ 15.8 MiB +   3.2 MiB =  19.0 MiB	NetworkManager
+ 13.4 MiB +   8.8 MiB =  22.2 MiB	foot
+ 52.1 MiB +  10.0 MiB =  62.1 MiB	dwl
+---------------------------------
+                        153.7 MiB
+=================================

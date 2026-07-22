@@ -42,7 +42,7 @@ pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1
 pipewire-pulse 1:1.6.8-1
 plasticscm-client-gui 11.0.16.10181-1
-power-profiles-daemon 0.30-1
+ps_mem 3.14-2
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
 restic 0.19.1-1
@@ -52,6 +52,7 @@ rsync 3.4.4-1
 rt-tests 2.10-1
 signal-desktop 8.19.0-1
 slurp 1.5.0-2
+smem 1.5-8
 stress-ng 0.21.04-2
 sysbench 1.0.20-2
 thunderbird 152.0-1
