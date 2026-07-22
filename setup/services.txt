@@ -10,7 +10,6 @@ system  NetworkManager.service
 system  getty@tty1.service
 system  fstrim.timer
 
-disable  power-profiles-daemon.service
 disable  NetworkManager-wait-online.service
 disable  systemd-timesyncd.service
 

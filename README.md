@@ -123,7 +123,6 @@ to activate). To do it by hand:
 ```bash
 sudo systemctl enable --now NetworkManager.service
 sudo systemctl enable --now getty@tty1.service
-sudo systemctl enable --now power-profiles-daemon.service
 sudo systemctl enable --now systemd-timesyncd.service
 sudo systemctl enable --now fstrim.timer
 ```
@@ -361,7 +360,7 @@ keeps its existing static `initramfs-custom-r14.img` as a fallback.
 
 The custom kernel is booted **directly by the firmware**, without a bootloader
 in between. Two properties make that trivial here: the kernel is built with
-`CONFIG_EFI_STUB=y` (so `vmlinuz` *is* a valid EFI binary) and it boots
+`CONFIG_EFI_STUB=y` (so `vmlinuz` _is_ a valid EFI binary) and it boots
 **without an initramfs**, so there is nothing to chain-load. The kernel command
 line travels as the boot entry's optional data (UCS-2), which is what the stub
 reads.
