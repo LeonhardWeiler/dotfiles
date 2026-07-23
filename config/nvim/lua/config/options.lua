@@ -36,3 +36,4 @@ vim.opt.swapfile = false
 vim.opt.undofile = true
 
 vim.cmd("colorscheme kanagawa")
+vim.cmd("packadd nvim.tohtml")
