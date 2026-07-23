@@ -46,15 +46,21 @@ function M.new_text()
     local html = vim.fn.readfile(texts)
 
     local row = {
-      "        <tr>",
-      "          <td>",
-      '            <a href="./pages/' .. filename .. '">',
-      "              " .. title,
-      "            </a>",
-      "          </td>",
-      '          <td class="shrink">' .. date .. "</td>",
-      '          <td class="shrink">' .. date .. "</td>",
-      "        </tr>",
+      "          <tr>",
+      "            <td>",
+      "              <a",
+      '                class="not-started"',
+      '                href="./pages/' .. filename .. '"',
+      "                ><span>" .. title .. "</span></a",
+      "              >",
+      "            </td>",
+      '            <td class="shrink">',
+      '              <time datetime="' .. date .. '">' .. date .. "</time>",
+      "            </td>",
+      '            <td class="shrink">',
+      '              <time datetime="' .. date .. '">' .. date .. "</time>",
+      "            </td>",
+      "          </tr>",
     }
 
     for i, line in ipairs(html) do
@@ -76,35 +82,30 @@ end
 
 function M.update_edited()
   local filepath = vim.fn.expand("%:p")
-
   if not filepath:find("/pages/") then
     return
   end
-
   local filename = vim.fn.expand("%:t")
   local date = os.date("%Y-%m-%d")
-
   local html = vim.fn.readfile(texts)
-
   local found = false
-
   for i, line in ipairs(html) do
     if line:find("./pages/" .. filename, 1, true) then
       found = true
-
-      for j = i, math.min(i + 10, #html) do
-        if html[j]:find('<td class="shrink">') then
-          if html[j + 1] and html[j + 1]:find('<td class="shrink">') then
-            html[j + 1] = '          <td class="shrink">' .. date .. "</td>"
-            break
+      for j = i, math.min(i + 20, #html) do
+        if html[j]:find('<td class="shrink">', 1, true) then
+          for k = j + 1, math.min(j + 3, #html) do
+            if html[k]:find("<time", 1, true) then
+              html[k] = '              <time datetime="' .. date .. '">' .. date .. "</time>"
+              break
+            end
           end
+          break
         end
       end
-
       break
     end
   end
-
   if found then
     vim.fn.writefile(html, texts)
     print("Updated edited date")
