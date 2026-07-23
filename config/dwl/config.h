@@ -115,13 +115,13 @@ static const Key keys[] = {
 	 * left thumb on ALT). */
 	{ MODKEY,                       XKB_KEY_space,   spawn,            {.v = termcmd} },
 	{ MODKEY,                       XKB_KEY_i,       spawn,            {.v = menucmd} },
-	{ MODKEY,                       XKB_KEY_w,       spawn,            {.v = browsercmd} },
+	{ MODKEY,                       XKB_KEY_n,       spawn,            {.v = browsercmd} },
 
 	/* Window operations on the right-hand home row - the hand already rests
 	 * there for ALT+HJKL below. killclient sits on the pinky (o), three columns
 	 * away from the navigation cluster, so slipping while navigating cannot
 	 * close a window. */
-	{ MODKEY,                       XKB_KEY_n,       zoom,             {0} },
+	{ MODKEY,                       XKB_KEY_Return,  zoom,             {0} },
 	{ MODKEY,                       XKB_KEY_e,       togglefullscreen, {0} },
 	{ MODKEY,                       XKB_KEY_o,       killclient,       {0} },
 	{ MODKEY,                       XKB_KEY_v,       togglefloating,   {0} },
