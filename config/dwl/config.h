@@ -39,6 +39,7 @@ static const Rule rules[] = {
 	/* app_id             title       tags mask     isfloating   monitor */
 	/* At least one rule must exist; this one is a harmless placeholder. */
 	{ "__never_matches",  NULL,       0,            0,           -1 },
+  { "ffplay",           NULL,       0,            1,           -1 },
 };
 
 /* layout(s) - "tile" is the master-stack layout; floating and monocle stay

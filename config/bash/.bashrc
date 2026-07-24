@@ -32,7 +32,7 @@ alias dot='cd $HOME/dotfiles'
 alias arst='sudo shutdown now'
 alias todo='nvim ./AGENT/TODO.md'
 alias claude='claude --dangerously-skip-permissions'
-alias camera='ffplay -f v4l2 /dev/video0'
+alias camera='ffplay -f v4l2 /dev/video0 -vf hflip -x 640 -y 480'
 
 export NIX_CONFIG="experimental-features = nix-command flakes"
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
