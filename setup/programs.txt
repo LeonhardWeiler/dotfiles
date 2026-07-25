@@ -6,7 +6,7 @@ brightnessctl 0.5.1-3
 btop 1.4.7-1
 clinfo 3.0.25.02.14-1
 clpeak 2.0.18-1
-cpupower 7.1.4-1
+cpupower 7.1.5-1
 dmidecode 3.7-1
 dosfstools 4.2-5
 dotnet-sdk 10.0.10.sdk110-1
@@ -55,7 +55,7 @@ slurp 1.5.0-2
 smem 1.5-8
 stress-ng 0.21.04-2
 sysbench 1.0.20-2
-thunderbird 152.0.1-1
+thunderbird 153.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
 unityhub 3.19.5-1
@@ -72,5 +72,5 @@ wlr-randr 0.5.0-1
 wlroots0.19 0.19.3-1
 wob 0.16-2
 yay 13.0.1-1
-zen-browser-bin 1.21.8b-1
+zen-browser-bin 1.21.9b-1
 zip 3.0-13
