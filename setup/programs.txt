@@ -11,6 +11,7 @@ dmidecode 3.7-1
 dosfstools 4.2-5
 dotnet-sdk 10.0.10.sdk110-1
 efibootmgr 18-4
+exfatprogs 1.4.2-1
 figma-agent-linux-bin 0.4.3-1
 fio 3.42-1
 foot 1.27.0-2
@@ -37,6 +38,7 @@ noto-fonts 1:2026.07.01-1
 noto-fonts-cjk 20240730-1
 noto-fonts-emoji 1:2.051-1
 npm 12.0.1-1
+ntfs-3g 2026.7.7-1
 openssh 10.4p1-3
 pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1
@@ -58,6 +60,7 @@ sysbench 1.0.20-2
 thunderbird 153.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
+udisks2 2.11.1-2
 unityhub 3.19.5-1
 unzip 6.0-23
 vulkan-radeon 1:26.1.5-1

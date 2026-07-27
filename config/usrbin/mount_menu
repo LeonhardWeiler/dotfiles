@@ -1,0 +1,234 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# rofi front-end for removable drives: mount, unmount, unlock/lock (LUKS) and
+# eject. udisks2 does the work over D-Bus, so nothing here needs root - polkit
+# grants an active local session mount rights on removable media and the
+# filesystem lands in /run/media/<user>/<label>.
+#
+# The menu lists one line per action, with the action as the first word, so the
+# whole thing stays searchable by typing "mount", "eject" or a label.
+#
+# The unlock/lock lines need device-mapper, which the custom kernel on this
+# machine is built without (no dm_mod) - udisks2 then fails the unlock and the
+# error ends up in the rofi popup. They are kept for a stock-kernel install.
+
+ALL=0
+SELF=${0##*/}
+
+usage() {
+  cat <<EOF
+Usage: $SELF [-a|--all]
+
+rofi menu for mounting/unmounting drives (via udisks2).
+
+  -a, --all   also list internal (non-removable) filesystems
+  -h, --help  show this help
+EOF
+}
+
+case "${1:-}" in
+  -a|--all)  ALL=1 ;;
+  -h|--help) usage; exit 0 ;;
+  "")        ;;
+  *)         usage >&2; exit 1 ;;
+esac
+
+for cmd in rofi udisksctl lsblk; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "$SELF: '$cmd' not found" >&2
+    exit 1
+  }
+done
+
+# lsblk's raw output escapes spaces inside values as \x20, so a plain space is
+# safe as a field separator - but only a non-whitespace IFS keeps empty fields
+# (an unlabelled partition) as empty fields, hence the swap to FS (0x1c).
+FS=$(printf '\034')
+
+# The rofi theme hides the prompt (inputbar shows only the entry); these menus
+# need it, so it is switched back on per invocation instead of in config.rasi.
+SHOW_PROMPT='inputbar { children: [ "prompt", "entry" ]; }'
+
+plain() { printf '%s' "$1" | sed 's/\\x20/ /g'; }
+
+menu() { rofi -dmenu -i -no-custom -p "$1" -theme-str "$SHOW_PROMPT"; }
+
+# `rofi -dmenu` exits immediately when stdin carries no entry at all, so the
+# passphrase prompt is fed one empty line (hidden with the list) and `-format f`
+# returns what was typed instead of what was selected.
+password() {
+  printf '\n' |
+    rofi -dmenu -password -format f -p "$1" \
+         -theme-str "$SHOW_PROMPT listview { enabled: false; }"
+}
+
+message() { rofi -e "$1"; }
+
+# ── device inspection ───────────────────────────────────────────────────────
+
+# A mountpoint outside the removable-media directories belongs to the system
+# (/, /home, [SWAP], …) and is never offered for unmounting.
+ours() {
+  case "$1" in
+    /run/media/*|/media/*|/mnt/*) return 0 ;;
+    *)                            return 1 ;;
+  esac
+}
+
+# Anything mounted or still unlocked keeps a drive from being powered off.
+disk_busy() {
+  lsblk -rno TYPE,MOUNTPOINT "$1" 2>/dev/null |
+    awk 'NF >= 2 { busy = 1 } $1 == "crypt" { busy = 1 } END { exit !busy }'
+}
+
+# First unlocked mapper below a LUKS container (empty while it is locked).
+crypt_child() {
+  lsblk -rpno NAME,TYPE "$1" 2>/dev/null |
+    awk '$2 == "crypt" { print $1; exit }'
+}
+
+model() {
+  [ -n "$1" ] || return 0
+  plain "$(lsblk -rdno MODEL "$1" 2>/dev/null)"
+}
+
+# ── menu ────────────────────────────────────────────────────────────────────
+
+build_menu() {
+  lsblk -rpno NAME,TYPE,SIZE,FSTYPE,LABEL,MOUNTPOINT,HOTPLUG,PKNAME |
+    tr ' ' "$FS" |
+    while IFS="$FS" read -r name type size fstype label mnt hotplug pkname; do
+      # Mappers and volume groups inherit no HOTPLUG flag of their own, so they
+      # are always listed; everything else has to be removable (or --all).
+      case "$type" in
+        crypt|lvm) ;;
+        part|disk|rom|loop)
+          [ "$ALL" = 1 ] || [ "$hotplug" = 1 ] || continue ;;
+        *) continue ;;
+      esac
+
+      # Already mounted somewhere the system owns → hands off entirely.
+      if [ -n "$mnt" ] && ! ours "$mnt"; then
+        continue
+      fi
+
+      desc=$(plain "$label")
+      [ -n "$desc" ] || desc=$(model "${pkname:-$name}")
+      [ -n "$desc" ] || desc="-"
+
+      case "$fstype" in
+        crypto_LUKS)
+          if [ -n "$(crypt_child "$name")" ]; then
+            disk_busy "$name" && continue   # unlocked mapper still in use
+            printf '%-8s %-14s %8s  %-11s %s\n' \
+              lock "$name" "$size" LUKS "$desc"
+          else
+            printf '%-8s %-14s %8s  %-11s %s\n' \
+              unlock "$name" "$size" LUKS "$desc"
+          fi
+          ;;
+        ""|swap|LVM2_member|linux_raid_member|zfs_member)
+          : ;;   # nothing mountable here
+        *)
+          if [ -n "$mnt" ]; then
+            printf '%-8s %-14s %8s  %-11s %s  ->  %s\n' \
+              unmount "$name" "$size" "$fstype" "$desc" "$(plain "$mnt")"
+          else
+            printf '%-8s %-14s %8s  %-11s %s\n' \
+              mount "$name" "$size" "$fstype" "$desc"
+          fi
+          ;;
+      esac
+
+      # One eject line per removable disk - it unmounts/locks whatever is still
+      # open on the drive and then powers it off, so a stick needs a single
+      # pick before it is safe to pull out.
+      if [ "$type" = disk ] && [ "$hotplug" = 1 ]; then
+        printf '%-8s %-14s %8s  %-11s %s\n' \
+          eject "$name" "$size" drive "$(model "$name")"
+      fi
+    done
+}
+
+# ── actions ─────────────────────────────────────────────────────────────────
+
+unlock_device() {
+  pass=$(password "Passphrase for ${1##*/}") || exit 0
+  [ -n "$pass" ] || exit 0
+
+  # /dev/shm keeps the passphrase off disk; udisksctl reads the file verbatim,
+  # so it must not gain a trailing newline.
+  keyfile=$(mktemp /dev/shm/.mount_menu.XXXXXX) || {
+    message "$SELF: cannot create key file"
+    exit 1
+  }
+  trap 'rm -f "$keyfile"' EXIT INT TERM HUP
+  (umask 077; printf '%s' "$pass" >"$keyfile")
+
+  out=$(udisksctl unlock -b "$1" --key-file "$keyfile" 2>&1)
+  status=$?
+  rm -f "$keyfile"
+  trap - EXIT INT TERM HUP
+  [ "$status" -eq 0 ] || { message "$out"; exit 1; }
+
+  # Unlocking on its own leaves nothing usable - mount the mapper right away.
+  mapper=$(crypt_child "$1")
+  [ -n "$mapper" ] || { message "$out"; exit 0; }
+  out=$(udisksctl mount -b "$mapper" 2>&1) || { message "$out"; exit 1; }
+  message "$out"
+}
+
+eject_disk() {
+  for part in $(lsblk -rpno NAME,MOUNTPOINT "$1" |
+                  awk 'NF >= 2 && $2 != "[SWAP]" { print $1 }'); do
+    out=$(udisksctl unmount -b "$part" 2>&1) || { message "$out"; exit 1; }
+  done
+  for part in $(lsblk -rpno NAME,FSTYPE "$1" |
+                  awk '$2 == "crypto_LUKS" { print $1 }'); do
+    [ -n "$(crypt_child "$part")" ] || continue
+    out=$(udisksctl lock -b "$part" 2>&1) || { message "$out"; exit 1; }
+  done
+
+  out=$(udisksctl power-off -b "$1" 2>&1) ||
+    { message "Unmounted, but power-off failed:
+$out"; exit 1; }
+  message "${1##*/} can be removed safely."
+}
+
+# ── main ────────────────────────────────────────────────────────────────────
+
+entries=$(build_menu)
+[ -n "$entries" ] || {
+  if [ "$ALL" = 1 ]; then
+    message "No mountable filesystems found."
+  else
+    message "No removable drives found.
+Run '$SELF --all' to include internal filesystems."
+  fi
+  exit 0
+}
+
+choice=$(printf '%s\n' "$entries" | menu drive) || exit 0
+[ -n "$choice" ] || exit 0
+
+# Fields are shell-safe: the action is a literal word and a device path never
+# contains whitespace.
+# shellcheck disable=SC2086
+set -- $choice
+action=${1:-}
+device=${2:-}
+[ -n "$device" ] || exit 0
+
+case "$action" in
+  mount)   out=$(udisksctl mount -b "$device" 2>&1)   || { message "$out"; exit 1; }
+           message "$out" ;;
+  unmount) out=$(udisksctl unmount -b "$device" 2>&1) || { message "$out"; exit 1; }
+           message "$out" ;;
+  lock)    out=$(udisksctl lock -b "$device" 2>&1)    || { message "$out"; exit 1; }
+           message "$out" ;;
+  unlock)  unlock_device "$device" ;;
+  eject)   eject_disk "$device" ;;
+  *)       exit 1 ;;
+esac

@@ -27,7 +27,8 @@ that **`hjkl` means the same thing everywhere**: `h`/`l` the horizontal axis,
 | ------------- | ---------------------------------------------- |
 | `MOD+Space`   | Terminal (foot)                                |
 | `MOD+I`       | App launcher (`rofi -show drun`)               |
-| `MOD+W`       | Browser (zen-browser) — _w_eb                  |
+| `MOD+N`       | Browser (zen-browser)                          |
+| `MOD+M`       | Drive menu (`mount_menu`) — _m_ount            |
 | `MOD+O`       | Close the focused window                       |
 | `MOD+E`       | Toggle fullscreen                              |
 | `MOD+V`       | Toggle floating for the focused window         |
@@ -46,7 +47,7 @@ plain `MOD` layer, so no stray Shift can lock the screen.
 | `MOD+K`       | Focus previous window in the stack                  |
 | `MOD+H`       | Shrink the master area (−2 %)                       |
 | `MOD+L`       | Grow the master area (+2 %)                         |
-| `MOD+N`       | Zoom — swap the focused window into the master area |
+| `MOD+Return`  | Zoom — swap the focused window into the master area |
 | `MOD+Shift+H` | One fewer window in the master area                 |
 | `MOD+Shift+L` | One more window in the master area                  |
 

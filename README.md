@@ -311,6 +311,31 @@ sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
   `PATH` via `~/.local/bin`; the same script the pacman hook uses).
 - To install all packages from `programs.txt`, run `./setup/install-programs`
 
+### Removable drives (`mount_menu`)
+
+`MOD+M` opens a rofi menu of every removable filesystem (`config/usrbin/mount_menu`,
+on `PATH` via `~/.local/bin`). Each line starts with the action it performs, so
+the menu stays searchable by typing `mount`, `eject` or a drive label:
+
+```
+mount    /dev/sda1        14.6G  vfat        SANDISK
+unmount  /dev/sdb1       931.5G  ext4        backup  ->  /run/media/leo/backup
+eject    /dev/sda         14.6G  drive       SanDisk Ultra
+```
+
+`eject` is the one-pick path for pulling a stick out: it unmounts everything
+still open on that drive, then powers it off. The mounting itself is done by
+**udisks2** over D-Bus - polkit grants an active local session mount rights on
+removable media, so nothing here needs root and a filesystem shows up under
+`/run/media/<user>/<label>`. Internal filesystems are hidden; `mount_menu --all`
+lists them too (those may need a polkit agent, which this setup does not run).
+Anything already mounted outside `/run/media`, `/media` or `/mnt` - `/`, `/home`,
+swap - is never offered, so the menu cannot touch a system mount.
+
+Encrypted volumes (`unlock`/`lock`, passphrase prompted in rofi) are implemented
+but **not usable on this machine**: the custom kernel is built without
+device-mapper, so udisks2 fails the unlock and the error is shown in the popup.
+
 ### Screen locker (waylock)
 
 dwl's `lockcmd` is [waylock](https://codeberg.org/ifreund/waylock), replacing the
