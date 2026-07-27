@@ -324,17 +324,24 @@ eject    /dev/sda         14.6G  drive       SanDisk Ultra
 ```
 
 `eject` is the one-pick path for pulling a stick out: it unmounts everything
-still open on that drive, then powers it off. The mounting itself is done by
-**udisks2** over D-Bus - polkit grants an active local session mount rights on
-removable media, so nothing here needs root and a filesystem shows up under
-`/run/media/<user>/<label>`. Internal filesystems are hidden; `mount_menu --all`
-lists them too (those may need a polkit agent, which this setup does not run).
-Anything already mounted outside `/run/media`, `/media` or `/mnt` - `/`, `/home`,
-swap - is never offered, so the menu cannot touch a system mount.
+still open on that drive, syncs, and then tells the kernel to delete the block
+device (`/sys/block/<disk>/device/delete`) so it spins down - the part a bare
+unmount does not do. Buses without that entry (SD cards, NVMe) are safe once
+unmounted and synced.
 
-Encrypted volumes (`unlock`/`lock`, passphrase prompted in rofi) are implemented
-but **not usable on this machine**: the custom kernel is built without
-device-mapper, so udisks2 fails the unlock and the error is shown in the popup.
+Mounting is plain `mount(8)`/`umount(8)` through `sudo -n`, riding on the
+passwordless `wheel` rule from the `--sudoers` step - **no udisks2, no daemon,
+no polkit, no fstab entries**. Drives land under `/run/media/<user>/<label>`
+(`/run` is a tmpfs, so a mount point left behind by a crash is gone after a
+reboot) and are mounted `nosuid,nodev,noatime`; FAT/exFAT/NTFS additionally get
+`uid`/`gid`/`umask` so they belong to the user, while a Linux filesystem keeps
+its own ownership. Internal filesystems are hidden - `mount_menu --all` lists
+them too. Anything already mounted outside `/run/media`, `/media` or `/mnt` -
+`/`, `/home`, swap - is never offered, so the menu cannot touch a system mount.
+
+Because everything runs through `sudo -n`, the menu reports an error instead of
+hanging if that sudo rule is missing. Encrypted volumes are not supported: this
+kernel is built without device-mapper, so dm-crypt and LVM do not exist here.
 
 ### Screen locker (waylock)
 

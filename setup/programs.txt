@@ -60,7 +60,6 @@ sysbench 1.0.20-2
 thunderbird 153.0-1
 ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
-udisks2 2.11.1-2
 unityhub 3.19.5-1
 unzip 6.0-23
 vulkan-radeon 1:26.1.5-1

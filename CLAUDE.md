@@ -222,11 +222,14 @@ scripts). The source->target mapping is stated explicitly in
   `config.h` stays the authority). `build-dwl` only contacts the remote when the
   pinned tag is missing locally, so an outage cannot block applying a `config.h`
   change.
-- **Removable drives**: `config/usrbin/mount_menu` (rofi + **udisks2**, bound to
-  `MOD+M` in `config/dwl/config.h`) mounts/unmounts/ejects them. udisks2 mounts
-  via polkit for the active local session, so no root and no fstab entries. The
-  script's `unlock`/`lock` (LUKS) lines cannot work on this machine: the custom
-  kernel has **no device-mapper** (`dm_mod` is missing), so dm-crypt/LVM are out.
+- **Removable drives**: `config/usrbin/mount_menu` (rofi, bound to `MOD+M` in
+  `config/dwl/config.h`) mounts/unmounts/ejects them with plain
+  `mount`/`umount` via `sudo -n` (the passwordless `wheel` rule from
+  `--sudoers`) - **no udisks2/polkit**, mount points under
+  `/run/media/<user>/<label>`. `sudo -n` everywhere so a missing rule errors
+  instead of hanging on a password prompt with no terminal. Encrypted volumes
+  are deliberately unsupported: the custom kernel has **no device-mapper**
+  (`dm_mod` is missing), so dm-crypt/LVM cannot work on this machine anyway.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).

@@ -2,26 +2,25 @@
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
-# rofi front-end for removable drives: mount, unmount, unlock/lock (LUKS) and
-# eject. udisks2 does the work over D-Bus, so nothing here needs root - polkit
-# grants an active local session mount rights on removable media and the
-# filesystem lands in /run/media/<user>/<label>.
+# rofi front-end for removable drives: mount, unmount and eject. Plain
+# mount(8)/umount(8) through the passwordless sudo this system already grants
+# `wheel` (the `--sudoers` step) - no udisks2, no daemon, no fstab entries.
 #
 # The menu lists one line per action, with the action as the first word, so the
-# whole thing stays searchable by typing "mount", "eject" or a label.
-#
-# The unlock/lock lines need device-mapper, which the custom kernel on this
-# machine is built without (no dm_mod) - udisks2 then fails the unlock and the
-# error ends up in the rofi popup. They are kept for a stock-kernel install.
+# whole thing stays searchable by typing "mount", "eject" or a drive label.
 
 ALL=0
 SELF=${0##*/}
+
+# Where drives are mounted. /run is a tmpfs, so a mount point left behind by a
+# crash disappears on the next boot.
+MOUNT_ROOT=/run/media/$(id -un)
 
 usage() {
   cat <<EOF
 Usage: $SELF [-a|--all]
 
-rofi menu for mounting/unmounting drives (via udisks2).
+rofi menu for mounting/unmounting drives, mounted under $MOUNT_ROOT.
 
   -a, --all   also list internal (non-removable) filesystems
   -h, --help  show this help
@@ -35,7 +34,7 @@ case "${1:-}" in
   *)         usage >&2; exit 1 ;;
 esac
 
-for cmd in rofi udisksctl lsblk; do
+for cmd in rofi lsblk findmnt sudo; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "$SELF: '$cmd' not found" >&2
     exit 1
@@ -47,24 +46,18 @@ done
 # (an unlabelled partition) as empty fields, hence the swap to FS (0x1c).
 FS=$(printf '\034')
 
-# The rofi theme hides the prompt (inputbar shows only the entry); these menus
-# need it, so it is switched back on per invocation instead of in config.rasi.
+# The rofi theme hides the prompt (inputbar shows only the entry); this menu
+# needs it, so it is switched back on per invocation instead of in config.rasi.
 SHOW_PROMPT='inputbar { children: [ "prompt", "entry" ]; }'
 
 plain() { printf '%s' "$1" | sed 's/\\x20/ /g'; }
 
-menu() { rofi -dmenu -i -no-custom -p "$1" -theme-str "$SHOW_PROMPT"; }
-
-# `rofi -dmenu` exits immediately when stdin carries no entry at all, so the
-# passphrase prompt is fed one empty line (hidden with the list) and `-format f`
-# returns what was typed instead of what was selected.
-password() {
-  printf '\n' |
-    rofi -dmenu -password -format f -p "$1" \
-         -theme-str "$SHOW_PROMPT listview { enabled: false; }"
-}
-
+menu()    { rofi -dmenu -i -no-custom -p "$1" -theme-str "$SHOW_PROMPT"; }
 message() { rofi -e "$1"; }
+
+# Every privileged call is non-interactive: there is no terminal to type a
+# password into, so a missing sudo rule has to fail instead of hang.
+root() { sudo -n "$@"; }
 
 # ── device inspection ───────────────────────────────────────────────────────
 
@@ -75,18 +68,6 @@ ours() {
     /run/media/*|/media/*|/mnt/*) return 0 ;;
     *)                            return 1 ;;
   esac
-}
-
-# Anything mounted or still unlocked keeps a drive from being powered off.
-disk_busy() {
-  lsblk -rno TYPE,MOUNTPOINT "$1" 2>/dev/null |
-    awk 'NF >= 2 { busy = 1 } $1 == "crypt" { busy = 1 } END { exit !busy }'
-}
-
-# First unlocked mapper below a LUKS container (empty while it is locked).
-crypt_child() {
-  lsblk -rpno NAME,TYPE "$1" 2>/dev/null |
-    awk '$2 == "crypt" { print $1; exit }'
 }
 
 model() {
@@ -100,10 +81,7 @@ build_menu() {
   lsblk -rpno NAME,TYPE,SIZE,FSTYPE,LABEL,MOUNTPOINT,HOTPLUG,PKNAME |
     tr ' ' "$FS" |
     while IFS="$FS" read -r name type size fstype label mnt hotplug pkname; do
-      # Mappers and volume groups inherit no HOTPLUG flag of their own, so they
-      # are always listed; everything else has to be removable (or --all).
       case "$type" in
-        crypt|lvm) ;;
         part|disk|rom|loop)
           [ "$ALL" = 1 ] || [ "$hotplug" = 1 ] || continue ;;
         *) continue ;;
@@ -119,18 +97,8 @@ build_menu() {
       [ -n "$desc" ] || desc="-"
 
       case "$fstype" in
-        crypto_LUKS)
-          if [ -n "$(crypt_child "$name")" ]; then
-            disk_busy "$name" && continue   # unlocked mapper still in use
-            printf '%-8s %-14s %8s  %-11s %s\n' \
-              lock "$name" "$size" LUKS "$desc"
-          else
-            printf '%-8s %-14s %8s  %-11s %s\n' \
-              unlock "$name" "$size" LUKS "$desc"
-          fi
-          ;;
-        ""|swap|LVM2_member|linux_raid_member|zfs_member)
-          : ;;   # nothing mountable here
+        ""|swap|crypto_LUKS|LVM2_member|linux_raid_member|zfs_member)
+          : ;;   # nothing this script can mount
         *)
           if [ -n "$mnt" ]; then
             printf '%-8s %-14s %8s  %-11s %s  ->  %s\n' \
@@ -142,9 +110,9 @@ build_menu() {
           ;;
       esac
 
-      # One eject line per removable disk - it unmounts/locks whatever is still
-      # open on the drive and then powers it off, so a stick needs a single
-      # pick before it is safe to pull out.
+      # One eject line per removable disk - it unmounts everything still open
+      # on the drive and powers it down, so a stick needs a single pick before
+      # it is safe to pull out.
       if [ "$type" = disk ] && [ "$hotplug" = 1 ]; then
         printf '%-8s %-14s %8s  %-11s %s\n' \
           eject "$name" "$size" drive "$(model "$name")"
@@ -154,46 +122,74 @@ build_menu() {
 
 # ── actions ─────────────────────────────────────────────────────────────────
 
-unlock_device() {
-  pass=$(password "Passphrase for ${1##*/}") || exit 0
-  [ -n "$pass" ] || exit 0
+# Mount points are named after the label, reduced to characters that need no
+# quoting; an unlabelled partition falls back to its device name.
+mount_point_for() {
+  name=$(plain "$2" | tr -c 'A-Za-z0-9._-' '_')
+  case "$name" in
+    ""|.|..|_*) name=${1##*/} ;;
+  esac
+  point=$MOUNT_ROOT/$name
+  # A second drive carrying the same label must not land on the first one.
+  if findmnt -no TARGET --mountpoint "$point" >/dev/null 2>&1; then
+    point=$point-${1##*/}
+  fi
+  printf '%s' "$point"
+}
 
-  # /dev/shm keeps the passphrase off disk; udisksctl reads the file verbatim,
-  # so it must not gain a trailing newline.
-  keyfile=$(mktemp /dev/shm/.mount_menu.XXXXXX) || {
-    message "$SELF: cannot create key file"
+mount_device() {
+  dev=$1
+  fstype=$(lsblk -rdno FSTYPE "$dev")
+  point=$(mount_point_for "$dev" "$(lsblk -rdno LABEL "$dev")")
+
+  # Removable media is never trusted with device nodes or setuid bits. The
+  # Windows filesystems carry no ownership of their own, so the mount has to
+  # hand them to the user; a Linux filesystem brings its own permissions.
+  opts=nosuid,nodev,noatime
+  case "$fstype" in
+    vfat|exfat|ntfs|ntfs3|msdos)
+      opts="$opts,uid=$(id -u),gid=$(id -g),umask=022" ;;
+  esac
+
+  out=$(root mkdir -p "$point" 2>&1) || { message "$out"; exit 1; }
+  out=$(root mount -o "$opts" "$dev" "$point" 2>&1) || {
+    root rmdir "$point" 2>/dev/null
+    message "$out"
     exit 1
   }
-  trap 'rm -f "$keyfile"' EXIT INT TERM HUP
-  (umask 077; printf '%s' "$pass" >"$keyfile")
+  # Reported through a variable rather than stdout: a command substitution
+  # would put the whole function in a subshell, where its `exit` on failure
+  # could not stop the caller.
+  MOUNTED_AT=$point
+}
 
-  out=$(udisksctl unlock -b "$1" --key-file "$keyfile" 2>&1)
-  status=$?
-  rm -f "$keyfile"
-  trap - EXIT INT TERM HUP
-  [ "$status" -eq 0 ] || { message "$out"; exit 1; }
-
-  # Unlocking on its own leaves nothing usable - mount the mapper right away.
-  mapper=$(crypt_child "$1")
-  [ -n "$mapper" ] || { message "$out"; exit 0; }
-  out=$(udisksctl mount -b "$mapper" 2>&1) || { message "$out"; exit 1; }
-  message "$out"
+# Unmounts and cleans up our own mount point; the caller reports the outcome.
+try_unmount() {
+  point=$(findmnt -no TARGET "$1" | head -n1)
+  out=$(root umount "$1" 2>&1) || return 1
+  case "$point" in
+    "$MOUNT_ROOT"/*) root rmdir "$point" 2>/dev/null ;;
+  esac
+  return 0
 }
 
 eject_disk() {
   for part in $(lsblk -rpno NAME,MOUNTPOINT "$1" |
                   awk 'NF >= 2 && $2 != "[SWAP]" { print $1 }'); do
-    out=$(udisksctl unmount -b "$part" 2>&1) || { message "$out"; exit 1; }
+    try_unmount "$part" || { message "$out"; exit 1; }
   done
-  for part in $(lsblk -rpno NAME,FSTYPE "$1" |
-                  awk '$2 == "crypto_LUKS" { print $1 }'); do
-    [ -n "$(crypt_child "$part")" ] || continue
-    out=$(udisksctl lock -b "$part" 2>&1) || { message "$out"; exit 1; }
-  done
+  sync
 
-  out=$(udisksctl power-off -b "$1" 2>&1) ||
-    { message "Unmounted, but power-off failed:
+  # Telling the kernel to delete the block device is what makes the drive spin
+  # down and stop responding, i.e. what "safe removal" buys over a bare
+  # unmount. Not every bus offers it (SD cards, NVMe) - unmounted plus synced
+  # is already safe there.
+  delete=/sys/block/${1##*/}/device/delete
+  if [ -e "$delete" ]; then
+    out=$(root sh -c "printf 1 > $delete" 2>&1) ||
+      { message "Unmounted, but powering the drive down failed:
 $out"; exit 1; }
+  fi
   message "${1##*/} can be removed safely."
 }
 
@@ -222,13 +218,10 @@ device=${2:-}
 [ -n "$device" ] || exit 0
 
 case "$action" in
-  mount)   out=$(udisksctl mount -b "$device" 2>&1)   || { message "$out"; exit 1; }
-           message "$out" ;;
-  unmount) out=$(udisksctl unmount -b "$device" 2>&1) || { message "$out"; exit 1; }
-           message "$out" ;;
-  lock)    out=$(udisksctl lock -b "$device" 2>&1)    || { message "$out"; exit 1; }
-           message "$out" ;;
-  unlock)  unlock_device "$device" ;;
+  mount)   mount_device "$device"
+           message "Mounted $device at $MOUNTED_AT" ;;
+  unmount) try_unmount "$device" || { message "$out"; exit 1; }
+           message "Unmounted $device" ;;
   eject)   eject_disk "$device" ;;
   *)       exit 1 ;;
 esac
