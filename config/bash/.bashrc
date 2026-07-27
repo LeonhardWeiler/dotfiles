@@ -29,6 +29,7 @@ export BROWSER=zen-browser
 
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
+alias notes='cd $HOME/files/projects/notes/; nvim .'
 alias arst='sudo shutdown now'
 alias todo='nvim ./AGENT/TODO.md'
 alias claude='claude --dangerously-skip-permissions'
