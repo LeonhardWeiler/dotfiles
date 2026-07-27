@@ -4,9 +4,16 @@
 
 set -euo pipefail
 
-OWNER="${DOTFILES_OWNER:-$(logname 2>/dev/null || id -un)}"
-OWNER_HOME="$(getent passwd "$OWNER" | cut -d: -f6)"
-DOTFILES="${DOTFILES_DIR:-${OWNER_HOME:-$HOME}/dotfiles}"
+# Locate the repo from this script's own resolved path: it lives in
+# <repo>/config/usrbin/ and is symlinked to /usr/local/bin for the pacman hook.
+# Do not derive it from the user - the hook runs as root without a controlling
+# terminal, where logname fails and id -un yields root.
+if [ -n "${DOTFILES_DIR:-}" ]; then
+  DOTFILES="$DOTFILES_DIR"
+else
+  SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+  DOTFILES="$(dirname "$(dirname "$(dirname "$SELF")")")"
+fi
 OUT="$DOTFILES/setup/programs.txt"
 
 OUT_DIR="$(dirname "$OUT")"
@@ -15,13 +22,18 @@ if [ ! -d "$OUT_DIR" ]; then
   exit 0
 fi
 
+# Keep the file owned by the repo owner, not by root when run from the hook.
+OWNER="${DOTFILES_OWNER:-$(stat -c %U "$OUT_DIR")}"
+
 TMP="$(mktemp "$OUT_DIR/.programs.txt.XXXXXX")"
 trap 'rm -f "$TMP"' EXIT
 
 pacman -Qe | awk 'NR==FNR{skip[$1];next} !($1 in skip)' <(pacman -Qq base) - > "$TMP"
 
 chmod 644 "$TMP"
-[ "$(id -u)" -eq 0 ] && chown "$OWNER" "$TMP"
+if [ "$(id -u)" -eq 0 ]; then
+  chown "$OWNER:" "$TMP"
+fi
 
 mv -f "$TMP" "$OUT"
 trap - EXIT
