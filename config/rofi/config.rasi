@@ -47,7 +47,7 @@ window {
   transparency: "screenshot";
   location: center;
   anchor: center;
-  width: 700px;
+  width: 1000px;
   x-offset: 0px;
   y-offset: 0px;
   margin: 0px;
@@ -65,7 +65,7 @@ mainbox {
   enabled: true;
   spacing: 10px;
   margin: 0px;
-  padding: 15px;
+  padding: 24px;
   children: [ "inputbar", "listview" ];
 }
 
@@ -124,7 +124,7 @@ element {
   enabled: true;
   spacing: 10px;
   margin: 0px;
-  padding: 5px 10px;
+  padding: 10px 17px;
   border: 0px solid;
   border-radius: 0px;
   border-color: @border-colour;
@@ -189,7 +189,7 @@ message {
 }
 
 textbox {
-  padding: 5px 10px;
+  padding: 10px 17px;
   border: 0px solid;
   text-color: @foreground-colour;
   vertical-align: 0.5;
@@ -201,7 +201,7 @@ textbox {
 }
 
 error-message {
-  padding: 10px;
+  padding: 17px;
   background-color: @background-colour;
   text-color: @foreground-colour;
 }
