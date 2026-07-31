@@ -34,7 +34,7 @@ linux 7.1.5.arch1-2
 linux-firmware 20260622-1
 linux-headers 7.1.5.arch1-2
 mandoc 1.14.6-5
-mesa 1:26.1.5-1
+mesa 1:26.1.6-1
 mesa-utils 9.0.0-7
 mpv 1:0.41.0-3
 neovim 0.12.4-1
@@ -59,7 +59,7 @@ ripgrep 15.2.0-1
 rofi 2.0.0-1
 rsync 3.4.4-1
 rt-tests 2.10-1
-signal-desktop 8.20.0-1
+signal-desktop 8.21.0-1
 slurp 1.5.0-2
 smem 1.5-8
 stress-ng 0.21.04-2
@@ -69,7 +69,7 @@ ttf-jetbrains-mono-nerd 3.4.0-2
 typst 1:0.15.1-2
 unityhub 3.19.5-1
 unzip 6.0-23
-vulkan-radeon 1:26.1.5-1
+vulkan-radeon 1:26.1.6-1
 vulkan-tools 1.4.350.1-1
 wayland 1.25.0-1
 wayland-protocols 1.49-1

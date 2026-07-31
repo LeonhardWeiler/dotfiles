@@ -5,6 +5,13 @@ export QT_QPA_PLATFORMTHEME=qt5ct
 export XDG_CURRENT_DESKTOP=dwl
 export XDG_THEME=dark
 
+
 if [[ -z ${WAYLAND_DISPLAY:-} && $(tty) == /dev/tty1 ]]; then
 	exec dwl
+fi
+
+
+if [[ -z "${TERMINAL_RECORDING:-}" ]]; then
+	export TERMINAL_RECORDING=1
+	exec script -q -f /tmp/terminal-output bash
 fi

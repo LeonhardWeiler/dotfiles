@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 
 STATE="${XDG_RUNTIME_DIR:-/tmp}/dictate"
 PIDFILE="$STATE/pid"

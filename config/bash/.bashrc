@@ -4,12 +4,24 @@ export HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/bash/history"
 mkdir -p "$(dirname "$HISTFILE")"
 shopt -s histappend
 
+
+LAST_INPUT="/tmp/bash-last-input"
+
+trap '
+  if [[ "$BASH_COMMAND" != "$PROMPT_COMMAND" && "$BASH_COMMAND" != "trap"* ]]; then
+    printf "%s" "$BASH_COMMAND" > "$LAST_INPUT"
+  fi
+' DEBUG
+
+
 BAT_CAPACITY=
 for _bat in /sys/class/power_supply/*; do
   [ -r "$_bat/type" ] && [ "$(<"$_bat/type")" = Battery ] && [ -r "$_bat/capacity" ] || continue
-  BAT_CAPACITY="$_bat/capacity"; break
+  BAT_CAPACITY="$_bat/capacity"
+  break
 done
 unset _bat
+
 
 update_battery() {
   if [ -n "$BAT_CAPACITY" ] && [ -r "$BAT_CAPACITY" ]; then
@@ -19,13 +31,17 @@ update_battery() {
   fi
 }
 
+
 PROMPT_COMMAND=update_battery
+
 PS1='${battery}\w \$ '
+
 
 export EDITOR="nvim"
 export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export QT_QPA_PLATFORM=wayland
 export BROWSER=zen-browser
+
 
 alias open='xdg-open'
 alias dot='cd $HOME/dotfiles'
@@ -36,10 +52,14 @@ alias claude='claude --dangerously-skip-permissions'
 alias camera='ffplay -f v4l2 /dev/video0 -vf hflip -x 640 -y 480'
 alias screenshot='grim -g "$(slurp)"'
 
+
 export NIX_CONFIG="experimental-features = nix-command flakes"
+
 [ -e ~/.nix-profile/etc/profile.d/nix.sh ] && . ~/.nix-profile/etc/profile.d/nix.sh
+
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
 export npm_config_cache="${XDG_CACHE_HOME:-$HOME/.cache}/npm"
+
 export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"
 
-[ -f "/home/leo/.ghcup/env" ] && . "/home/leo/.ghcup/env" # ghcup-env
+[ -f "/home/leo/.ghcup/env" ] && . "/home/leo/.ghcup/env"
