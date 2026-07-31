@@ -1,0 +1,24 @@
+#!/bin/sh
+
+TMP=$(mktemp --suffix=.wav)
+
+trap 'rm -f "$TMP" "$TMP.txt"' EXIT
+
+echo "🎤 Aufnahme..."
+
+pw-record "$TMP" >/dev/null 2>&1
+
+echo "⌛ Whisper..."
+
+whisper-cli \
+    -m ~/models/ggml-medium-q5_0.bin \
+    -f "$TMP" \
+    -l de \
+    --no-timestamps \
+    -otxt \
+    -of "$TMP" \
+    >/dev/null 2>&1
+
+cat "$TMP.txt" | wl-copy
+
+echo "✓ Im Clipboard"
