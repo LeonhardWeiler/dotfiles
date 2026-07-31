@@ -76,6 +76,7 @@ wl-clipboard 1:2.3.0-1
 wlr-randr 0.5.0-1
 wlroots0.19 0.19.3-1
 wob 0.16-2
+xdg-desktop-portal-wlr 0.8.2-1
 yay 13.0.1-1
 yt-dlp 2026.07.04-1
 zen-browser-bin 1.21.10b-1
