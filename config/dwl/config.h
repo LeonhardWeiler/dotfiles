@@ -15,10 +15,10 @@ static const float urgentcolor[]           = COLOR(0xff0000ff);
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f};
 
 /* gaps (px, from the gaps patch) - inner = between windows, outer = screen edge */
-static const unsigned int gappih = 3;  /* inner horizontal */
-static const unsigned int gappiv = 3;  /* inner vertical */
-static const unsigned int gappoh = 6;  /* outer horizontal */
-static const unsigned int gappov = 6;  /* outer vertical */
+static const unsigned int gappih = 5;  /* inner horizontal */
+static const unsigned int gappiv = 5;  /* inner vertical */
+static const unsigned int gappoh = 10;  /* outer horizontal */
+static const unsigned int gappov = 10;  /* outer vertical */
 
 /* tagging - 9 tags. TAGCOUNT must be <= 31. ALT+1..9 view a tag, ALT+SHIFT+1..9
  * move the focused window to a tag. */
@@ -127,7 +127,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XKB_KEY_space,   spawn,            {.v = termcmd} },
 	{ MODKEY,                       XKB_KEY_i,       spawn,            {.v = menucmd} },
 	{ MODKEY,                       XKB_KEY_n,       spawn,            {.v = browsercmd} },
-	{ MODKEY|WLR_MODIFIER_CTRL,     XKB_KEY_w,       spawn,            {.v = whispercmd} },
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_w,       spawn,            {.v = whispercmd} },
 
 	/* Drive menu (mount/unmount/eject of removable media). Rare enough for the index
 	 * stretch, and `m` is the mnemonic - right hand, so no penalty against the

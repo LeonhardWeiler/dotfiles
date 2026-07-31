@@ -1,24 +1,85 @@
 #!/bin/sh
 
+STATE="${XDG_RUNTIME_DIR:-/tmp}/dictate"
+PIDFILE="$STATE/pid"
+STOPFILE="$STATE/stop"
+
+mkdir -p "$STATE"
+
+cleanup() {
+  rm -f "$STOPFILE"
+
+  [ -n "$REC_PID" ] && kill "$REC_PID" 2>/dev/null
+  [ -n "$WOB_PID" ] && kill "$WOB_PID" 2>/dev/null
+
+  rm -rf "$STATE"
+  [ -n "$TMP" ] && rm -f "$TMP" "$TMP.txt"
+
+  exit 0
+}
+
+# zweiter Keybind -> Aufnahme beenden
+if [ -f "$PIDFILE" ]; then
+  PID=$(cat "$PIDFILE")
+
+  if kill -0 "$PID" 2>/dev/null; then
+    touch "$STOPFILE"
+    exit 0
+  fi
+
+  rm -f "$PIDFILE"
+fi
+
+echo $$ > "$PIDFILE"
+rm -f "$STOPFILE"
+
+trap cleanup INT TERM HUP
+
 TMP=$(mktemp --suffix=.wav)
 
-trap 'rm -f "$TMP" "$TMP.txt"' EXIT
+# OSD
+(
+  while :; do
+    echo "100 record"
+    sleep 0.5
+  done
+) | wob >/dev/null 2>&1 &
+
+WOB_PID=$!
 
 echo "🎤 Aufnahme..."
 
-pw-record "$TMP" >/dev/null 2>&1
+pw-record "$TMP" >/dev/null 2>&1 &
+REC_PID=$!
+
+# warten auf zweiten Keybind
+while [ ! -f "$STOPFILE" ]; do
+  sleep 0.1
+done
+
+echo "⏹ Aufnahme beendet"
+
+kill "$REC_PID" 2>/dev/null
+wait "$REC_PID" 2>/dev/null
+
+kill "$WOB_PID" 2>/dev/null
+WOB_PID=
 
 echo "⌛ Whisper..."
 
 whisper-cli \
-    -m ~/models/ggml-medium-q5_0.bin \
-    -f "$TMP" \
-    -l de \
-    --no-timestamps \
-    -otxt \
-    -of "$TMP" \
-    >/dev/null 2>&1
+-m ~/models/ggml-medium-q5_0.bin \
+-f "$TMP" \
+-l de \
+--no-timestamps \
+-otxt \
+-of "$TMP" \
+>/dev/null 2>&1
 
-cat "$TMP.txt" | wl-copy
+if [ -s "$TMP.txt" ]; then
+  wl-copy < "$TMP.txt"
+  OSD_DURATION=0.2 osd 100 done
+  echo "✓ Im Clipboard"
+fi
 
-echo "✓ Im Clipboard"
+cleanup

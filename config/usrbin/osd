@@ -5,13 +5,20 @@
 DURATION=${OSD_DURATION:-0.8}
 
 command -v wob >/dev/null 2>&1 || {
-  echo "osd: 'wob' not found" >&2
-  exit 1
+    echo "osd: 'wob' not found" >&2
+    exit 1
 }
 
 [ -n "$1" ] || {
-  echo "Usage: osd <value 0-100> [style]" >&2
-  exit 1
+    echo "Usage: osd <value 0-100> [style]" >&2
+    exit 1
 }
 
-{ printf '%s\n' "$1${2:+ $2}"; sleep "$DURATION"; } | wob 2>/dev/null || true
+if [ "$OSD_PERSIST" = 1 ]; then
+    while :; do
+        printf '%s\n' "$1${2:+ $2}"
+        sleep 1
+    done | wob 2>/dev/null
+else
+    { printf '%s\n' "$1${2:+ $2}"; sleep "$DURATION"; } | wob 2>/dev/null || true
+fi
