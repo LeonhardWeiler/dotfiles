@@ -1,7 +1,7 @@
 acpi 1.8-2
 amd-ucode 20260622-1
 android-tools 36.0.1-2
-aseprite 1.3.18.1-1
+aseprite 1.3.18.1-3
 base-devel 1-2
 bc 1.08.2-1
 brightnessctl 0.5.1-3
