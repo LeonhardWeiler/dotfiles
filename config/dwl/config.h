@@ -28,12 +28,20 @@ static const unsigned int gappov = 6;  /* outer vertical */
 static int log_level = WLR_ERROR;
  
 static const char *const autostart[] = {
-  /* wallpaper disabled - re-enable this line (and the links.conf wallpaper
-     lines) plus `./install --wbg` to bring wbg back. */
-  /* "sh", "-c", "$HOME/.local/bin/change-wallpaper", NULL, */
-  "sh", "-c", "wlr-randr --output eDP-1 --custom-mode 2560x1600@60 --scale 1", NULL,
-  "sh", "-c", "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done", NULL,
-  NULL
+    "sh", "-c",
+    "systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE; "
+    "dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE",
+    NULL,
+
+    "sh", "-c",
+    "wlr-randr --output eDP-1 --custom-mode 2560x1600@60 --scale 1",
+    NULL,
+
+    "sh", "-c",
+    "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done",
+    NULL,
+
+    NULL
 };
 
 static const Rule rules[] = {

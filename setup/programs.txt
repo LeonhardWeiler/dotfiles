@@ -9,6 +9,7 @@ btop 1.4.7-1
 clinfo 3.0.25.02.14-1
 clpeak 2.0.18-1
 cpupower 7.1.5-1
+devtools 1:1.5.1-1
 dmidecode 3.7-1
 dosfstools 4.2-5
 dotnet-sdk 10.0.10.sdk110-1
@@ -25,12 +26,14 @@ hdparm 9.65-3
 iperf3 3.21-1
 iptables 1:1.8.13-1
 jq 1.8.2-1
+kdenlive 26.04.3-1
 keepassxc 2.7.12-3
 less 1:704-1
 libnotify 0.8.8-1
 linux 7.1.5.arch1-2
 linux-firmware 20260622-1
 linux-headers 7.1.5.arch1-2
+mandoc 1.14.6-5
 mesa 1:26.1.5-1
 mesa-utils 9.0.0-7
 mpv 1:0.41.0-3
@@ -42,6 +45,7 @@ noto-fonts-cjk 20240730-1
 noto-fonts-emoji 1:2.051-1
 npm 12.0.1-1
 ntfs-3g 2026.7.7-1
+obs-studio 32.1.2-7
 openssh 10.4p1-3
 pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1

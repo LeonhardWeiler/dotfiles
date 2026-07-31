@@ -41,3 +41,5 @@ export NIX_CONFIG="experimental-features = nix-command flakes"
 export GOPATH="${XDG_DATA_HOME:-$HOME/.local/share}/go"
 export npm_config_cache="${XDG_CACHE_HOME:-$HOME/.cache}/npm"
 export PATH="$HOME/.local/bin:$GOPATH/bin:$PATH"
+
+[ -f "/home/leo/.ghcup/env" ] && . "/home/leo/.ghcup/env" # ghcup-env
