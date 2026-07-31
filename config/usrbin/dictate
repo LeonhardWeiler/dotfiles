@@ -77,7 +77,11 @@ whisper-cli \
 >/dev/null 2>&1
 
 if [ -s "$TMP.txt" ]; then
-  wl-copy < "$TMP.txt"
+  tr '\n' ' ' < "$TMP.txt" \
+    | sed 's/[[:space:]]\+/ /g;s/^ *//;s/ *$//' \
+    | tr -d '\n' \
+    | wl-copy
+
   OSD_DURATION=0.2 osd 100 done
   echo "✓ Im Clipboard"
 fi
