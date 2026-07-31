@@ -4,16 +4,6 @@ export HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/bash/history"
 mkdir -p "$(dirname "$HISTFILE")"
 shopt -s histappend
 
-
-LAST_INPUT="/tmp/bash-last-input"
-
-trap '
-  if [[ "$BASH_COMMAND" != "$PROMPT_COMMAND" && "$BASH_COMMAND" != "trap"* ]]; then
-    printf "%s" "$BASH_COMMAND" > "$LAST_INPUT"
-  fi
-' DEBUG
-
-
 BAT_CAPACITY=
 for _bat in /sys/class/power_supply/*; do
   [ -r "$_bat/type" ] && [ "$(<"$_bat/type")" = Battery ] && [ -r "$_bat/capacity" ] || continue
