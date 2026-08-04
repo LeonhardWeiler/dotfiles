@@ -39,7 +39,7 @@ alias notes='cd $HOME/files/projects/notes/'
 alias arst='sudo shutdown now'
 alias todo='nvim ./AGENT/TODO.md'
 alias claude='claude --dangerously-skip-permissions'
-alias camera='ffplay -f v4l2 /dev/video0 -vf hflip -x 640 -y 480'
+alias camera='ffplay -f v4l2 /dev/video0 -vf hflip -x 1280 -y 720'
 alias screenshot='grim -g "$(slurp)"'
 
 
