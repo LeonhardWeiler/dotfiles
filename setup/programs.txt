@@ -61,6 +61,7 @@ ripgrep 15.2.0-1
 rofi 2.0.0-1
 rsync 3.4.4-1
 rt-tests 2.10-1
+sideband 1.9.8-1
 signal-desktop 8.21.0-1
 slurp 1.5.0-2
 smem 1.5-8
