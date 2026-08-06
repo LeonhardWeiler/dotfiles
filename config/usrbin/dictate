@@ -70,7 +70,7 @@ WOB_PID=
 echo "⌛ Whisper..."
 
 whisper-cli \
--m ~/models/ggml-medium-q5_0.bin \
+-m ~/files/models/ggml-medium-q5_0.bin \
 -f "$TMP" \
 -l de \
 --no-timestamps \
