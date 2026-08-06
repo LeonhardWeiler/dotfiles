@@ -32,9 +32,9 @@ kdenlive 26.04.3-1
 keepassxc 2.7.12-3
 less 1:704-1
 libnotify 0.8.8-1
-linux 7.1.5.arch1-2
+linux 7.1.6.arch1-1
 linux-firmware 20260622-1
-linux-headers 7.1.5.arch1-2
+linux-headers 7.1.6.arch1-1
 mandoc 1.14.6-5
 mesa 1:26.1.6-1
 mesa-utils 9.0.0-7
