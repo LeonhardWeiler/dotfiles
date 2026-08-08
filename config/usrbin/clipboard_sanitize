@@ -21,7 +21,7 @@ set -u
 
 SELF=${0##*/}
 STATE_DIR=${XDG_RUNTIME_DIR:-/tmp}/clipboard-sanitize
-TYPES='image/png image/jpeg image/webp image/tiff'
+TYPES='image/png image/jpeg image/webp image/tiff image/gif image/avif'
 
 usage() {
   cat <<EOF
@@ -46,6 +46,8 @@ handle() {
     image/jpeg) ext=.jpg ;;
     image/webp) ext=.webp ;;
     image/tiff) ext=.tif ;;
+    image/gif)  ext=.gif ;;
+    image/avif) ext=.avif ;;
     *)          ext=.bin ;;
   esac
 

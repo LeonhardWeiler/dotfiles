@@ -430,19 +430,28 @@ By default the original is untouched and the copy goes to
 `$XDG_RUNTIME_DIR/sanitized` - a tmpfs that dies with the session, so cleaned
 copies never pile up on disk.
 
-**`MOD+S` - the rofi menu** (`sanitize_menu`): type part of a file name, get the
-matches below `~` newest-first, pick one. `Return` puts the cleaned **image
+**`MOD+S` - the rofi menu** (`sanitize_menu`): one window, filtering the files
+below `~` live as you type, newest first. `Return` puts the cleaned **image
 itself** on the clipboard (paste into Signal, a mail, a browser field);
 `Shift+Return` puts the **path** of the cleaned copy there, for "upload a file"
 dialogs (`Ctrl+L`, then `Ctrl+V`). Two keys because `wl-copy` can offer only one
-MIME type per invocation. Hidden directories are skipped - nothing in
-`~/.cache` is meant to be sent.
+MIME type per invocation.
+
+The filtering is rofi's own, over a list built once at startup - which only
+stays instant while that list stays small, so it holds just the formats that
+carry metadata at all (`EXT_RE` in the script). That is nearly the same set
+`sanitize` can process, so what it leaves out would have errored out on `Return`
+anyway; here it cuts 278k files down to 19k. Hidden directories are skipped
+too - nothing in `~/.cache` is meant to be sent.
 
 **The clipboard** (`clipboard_sanitize`, started from the dwl autostart):
 copying a picture and pasting it into a chat never touches the disk, so the menu
-above never sees it. One `wl-paste --watch` per image type strips what comes in
-and puts it back - only if that changed something, and never twice, since the
-content it writes is remembered by hash.
+above never sees it. One `wl-paste --watch` per image type - png, jpeg, webp,
+tiff, gif, avif - strips what comes in and puts it back, only if that changed
+something, and never twice, since the content it writes is remembered by hash.
+A file copied in a file manager is **not** covered: that puts a `text/uri-list`
+on the clipboard, and the receiving application then reads the original off
+disk. Use `MOD+S` for those.
 
 What none of this can fix is the **contents**: a screenshot still shows window
 titles, paths and a clock, and a "redacted" PDF may still carry the text

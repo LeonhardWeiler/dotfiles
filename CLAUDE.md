@@ -257,8 +257,14 @@ scripts). The source->target mapping is stated explicitly in
   `$XDG_RUNTIME_DIR/sanitized`. The two front-ends: **`sanitize_menu`** (rofi,
   `MOD+S` in `config/dwl/config.h`; `Return` = image on the clipboard,
   `Shift+Return` = path, because `wl-copy` offers one MIME type per call) and
-  **`clipboard_sanitize`** (one `wl-paste --watch` per image type, loop-safe via
-  a sha256 of what it wrote). The watcher runs from the dwl `autostart[]`, not
+  **`clipboard_sanitize`** (one `wl-paste --watch` per MIME type in `TYPES` -
+  png/jpeg/webp/tiff/gif/avif -, loop-safe via a sha256 of what it wrote).
+  `sanitize_menu` is a **single** rofi window that filters live: the candidates
+  are piped in once and rofi does the matching, which only stays instant while
+  the list stays small - hence `EXT_RE`, which keeps the metadata-carrying
+  formats (~19k of 278k files here) and drops what `sanitize` would reject on
+  `Return` anyway. It deliberately passes **no `-p`**, so only the theme's
+  `Search...` placeholder shows, like `MOD+I`. The watcher runs from the dwl `autostart[]`, not
   as a systemd user unit - same reasoning as `bat_check`. Both front-ends locate
   `sanitize` via `dirname "$0"`, not `PATH`. A **watched `~/outbox` directory**
   was built and then dropped on purpose - do not reintroduce it without asking.

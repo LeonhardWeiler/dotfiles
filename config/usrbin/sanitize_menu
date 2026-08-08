@@ -2,10 +2,9 @@
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
-# rofi front-end for `sanitize`: type part of a file name, pick the file from
-# the hits below $HOME, and get a metadata-free copy of it on the clipboard.
-# The original is never touched - the copy lands in a tmpfs directory that
-# disappears with the session.
+# rofi front-end for `sanitize`: one window that filters the files below $HOME
+# as you type, and hands the pick to `sanitize`.  The original is never touched
+# - the copy lands in a tmpfs directory that disappears with the session.
 #
 # Two ways to paste, because "share a file" means two different things:
 #
@@ -15,20 +14,29 @@
 #   Shift+Return  the path of the cleaned copy as plain text, for the "upload
 #                 a file" dialogs (Ctrl+L, then Ctrl+V).
 #
+# The candidate list is built once and piped into rofi, which then does the
+# filtering in-process - that is what makes it live.  For that to stay snappy
+# the list has to stay small, so only files that carry metadata in the first
+# place are offered (EXT_RE).  That is not an arbitrary cut: it is very nearly
+# the set `sanitize` can process, so what it drops would have errored out on
+# Return anyway.  Here it takes the candidates from 278k files down to 19k.
+#
 # Hidden directories are skipped: ~/.cache, ~/.mozilla and the rest hold no
 # file anyone means to send, and they would bury the real hits.
 
 set -u
 
 SELF=${0##*/}
-MAX_HITS=300
+
+# Matched against the whole "<mtime>\t<path>" line, hence anchored at the end.
+EXT_RE='\.(jpe?g|png|gif|webp|avif|tiff?|heic|heif|bmp|svg|mp4|mkv|mov|webm|avi|m4v|mp3|flac|ogg|opus|m4a|wav|aac|pdf|docx|odt|xlsx|ods|pptx|odp|epub|zip|tar|gz)$'
 
 usage() {
   cat <<EOF
 Usage: $SELF
 
 rofi menu that copies a metadata-free version of a file below \$HOME:
-search by name, Return copies the image, Shift+Return the path.
+type to filter, Return copies the image, Shift+Return the path.
 
   -h, --help  show this help
 EOF
@@ -55,34 +63,21 @@ SANITIZE=$(dirname -- "$0")/sanitize
   exit 1
 }
 
-# The rofi theme hides the prompt (inputbar shows only the entry); this menu
-# needs it, so it is switched back on per invocation instead of in config.rasi.
-SHOW_PROMPT='inputbar { children: [ "prompt", "entry" ]; }'
-
 message() { rofi -e "$1"; }
 
-# ── ask for the search string ───────────────────────────────────────────────
+# ── search and pick, in one window ──────────────────────────────────────────
 
-# An empty candidate list makes this a plain input box; without -no-custom the
-# typed text is what comes back.
-QUERY=$(: | rofi -dmenu -p 'sanitize' -theme-str "$SHOW_PROMPT" \
-                 -mesg 'name of the file to search for in ~') || exit 0
-[ -n "$QUERY" ] || exit 0
-
-# ── search ──────────────────────────────────────────────────────────────────
-
-# Newest first: the file worth sending is usually the one just created.
-HITS=$(find "$HOME" \( -name '.*' -o -name node_modules \) -prune -o \
-            -type f -iname "*$QUERY*" -printf '%T@\t%p\n' 2>/dev/null |
-       sort -rn | cut -f2- | head -n "$MAX_HITS" |
-       sed "s|^$HOME/|~/|")
-
-[ -n "$HITS" ] || { message "No file matching \"$QUERY\" below ~."; exit 1; }
-
-# ── pick one ────────────────────────────────────────────────────────────────
-
-CHOICE=$(printf '%s\n' "$HITS" |
-         rofi -dmenu -i -no-custom -p 'file' -theme-str "$SHOW_PROMPT" \
+# Newest first: the file worth sending is usually the one just created.  The
+# sort has to buffer the whole list, so rofi's window comes up empty for a
+# moment - which is fine, nobody has finished typing by then.
+#
+# No -p: the prompt would sit next to the input, and the theme's "Search..."
+# placeholder already says what the field is (same look as MOD+I).
+CHOICE=$(find "$HOME" \( -name '.*' -o -name node_modules \) -prune -o \
+              -type f -printf '%T@\t%p\n' 2>/dev/null |
+         grep -Ei "$EXT_RE" |
+         sort -rn | cut -f2- | sed "s|^$HOME/|~/|" |
+         rofi -dmenu -i -no-custom \
               -mesg 'Return: copy the image   ·   Shift+Return: copy the path')
 RC=$?
 
