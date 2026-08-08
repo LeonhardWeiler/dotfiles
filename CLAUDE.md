@@ -120,7 +120,7 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
   `dwl`, `foot`, `git`, `keepassxc`, `locale`, `logind`, `mimeapps`,
   `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `usrbin`, `wallpaper`, `wbg`, `wob`.
+  `systemd-system`, `usrbin`, `wallpaper`, `wbg`, `wob`, `zen-yt`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
   wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `/etc` targets deliberately **only the single file**
@@ -284,6 +284,27 @@ scripts). The source->target mapping is stated explicitly in
   as a systemd user unit - same reasoning as `bat_check`. Both front-ends locate
   `sanitize` via `dirname "$0"`, not `PATH`. A **watched `~/outbox` directory**
   was built and then dropped on purpose - do not reintroduce it without asking.
+- **The YouTube lists** span a browser add-on and two scripts, and the notes
+  repo they write to (`~/files/repos/notes/yt/`) is **not** part of this repo.
+  `config/zen-yt/` is the add-on (`manifest.json`, `content.js` for the hover
+  state, `background.js` for the two `commands`) plus `build-xpi`; it is **not**
+  symlinked - only `at.leo.yt_save.json` is, into
+  `~/.mozilla/native-messaging-hosts` (Firefox-based browsers hardcode
+  `~/.mozilla` regardless of the app name - verified in Zen's `libxul.so`, and
+  the reason KeePassXC's manifest sits there too). That manifest needs an
+  **absolute** `path`, so `/home/leo` is spelled out in it, same as the
+  `signingkey` in `config/git/config`. The two ends: `config/usrbin/yt_save` is
+  the native messaging host (4-byte length prefix, then JSON, on stdin *and*
+  stdout - **stdout belongs to the protocol**, every diagnostic goes to stderr),
+  `config/usrbin/yt_menu` is the rofi front-end on `MOD+Y`. Both commit into the
+  notes repo with `git commit -- <path>`, which leaves anything else staged
+  there alone. An unsigned add-on only installs because Zen is built with
+  `MOZ_REQUIRE_SIGNING=false`; a Zen build that changes that would take the
+  feature with it. **rofi exit codes**: `10` is `Shift+Return` (alternate
+  accept, the same assumption `sanitize_menu` runs on), and `kb-custom-N`
+  returns `9 + N` - so `kb-custom-1` would collide with it. `yt_menu` therefore
+  binds `Alt+Delete` to `kb-custom-2` and reads `11`, which was measured against
+  the installed rofi rather than taken from the manpage.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).

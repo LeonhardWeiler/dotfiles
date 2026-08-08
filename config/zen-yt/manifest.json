@@ -1,0 +1,45 @@
+{
+  "manifest_version": 2,
+  "name": "yt-save",
+  "version": "1.0",
+  "description": "Save the hovered or currently open YouTube link to the notes lists.",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "yt-save@leo",
+      "strict_min_version": "115.0"
+    }
+  },
+
+  "permissions": [
+    "nativeMessaging",
+    "tabs",
+    "<all_urls>"
+  ],
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start",
+      "js": ["content.js"]
+    }
+  ],
+
+  "commands": {
+    "save-remember": {
+      "suggested_key": { "default": "Ctrl+Alt+R" },
+      "description": "Save the YouTube link to yt/remember.md"
+    },
+    "save-watchlist": {
+      "suggested_key": { "default": "Ctrl+Alt+W" },
+      "description": "Save the YouTube link to yt/watchlist.md"
+    }
+  }
+}

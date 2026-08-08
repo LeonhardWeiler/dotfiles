@@ -1,0 +1,243 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Native messaging host for the `yt-save` browser extension
+# (config/zen-yt/, registered through ~/.mozilla/native-messaging-hosts/).
+# The browser starts it for one message and it exits again - there is no
+# daemon, no port and nothing listening between two keypresses.
+#
+# It appends `- [title](url)` to yt/remember.md or yt/watchlist.md in the notes
+# repo, commits that one file, and flashes wob green through `osd` - the same
+# confirmation `dictate` gives.  A link already on either list is not added a
+# second time; that flashes red instead, so the keypress always answers.
+#
+# Wire format (Mozilla native messaging): a 4-byte message length in native
+# byte order, then that many bytes of UTF-8 JSON, on stdin and on stdout.
+# stdout therefore belongs to the protocol - every diagnostic goes to stderr,
+# which lands in the browser's console.
+
+set -uf
+
+SELF=${0##*/}
+
+NOTES=${YT_NOTES_DIR:-$HOME/files/repos/notes}
+YT_DIR=$NOTES/yt
+
+# Taken from next to this script rather than from PATH: the browser hands us
+# whatever environment it was started with.
+OSD=$(dirname -- "$0")/osd
+
+# ── native messaging wire format ────────────────────────────────────────────
+
+# Reads one message from stdin and prints its JSON. `dd bs=1` because a
+# buffered reader (head -c) may swallow bytes past the length prefix, and the
+# prefix goes straight into od because command substitution drops the NUL
+# bytes a small length is mostly made of.
+read_message() {
+  _len=$(dd bs=1 count=4 2>/dev/null | od -An -tu4 | tr -d '[:space:]')
+  case ${_len:-} in
+    ""|*[!0-9]*) return 1 ;;
+    0)           return 1 ;;
+  esac
+  dd bs=1 count="$_len" 2>/dev/null
+}
+
+# x86 is little endian, and the protocol asks for native byte order. The escape
+# sequences are built first and expanded by `%b` second, because the prefix is
+# mostly NUL bytes and a command substitution would drop them.
+write_message() {
+  _msg=$1
+  _len=$(printf '%s' "$_msg" | wc -c)
+  _prefix=$(printf '\\0%03o\\0%03o\\0%03o\\0%03o' \
+    $((_len & 255)) $(((_len >> 8) & 255)) \
+    $(((_len >> 16) & 255)) $(((_len >> 24) & 255)))
+  printf '%b%s' "$_prefix" "$_msg"
+}
+
+# JSON string escaping for the handful of characters that can reach a reply.
+json_escape() {
+  printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr -d '\n\r\t'
+}
+
+reply() { write_message "{\"status\":\"$1\",\"message\":\"$(json_escape "$2")\"}"; }
+
+flash() {
+  [ -x "$OSD" ] || return 0
+  OSD_DURATION=${2:-0.2} "$OSD" 100 "$1" >/dev/null 2>&1 || true
+}
+
+# Red flash, tell the extension, stop. Used for everything the user should
+# notice but cannot fix in the moment.
+fail() {
+  echo "$SELF: $1" >&2
+  flash critical 0.8
+  reply error "$1"
+  exit 1
+}
+
+# ── urls ────────────────────────────────────────────────────────────────────
+
+# Drops the fragment and every query parameter except the three that carry
+# meaning (video, playlist, timestamp) - `si`, `pp`, `feature`, `utm_*` and the
+# rest are tracking. A timestamp that came with the link is kept; none is ever
+# added. Mobile hosts become www so the desktop site opens later.
+clean_url() {
+  _u=${1%%#*}
+  _base=${_u%%\?*}
+  _q=
+
+  case $_u in
+    *\?*)
+      _old=$IFS
+      IFS='&'
+      for _p in ${_u#*\?}; do
+        case ${_p%%=*} in
+          v|list|t|start) _q="${_q:+$_q&}$_p" ;;
+        esac
+      done
+      IFS=$_old
+      ;;
+  esac
+
+  case $_base in
+    http://m.youtube.com/*|https://m.youtube.com/*)
+      _base="https://www.youtube.com/${_base#*//m.youtube.com/}" ;;
+  esac
+
+  printf '%s%s' "$_base" "${_q:+?$_q}"
+}
+
+# The identity of a link for the duplicate check: the same video reached
+# through youtu.be, /shorts/ or a watch URL with a timestamp is one entry.
+# Everything without a video or playlist id falls back to host plus path, so a
+# channel counts once no matter which mirror it came from.
+url_key() {
+  _u=${1%%#*}
+  _id=
+
+  case $_u in
+    *youtu.be/*)           _id=${_u#*youtu.be/}; _id=${_id%%[?/&]*} ;;
+    *youtube.com/shorts/*) _id=${_u#*/shorts/};  _id=${_id%%[?/&]*} ;;
+    *youtube.com/embed/*)  _id=${_u#*/embed/};   _id=${_id%%[?/&]*} ;;
+    *\?v=*|*\&v=*)         _id=${_u#*[?&]v=};    _id=${_id%%&*} ;;
+  esac
+  if [ -n "$_id" ]; then
+    printf 'v:%s' "$_id"
+    return
+  fi
+
+  case $_u in
+    *\?list=*|*\&list=*)
+      _id=${_u#*[?&]list=}; _id=${_id%%&*}
+      printf 'l:%s' "$_id"
+      return ;;
+  esac
+
+  _p=${_u%%\?*}
+  _p=${_p#*://}
+  case $_p in
+    www.*) _p=${_p#www.} ;;
+    m.*)   _p=${_p#m.} ;;
+  esac
+  printf 'p:%s' "${_p%/}"
+}
+
+# Every url on a list, both the usual `- [name](url)` and the reversed
+# `(name)[url]` spelling that is already in remember.md.
+list_urls() {
+  [ -f "$1" ] || return 0
+  sed -n -e 's/.*](\([^)]*\)).*/\1/;t p' \
+         -e 's/.*)\[\([^]]*\)\].*/\1/;t p' \
+         -e 'd' -e ':p' -e 'p' "$1"
+}
+
+# ── the message ─────────────────────────────────────────────────────────────
+
+command -v jq >/dev/null 2>&1 || fail "'jq' not found"
+
+PAYLOAD=$(read_message) || fail "no message on stdin"
+
+# One jq call for all three fields; @tsv escapes any tab or newline inside them
+# so the split below cannot be fooled by a title.
+FIELDS=$(printf '%s' "$PAYLOAD" | jq -r '[.list, .url, .title] | @tsv' 2>/dev/null) ||
+  fail "message is not valid json"
+
+TAB=$(printf '\t')
+IFS=$TAB read -r LIST URL TITLE <<EOF
+$FIELDS
+EOF
+
+# The list name reaches us from the browser and is about to become a file
+# name, so it is matched against the two we have rather than pasted into a path.
+case $LIST in
+  remember)  FILE=$YT_DIR/remember.md ;;
+  watchlist) FILE=$YT_DIR/watchlist.md ;;
+  *)         fail "unknown list '$LIST'" ;;
+esac
+[ -n "$URL" ] || fail "no url in message"
+
+URL=$(clean_url "$URL")
+
+# @tsv left the escapes as literal backslash sequences. Brackets would end the
+# markdown link early, so they become parentheses instead of vanishing.
+TITLE=$(printf '%s' "$TITLE" |
+  sed -e 's/\\[nrt]/ /g' -e 's/\\\\/\\/g' -e 's/\\//g' \
+      -e 's/\[/(/g' -e 's/\]/)/g' \
+      -e 's/  */ /g' -e 's/^ //' -e 's/ $//')
+[ -n "$TITLE" ] || TITLE=$URL
+
+[ -d "$YT_DIR" ] || fail "notes directory '$YT_DIR' not found"
+
+# ── duplicate check across both lists ───────────────────────────────────────
+
+KEY=$(url_key "$URL")
+for known in $(list_urls "$YT_DIR/remember.md"; list_urls "$YT_DIR/watchlist.md"); do
+  [ "$(url_key "$known")" = "$KEY" ] || continue
+  flash critical 0.4
+  reply duplicate "already on a list"
+  exit 0
+done
+
+# ── append ──────────────────────────────────────────────────────────────────
+
+# Into the section before the first `##` heading, after its last non-empty
+# line. In remember.md, which has no headings, that is the end of the file; in
+# watchlist.md it keeps new entries out of the "godot" section below.
+ENTRY="- [$TITLE]($URL)"
+TMP=$FILE.yt_save.$$
+trap 'rm -f "$TMP"' EXIT INT TERM HUP
+
+[ -f "$FILE" ] || : >"$FILE"
+
+ENTRY=$ENTRY awk '
+  { line[NR] = $0; if (!cut && $0 ~ /^##[^#]/) cut = NR }
+  END {
+    end = cut ? cut - 1 : NR
+    while (end > 0 && line[end] ~ /^[ \t]*$/) end--
+    for (i = 1; i <= NR; i++) {
+      print line[i]
+      if (i == end) print ENVIRON["ENTRY"]
+    }
+    if (end == 0) print ENVIRON["ENTRY"]
+  }
+' "$FILE" >"$TMP" || fail "could not write $FILE"
+
+cat "$TMP" >"$FILE" || fail "could not write $FILE"
+rm -f "$TMP"
+
+# ── commit ──────────────────────────────────────────────────────────────────
+
+REL=yt/${FILE##*/}
+if git -C "$NOTES" rev-parse --git-dir >/dev/null 2>&1; then
+  # `commit -- <path>` commits this file alone and leaves anything else staged
+  # in the index alone; a file git has never seen has to be added first for
+  # that pathspec to match at all.
+  git -C "$NOTES" ls-files --error-unmatch -- "$REL" >/dev/null 2>&1 ||
+    git -C "$NOTES" add -- "$REL" >/dev/null 2>&1
+  git -C "$NOTES" commit -q -m "[$REL] changed" -- "$REL" >/dev/null 2>&1 ||
+    echo "$SELF: commit failed" >&2
+fi
+
+flash done
+reply added "$ENTRY"

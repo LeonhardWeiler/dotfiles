@@ -1,0 +1,33 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Packs this directory into an installable XPI. Zen is built without enforced
+# add-on signing (MOZ_REQUIRE_SIGNING=false), so with
+# `xpinstall.signatures.required = false` in about:config the unsigned package
+# installs permanently through about:addons -> Install Add-on From File.
+#
+# While developing, skip the packing: about:debugging -> This Firefox -> Load
+# Temporary Add-on loads manifest.json straight out of this directory, and
+# reloads on demand. That copy is gone after a browser restart.
+set -eu
+
+SRC_DIR="$(cd "$(dirname "$0")" && pwd)"
+OUT=${1:-${XDG_CACHE_HOME:-$HOME/.cache}/zen-yt/yt-save.xpi}
+
+command -v zip >/dev/null 2>&1 || { echo "build-xpi: 'zip' not found" >&2; exit 1; }
+
+for f in manifest.json background.js content.js; do
+	[ -f "$SRC_DIR/$f" ] || { echo "build-xpi: $f missing" >&2; exit 1; }
+done
+
+mkdir -p "$(dirname "$OUT")"
+rm -f "$OUT"
+
+# Zipped from inside the directory: the manifest has to sit at the root of the
+# archive, not below a folder. -FS keeps a rebuilt archive in sync when files
+# were removed; the native manifest and this script are not part of the add-on.
+(cd "$SRC_DIR" && zip -q -r -FS "$OUT" manifest.json background.js content.js)
+
+echo "build-xpi: $OUT"
+echo "build-xpi: install it via about:addons -> gear icon -> Install Add-on From File"

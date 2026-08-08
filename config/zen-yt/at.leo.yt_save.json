@@ -1,0 +1,7 @@
+{
+  "name": "at.leo.yt_save",
+  "description": "Appends a YouTube link to the notes lists",
+  "path": "/home/leo/.local/bin/yt_save",
+  "type": "stdio",
+  "allowed_extensions": ["yt-save@leo"]
+}
