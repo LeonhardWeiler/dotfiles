@@ -23,22 +23,27 @@ that **`hjkl` means the same thing everywhere**: `h`/`l` the horizontal axis,
 
 ### Launch / windows
 
-| Keys          | Action                                         |
-| ------------- | ---------------------------------------------- |
-| `MOD+Space`   | Terminal (foot)                                |
-| `MOD+I`       | App launcher (`rofi -show drun`)               |
-| `MOD+N`       | Browser (zen-browser)                          |
-| `MOD+M`       | Drive menu (`mount_menu`) — _m_ount            |
+| Keys          | Action                                                          |
+| ------------- | --------------------------------------------------------------- |
+| `MOD+Space`   | Terminal (foot)                                                 |
+| `MOD+I`       | App launcher (`app_menu`)                                       |
+| `MOD+N`       | Browser (zen-browser)                                           |
+| `MOD+M`       | Drive menu (`mount_menu`) — _m_ount                             |
 | `MOD+S`       | Copy a file without its metadata (`sanitize_menu`) — _s_anitize |
-| `MOD+O`       | Close the focused window                       |
-| `MOD+E`       | Toggle fullscreen                              |
-| `MOD+V`       | Toggle floating for the focused window         |
-| `MOD+Shift+U` | Lock the screen (waylock)                      |
-| `MOD+Shift+Q` | Quit dwl — asks for confirmation in rofi first |
+| `MOD+Y`       | YouTube lists from the notes repo (`yt_menu`) — _y_outube        |
+| `MOD+O`       | Close the focused window                                        |
+| `MOD+E`       | Toggle fullscreen                                               |
+| `MOD+V`       | Toggle floating for the focused window                          |
+| `MOD+Shift+U` | Lock the screen (waylock)                                       |
+| `MOD+Shift+Q` | Quit dwl — asks for confirmation in rofi first                  |
 
 Close sits on the right pinky, three columns away from the `hjkl` cluster, so a
 navigation slip cannot reach it. Lock is on a key that is **unbound** on the
 plain `MOD` layer, so no stray Shift can lock the screen.
+
+Inside `MOD+Y`: `Enter` opens the entry, `Shift+Enter` opens it and moves it to
+`yt/watched.md`, `Alt+Delete` moves it there without opening. Filling those
+lists is the browser's half of the job — see the `yt-save` add-on below.
 
 ### Layout / focus
 
@@ -200,10 +205,11 @@ changed, with the handful of keys worth remembering. There are two exceptions:
 rofi, where `Ctrl+J`/`Ctrl+K` were added to `config.rasi` for the sake of the
 system-wide `hjkl` axes, and foot, which adds `Ctrl+Shift+Y`/`Ctrl+Shift+A`:
 
-| Program   | Config                         | Notable defaults                                                                                                                           |
-| --------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Program   | Config                         | Notable defaults                                                                                                                                                                                                                                                                                             |
+| --------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | foot      | `config/foot/foot.ini`         | `Ctrl+Shift+C`/`V` copy & paste, `Ctrl+Shift+R` search, `Ctrl+Shift+N` new window, `Ctrl++`/`-` font size, `Ctrl+Shift+Z`/`X` jump between prompts; **own bindings**: `Ctrl+Shift+Y` copies the last command + its output (`copy-last-command`), `Ctrl+Shift+A` copies every pair on screen (`copy-visible`) |
-| rofi      | `config/rofi/`                 | Type to filter, `↑`/`↓`, `Ctrl+J`/`Ctrl+K` or `Ctrl+N`/`Ctrl+P` to move, `Enter` to run, `Esc` to cancel, `Shift+Enter` runs in a terminal |
-| btop      | `config/btop/btop.conf`        | `Esc`/`m` menu, `q` quit, `+`/`-` update interval, `f` filter, `k` kill process                                                            |
-| waylock   | none (CLI flags in `config.h`) | Type the password, `Enter` to unlock — no other input                                                                                      |
-| KeePassXC | `config/keepassxc/`            | `Ctrl+C` copy password, `Ctrl+B` copy username, `Ctrl+F` search, `Ctrl+L` lock database                                                    |
+| rofi      | `config/rofi/`                 | Type to filter, `↑`/`↓`, `Ctrl+J`/`Ctrl+K` or `Ctrl+N`/`Ctrl+P` to move, `Enter` to run — a no-op while nothing matches, every menu here runs with `-no-custom` —, `Esc` to cancel, `Shift+Enter` runs in a terminal                                                                                         |
+| btop      | `config/btop/btop.conf`        | `Esc`/`m` menu, `q` quit, `+`/`-` update interval, `f` filter, `k` kill process                                                                                                                                                                                                                              |
+| waylock   | none (CLI flags in `config.h`) | Type the password, `Enter` to unlock — no other input                                                                                                                                                                                                                                                        |
+| KeePassXC | `config/keepassxc/`            | `Ctrl+C` copy password, `Ctrl+B` copy username, `Ctrl+F` search, `Ctrl+L` lock database                                                                                                                                                                                                                      |
+| Zen       | `config/zen-yt/` (add-on)      | **own bindings** from the `yt-save` add-on: `Ctrl+Alt+R` saves the hovered YouTube link — or the video the tab is on — to `yt/remember.md`, `Ctrl+Alt+W` to `yt/watchlist.md`; hovering wins over the tab, neither one does nothing at all. Rebindable in `about:addons` → gear → Manage Extension Shortcuts |

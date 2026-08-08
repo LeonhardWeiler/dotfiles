@@ -112,7 +112,10 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 
 /* commands */
 static const char *termcmd[]    = { "foot", NULL };
-static const char *menucmd[]    = { "rofi", "-show", "drun", NULL };
+/* app_menu instead of `rofi -show drun`: rofi's `-no-custom` (Return does
+ * nothing while nothing matches, as in MOD+M and MOD+S) exists in the dmenu
+ * mode only, so the .desktop list is built by the script. */
+static const char *menucmd[]    = { "app_menu", NULL };
 static const char *browsercmd[] = { "zen-browser", NULL };
 static const char *whispercmd[] = { "dictate", NULL };
 static const char *lockcmd[]    = { "waylock", "-ignore-empty-password",
@@ -145,6 +148,12 @@ static const Key keys[] = {
 	 * (1.0) against the left thumb on MOD (+1.0) = 2.0, still cheaper than
 	 * every free key on the right hand except `,`. */
 	{ MODKEY,                       XKB_KEY_s,       spawn, SHCMD("~/.local/bin/sanitize_menu") },
+
+	/* The YouTube lists from the notes repo (rofi: pick, open, tick off). The
+	 * other half of that workflow is Ctrl+Alt+R / Ctrl+Alt+W in the browser,
+	 * which the yt-save add-on owns - so this side only needed a mnemonic, and
+	 * `y` was still free. */
+	{ MODKEY,                       XKB_KEY_y,       spawn, SHCMD("~/.local/bin/yt_menu") },
 
 	/* Window operations on the right-hand home row - the hand already rests
 	 * there for ALT+HJKL below. killclient sits on the pinky (o), three columns

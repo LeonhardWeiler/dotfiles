@@ -1,0 +1,301 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# rofi application launcher, in place of rofi's built-in `drun` mode.
+#
+# The one thing drun cannot do is refuse a non-match: with nothing left in the
+# list, Return hands the typed text to the shell and the failure comes back as
+# a "Failed to execute: '<typo>'" dialog.  rofi's `-no-custom` - the flag that
+# makes Return a no-op in mount_menu and sanitize_menu - is implemented in the
+# dmenu mode only (source/modes/dmenu.c upstream), so behaving like those menus
+# means listing the applications here and going through dmenu.
+#
+# That gives up drun's bookkeeping, so the parts of it that were visible are
+# kept:
+#
+#   * the .desktop scan over the XDG data dirs, first directory winning, so a
+#     file in ~/.local/share/applications overrides the system one of the same
+#     desktop-id
+#   * the Type/NoDisplay/Hidden/TryExec/OnlyShowIn/NotShowIn filtering
+#   * most-used first, counted in a file of drun's own format - an existing
+#     ~/.cache/rofi3.druncache is therefore adopted on the first run instead of
+#     starting the ranking from scratch
+#   * Exec field codes (%f, %U, …), Path= as the working directory, and
+#     Terminal=true through the terminal
+#
+# Localised names (`Name[de]=`) are ignored on purpose: this system runs
+# en_US.UTF-8 (config/locale/locale.conf), where plain `Name=` is the one to
+# show.
+
+set -u
+
+SELF=${0##*/}
+
+# Matches termcmd in config/dwl/config.h; $TERMINAL wins if the session sets it.
+TERMINAL=${TERMINAL:-foot}
+
+CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}
+HISTORY=$CACHE_DIR/app_menu.history
+DRUNCACHE=$CACHE_DIR/rofi3.druncache
+
+# Field separator for the internal table.  Not a tab: tab is IFS whitespace, so
+# `read` would fold two adjacent separators into one and an entry without a
+# Path= would shift every later field by one.  Same trick as mount_menu.
+FS=$(printf '\034')
+
+usage() {
+  cat <<EOF
+Usage: $SELF
+
+rofi application launcher: type to filter, Return starts the entry,
+Shift+Return starts it in a terminal.  While nothing matches, Return
+does nothing.
+
+  -h, --help  show this help
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  "")        ;;
+  *)         usage >&2; exit 1 ;;
+esac
+
+for cmd in rofi awk sed sort cut find setsid; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "$SELF: '$cmd' not found" >&2
+    exit 1
+  }
+done
+
+message() { rofi -e "$1"; }
+
+# ── the application list ────────────────────────────────────────────────────
+
+# XDG_DATA_HOME first: its entries override the system ones of the same
+# desktop-id, which is what the user directory is for.
+data_dirs() {
+  printf '%s\n' "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+  printf '%s' "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" |
+    tr ':' '\n' |
+    sed -e '/^$/d' -e 's|/*$|/applications|'
+}
+
+# One awk over every .desktop file at once - a run per file would cost more in
+# forks than the parsing itself.  Only the [Desktop Entry] group is read;
+# [Desktop Action …] groups carry their own Name/Exec and would otherwise leak
+# into the list as duplicates.
+parse_entries() {
+  # shellcheck disable=SC2086  # the data dirs carry no whitespace
+  find -L $DIRS -name '*.desktop' -type f -print0 2>/dev/null |
+  xargs -0 -r awk -v fs="$FS" -v dirs="$DIRS" -v cur="${XDG_CURRENT_DESKTOP:-}" '
+    BEGIN {
+      pn = split(dirs, prefix, "\n")
+      dn = split(cur, desk, ":")
+    }
+
+    # OnlyShowIn/NotShowIn are ";"-terminated lists of desktop names, compared
+    # case-sensitively against XDG_CURRENT_DESKTOP (dwl here).
+    function in_desktop(list,   n, a, i, j) {
+      n = split(list, a, ";")
+      for (i = 1; i <= n; i++)
+        if (a[i] != "")
+          for (j = 1; j <= dn; j++)
+            if (a[i] == desk[j]) return 1
+      return 0
+    }
+
+    function visible() {
+      if (onlyshowin != "") return in_desktop(onlyshowin)
+      if (notshowin  != "") return !in_desktop(notshowin)
+      return 1
+    }
+
+    # The desktop-id is the path below the data directory with "/" turned into
+    # "-" (spec) - which is also the key drun writes into its cache, so the
+    # adopted counts keep matching.
+    function ident(f,   i, p) {
+      for (i = 1; i <= pn; i++) {
+        p = prefix[i] "/"
+        if (substr(f, 1, length(p)) == p) { f = substr(f, length(p) + 1); break }
+      }
+      gsub("/", "-", f)
+      return f
+    }
+
+    function reset() {
+      ingroup = 0
+      type = name = exec = tryexec = terminal = path = ""
+      nodisplay = hidden = onlyshowin = notshowin = ""
+    }
+
+    function flush() {
+      if (id == "") return
+      if (type == "Application" && name != "" && exec != "" &&
+          nodisplay != "true" && hidden != "true" && visible())
+        print id fs name fs tryexec fs terminal fs path fs exec
+    }
+
+    FNR == 1 { flush(); reset(); id = ident(FILENAME) }
+
+    /^[ \t]*#/  { next }
+    /^[ \t]*\[/ { ingroup = ($0 ~ /^[ \t]*\[Desktop Entry\][ \t\r]*$/); next }
+
+    ingroup && index($0, "=") > 1 {
+      k = substr($0, 1, index($0, "=") - 1)
+      v = substr($0, index($0, "=") + 1)
+      sub(/[ \t]+$/, "", k)
+      sub(/^[ \t]+/, "", v)
+      sub(/\r$/, "", v)
+      # First occurrence wins: a key is unique per group, so a second one is a
+      # broken file rather than an override.
+      if      (k == "Type"       && type       == "") type       = v
+      else if (k == "Name"       && name       == "") name       = v
+      else if (k == "Exec"       && exec       == "") exec       = v
+      else if (k == "TryExec"    && tryexec    == "") tryexec    = v
+      else if (k == "Terminal"   && terminal   == "") terminal   = v
+      else if (k == "Path"       && path       == "") path       = v
+      else if (k == "NoDisplay"  && nodisplay  == "") nodisplay  = v
+      else if (k == "Hidden"     && hidden     == "") hidden     = v
+      else if (k == "OnlyShowIn" && onlyshowin == "") onlyshowin = v
+      else if (k == "NotShowIn"  && notshowin  == "") notshowin  = v
+    }
+
+    END { flush() }
+  '
+}
+
+# TryExec names the program that has to exist for the entry to be worth
+# showing - a leftover .desktop file of an uninstalled package, a wrapper
+# without its runtime.  Resolved here rather than in awk: `command -v` is a
+# builtin, so the whole loop costs no processes.  The field is dropped on the
+# way out, leaving id, name, terminal, path, exec.
+drop_missing_tryexec() {
+  while IFS="$FS" read -r id name tryexec terminal path exec; do
+    if [ -n "$tryexec" ]; then
+      case $tryexec in
+        /*) [ -x "$tryexec" ] || continue ;;
+        *)  command -v "$tryexec" >/dev/null 2>&1 || continue ;;
+      esac
+    fi
+    printf '%s%s%s%s%s%s%s%s%s\n' \
+      "$id" "$FS" "$name" "$FS" "$terminal" "$FS" "$path" "$FS" "$exec"
+  done
+}
+
+# Most-used first, alphabetical within the same count.  The counter file holds
+# "<count> <desktop-id>" per line, which is exactly the format drun writes.
+rank() {
+  awk -F"$FS" -v fs="$FS" -v hist="$HISTORY" '
+    BEGIN {
+      while ((getline line < hist) > 0) {
+        n = index(line, " ")
+        if (n > 1) count[substr(line, n + 1)] = substr(line, 1, n - 1) + 0
+      }
+      close(hist)
+    }
+    { print count[$1] fs $0 }
+  ' |
+  sort -t"$FS" -k1,1nr -k3,3f |
+  cut -d"$FS" -f2-
+}
+
+# First run after the switch away from drun: take its counts over, so the list
+# does not start out in plain alphabetical order.
+seed_history() {
+  [ -e "$HISTORY" ] && return 0
+  [ -r "$DRUNCACHE" ] || return 0
+  mkdir -p "$CACHE_DIR" && cp -- "$DRUNCACHE" "$HISTORY"
+  return 0
+}
+
+# The picked entry moves up for the next run.  Rewritten whole because the file
+# is short - one line per application ever started.
+bump_history() {
+  mkdir -p "$CACHE_DIR" || return 0
+  tmp=$HISTORY.$$
+  [ -e "$HISTORY" ] || : >"$HISTORY"
+  awk -v id="$1" '
+    { n = index($0, " ")
+      if (n > 1) {
+        key = substr($0, n + 1)
+        c = substr($0, 1, n - 1) + 0
+        if (key == id) { c++; seen = 1 }
+        if (!(key in count)) order[++i] = key
+        count[key] = c
+      } }
+    END {
+      if (!seen) { order[++i] = id; count[id] = 1 }
+      for (j = 1; j <= i; j++) print count[order[j]], order[j]
+    }
+  ' "$HISTORY" >"$tmp" 2>/dev/null && mv -- "$tmp" "$HISTORY"
+  rm -f -- "$tmp"
+}
+
+# ── launching ──────────────────────────────────────────────────────────────
+
+# The field codes stand for the files/URLs an entry would be opened with; from
+# a launcher there are none, so they all drop out.  "%%" is a literal percent
+# and is parked on \001 first - otherwise "%%f" would lose its "f".
+expand_exec() {
+  printf '%s' "$1" | sed -e 's/%%/\o001/g' \
+                         -e 's/%[fFuUdDnNickvm]//g' \
+                         -e 's/  */ /g' \
+                         -e 's/ *$//' \
+                         -e 's/\o001/%/g'
+}
+
+# ── main ───────────────────────────────────────────────────────────────────
+
+DIRS=$(data_dirs)
+
+seed_history
+
+# Two files can share a desktop-id (the user directory shadowing a system one);
+# find walks the directories in priority order, so the first one wins.
+ENTRIES=$(parse_entries |
+          awk -F"$FS" '!seen[$1]++' |
+          drop_missing_tryexec |
+          rank)
+
+[ -n "$ENTRIES" ] || { message "No applications found."; exit 1; }
+
+# No -p: the theme's "Search..." placeholder already says what the field is,
+# the same look drun had.  -format i returns the position in the list instead
+# of the label, so two entries of the same name stay distinguishable.
+INDEX=$(printf '%s\n' "$ENTRIES" | cut -d"$FS" -f2 |
+        rofi -dmenu -i -no-custom -format i)
+RC=$?
+
+case $RC in
+  0)  FORCE_TERMINAL=0 ;;
+  10) FORCE_TERMINAL=1 ;;   # Shift+Return, rofi's alternate accept - the same
+                            # "run this one in a terminal" drun offered there
+  *)  exit 0 ;;             # cancelled
+esac
+
+[ -n "$INDEX" ] || exit 0
+
+ENTRY=$(printf '%s\n' "$ENTRIES" | awk -v n="$((INDEX + 1))" 'NR == n')
+[ -n "$ENTRY" ] || exit 0
+
+IFS="$FS" read -r ID NAME IN_TERMINAL PATH_DIR EXECLINE <<EOF
+$ENTRY
+EOF
+
+CMD=$(expand_exec "$EXECLINE")
+[ -n "$CMD" ] || { message "$NAME has no runnable Exec line."; exit 1; }
+
+bump_history "$ID"
+
+[ -n "$PATH_DIR" ] && cd -- "$PATH_DIR" 2>/dev/null
+
+# setsid -f, so the application outlives this script instead of dying with it
+# when it is started from a terminal.  Exec lines are shell syntax (quoted
+# arguments), which is why they go through sh -c rather than being split here.
+if [ "$IN_TERMINAL" = true ] || [ "$FORCE_TERMINAL" = 1 ]; then
+  setsid -f "$TERMINAL" sh -c "$CMD"
+else
+  setsid -f sh -c "$CMD"
+fi

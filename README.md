@@ -204,6 +204,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | Systemd System | `/etc/systemd/system/`             |
 | Wallpapers     | `~/.local/share/wallpapers`        |
 | wbg            | compiled + `/usr/local` binary     |
+| yt-save add-on | packed XPI + `~/.mozilla/native-messaging-hosts` |
 
 ## My Setup
 
@@ -364,6 +365,30 @@ space-free path starting in `~` or `/`, then `$ `) — **change the prompt and
 that regex has to follow**. Output above the first prompt (a command whose
 prompt has already scrolled off) is kept as a block with an empty `Input:`.
 
+### Application launcher (`app_menu`)
+
+`MOD+I` opens `config/usrbin/app_menu` instead of rofi's built-in `drun` mode.
+The reason is a single behaviour: in `drun`, Return with nothing left in the
+list hands the typed text to the shell and answers with a
+`Failed to execute: '<typo>'` dialog. rofi does have a flag against that -
+`-no-custom`, which is what makes Return a no-op in `mount_menu` and
+`sanitize_menu` - but it is implemented in the **dmenu mode only**, so getting
+it here meant listing the applications ourselves and going through dmenu.
+
+The script keeps what `drun` actually showed: it scans the `.desktop` files of
+the XDG data dirs (`~/.local/share/applications` first, so a file there
+overrides the system one of the same desktop-id), drops the entries marked
+`NoDisplay`/`Hidden`, whose `TryExec` program is missing, or that are meant for
+another desktop (`OnlyShowIn`/`NotShowIn`, matched against
+`XDG_CURRENT_DESKTOP=dwl`), and starts the pick with its `Exec` line - field
+codes (`%f`, `%U`, …) removed, `Path=` as the working directory,
+`Terminal=true` through foot. `Shift+Return` runs any entry in a terminal.
+
+Most-used first, as before: the counter file is
+`~/.cache/app_menu.history`, in the same `<count> <desktop-id>` format `drun`
+writes, so the first run adopts `~/.cache/rofi3.druncache` and the order does
+not start over from alphabetical.
+
 ### Removable drives (`mount_menu`)
 
 `MOD+M` opens a rofi menu of every removable filesystem (`config/usrbin/mount_menu`,
@@ -464,6 +489,63 @@ disk. Use `MOD+S` for those.
 What none of this can fix is the **contents**: a screenshot still shows window
 titles, paths and a clock, and a "redacted" PDF may still carry the text
 underneath the black box.
+
+### YouTube lists (`yt-save` add-on, `yt_save`, `yt_menu`)
+
+Two markdown lists in a separate notes repo - `yt/remember.md` and
+`yt/watchlist.md` - hold YouTube links as `- [name](url)`. Keeping them by hand
+meant opening the file and pasting into it; this is the same two lists with a
+keypress on each end.
+
+**Saving, in the browser.** The `yt-save` add-on (`config/zen-yt/`) binds
+`Ctrl+Alt+R` (remember) and `Ctrl+Alt+W` (watchlist). What it saves, in order:
+the YouTube link **under the mouse pointer**, otherwise the video the tab is
+**on**, otherwise nothing - no flash, no error, so a mistaken keypress in a text
+editor stays a non-event. Only code inside the page can see the pointer, hence
+the content script: it reports the hovered link, and the background page pairs
+that with the shortcut.
+
+Both halves are needed because a page cannot write to a file. The bridge is
+**native messaging**: Zen starts `config/usrbin/yt_save` for one message and it
+exits again. That is what KeePassXC does here too, and it is why there is **no
+open port, no daemon and no polling** - the older sketch of this feature had a
+userscript talking to `127.0.0.1`, and none of that survived.
+
+`yt_save` strips the tracking parameters (`si`, `pp`, `feature`, `utm_*`; `v`,
+`list` and a timestamp that came with the link are kept, none is ever added),
+refuses a link already on either list, appends the entry, commits that one file,
+and flashes wob green through `osd` - the confirmation `dictate` gives. A
+duplicate flashes **red** instead, so the keypress always answers. New entries
+go into the section above the first `##` heading, which is what keeps them out
+of the "godot" block at the bottom of the watchlist.
+
+**Opening, in dwl.** `MOD+Y` runs `config/usrbin/yt_menu`, one rofi window with
+both lists, prefixed, so typing `W ` narrows it to the watchlist:
+
+```
+[W] lenin misunderstood - was tun?
+[W] godot / metroidvania playlist
+[R] nice sounds/background track
+```
+
+`Enter` opens the entry in a new browser window, `Shift+Enter` opens it **and**
+takes it off the list, `Alt+Delete` takes it off without opening. Removed lines
+are not deleted but moved to `yt/watched.md` with the date. The pick comes back
+from rofi as a row number (`-format i`), not as its text, so two entries with the
+same name cannot be confused - and the line is only removed if the url is still
+on it, in case the file was edited while the menu was open.
+
+**Setup**, once. `./install` links `at.leo.yt_save.json` into
+`~/.mozilla/native-messaging-hosts` (Firefox-based browsers look there whatever
+the app is called) and both scripts into `~/.local/bin`. Zen is built with
+`MOZ_REQUIRE_SIGNING=false`, so with `xpinstall.signatures.required = false` in
+`about:config` the unsigned add-on installs permanently: `config/zen-yt/build-xpi`
+packs it, `about:addons` → gear → *Install Add-on From File* installs it. While
+changing it, `about:debugging` → *Load Temporary Add-on* loads the directory
+directly and skips the packing.
+
+If a keypress produces no flash at all, the host never ran - the extension logs
+why in the console of `about:debugging`.
 
 ### Screen locker (waylock)
 

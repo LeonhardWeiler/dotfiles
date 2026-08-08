@@ -240,6 +240,18 @@ scripts). The source->target mapping is stated explicitly in
   as plain text with no markers left in it, so the script splits the blocks by
   matching **prompt lines** with a regex that mirrors `PS1` - editing `PS1` in
   `.bashrc` means editing `PROMPT_RE` in `copy-visible`.
+- **App launcher**: `MOD+I` runs `config/usrbin/app_menu`, **not** `rofi -show
+  drun`. Reason: rofi's `-no-custom` (Return is a no-op while nothing matches,
+  which is what `mount_menu`/`sanitize_menu` rely on) is implemented in the
+  **dmenu mode only**, so drun answers a typo with a `Failed to execute:`
+  dialog. The script therefore does drun's job itself: scan the `.desktop`
+  files of the XDG data dirs (user dir first, one entry per desktop-id),
+  filter `NoDisplay`/`Hidden`/`TryExec`/`OnlyShowIn`/`NotShowIn`, and launch
+  the `Exec` line with the field codes stripped (`Path=` as cwd,
+  `Terminal=true` and `Shift+Return` through `$TERMINAL`, default foot).
+  Ranking is a counter file in **drun's own format**
+  (`~/.cache/app_menu.history`, `<count> <desktop-id>`), seeded once from
+  `~/.cache/rofi3.druncache` - do not change that format without a migration.
 - **Removable drives**: `config/usrbin/mount_menu` (rofi, bound to `MOD+M` in
   `config/dwl/config.h`) mounts/unmounts/ejects them with plain
   `mount`/`umount` via `sudo -n` (the passwordless `wheel` rule from
