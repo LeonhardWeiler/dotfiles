@@ -154,8 +154,8 @@ scripts). The source->target mapping is stated explicitly in
   `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the
   battery-level check runs as a plain command from the dwl
   autostart (`autostart[]` in `config/dwl/config.h`) instead of a systemd user unit
-  (a `while` loop calling `bat_check` every 2 min), and the two metadata
-  watchers (`outbox_watch`, `clipboard_sanitize`) start the same way.
+  (a `while` loop calling `bat_check` every 2 min), and the clipboard metadata
+  watcher (`clipboard_sanitize`) starts the same way.
   Deliberately `enable`, **not**
   `reenable`: our unit files are symlinks (linked units), and `reenable` would
   delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
@@ -248,22 +248,20 @@ scripts). The source->target mapping is stated explicitly in
   instead of hanging on a password prompt with no terminal. Encrypted volumes
   are deliberately unsupported: the custom kernel has **no device-mapper**
   (`dm_mod` is missing), so dm-crypt/LVM cannot work on this machine anyway.
-- **Metadata stripping** spans four scripts in `config/usrbin/`, all built on
+- **Metadata stripping** spans three scripts in `config/usrbin/`, all built on
   **`sanitize`** (the only one with format knowledge: `exiftool -all=` for
   images - lossless, `ffmpeg -c copy -map_metadata -1` for a/v, `mat2` for
   everything else; an unsupported format is a hard error, never a silent pass).
   It also renames (`image-<hex8>.jpg`) and re-stamps the mtime, since file name
   and `lastModified` leak as loudly as EXIF; copies go to
-  `$XDG_RUNTIME_DIR/sanitized`. The three front-ends: **`sanitize_menu`** (rofi,
+  `$XDG_RUNTIME_DIR/sanitized`. The two front-ends: **`sanitize_menu`** (rofi,
   `MOD+S` in `config/dwl/config.h`; `Return` = image on the clipboard,
-  `Shift+Return` = path, because `wl-copy` offers one MIME type per call),
-  **`outbox_watch`** (`inotifywait` on `~/outbox`, strips in place; the
-  generated name **is** the "already done" marker, which is what keeps the
-  watcher off its own output - failures go to `~/outbox/rejected/`), and
+  `Shift+Return` = path, because `wl-copy` offers one MIME type per call) and
   **`clipboard_sanitize`** (one `wl-paste --watch` per image type, loop-safe via
-  a sha256 of what it wrote). The two watchers run from the dwl `autostart[]`,
-  not as systemd user units - same reasoning as `bat_check`. All three
-  front-ends locate `sanitize` via `dirname "$0"`, not `PATH`.
+  a sha256 of what it wrote). The watcher runs from the dwl `autostart[]`, not
+  as a systemd user unit - same reasoning as `bat_check`. Both front-ends locate
+  `sanitize` via `dirname "$0"`, not `PATH`. A **watched `~/outbox` directory**
+  was built and then dropped on purpose - do not reintroduce it without asking.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).

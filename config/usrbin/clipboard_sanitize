@@ -4,8 +4,8 @@
 #
 # Strip metadata from images as they pass through the clipboard.  Copying a
 # picture in a file manager or a browser and pasting it into a chat never
-# touches the disk, so neither `sanitize` nor the ~/outbox watcher ever sees
-# it - this closes that path.
+# touches the disk, so `sanitize` and its rofi menu never see it - this closes
+# that path.
 #
 # One `wl-paste --watch` per image type, since wl-paste hands over a single
 # MIME type at a time.  Each new clipboard image is stripped and, only if that

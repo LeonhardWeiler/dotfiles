@@ -41,13 +41,8 @@ static const char *const autostart[] = {
     "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done",
     NULL,
 
-    /* Metadata never leaves this machine by accident: one watcher strips
-     * everything dropped into ~/outbox, the other strips images copied to the
-     * clipboard.  MOD+s is the third way in, for files staying where they are. */
-    "sh", "-c",
-    "\"$HOME/.local/bin/outbox_watch\"",
-    NULL,
-
+    /* Strips the metadata from images copied to the clipboard, which never
+     * touch the disk.  MOD+s is the other way in, for files on disk. */
     "sh", "-c",
     "\"$HOME/.local/bin/clipboard_sanitize\"",
     NULL,

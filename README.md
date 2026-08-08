@@ -401,7 +401,7 @@ kernel is built without device-mapper, so dm-crypt and LVM do not exist here.
 A photo carries the camera model and its serial number, the lens, the GPS
 position and the second it was taken; a PDF names the author and the scanner; a
 video names the device. None of that should follow a file out of the house, so
-there are three ways to get rid of it - one deliberate, two automatic - all
+there are two ways to get rid of it - one deliberate, one automatic - both
 built on `config/usrbin/sanitize`.
 
 `sanitize` picks its tool by file type, because no single one is good at
@@ -438,18 +438,10 @@ dialogs (`Ctrl+L`, then `Ctrl+V`). Two keys because `wl-copy` can offer only one
 MIME type per invocation. Hidden directories are skipped - nothing in
 `~/.cache` is meant to be sent.
 
-**`~/outbox` - the airlock** (`outbox_watch`, started from the dwl autostart):
-everything dropped in there is stripped in place and renamed. Put a file in the
-directory and send it from there with any program at all; no command to
-remember. The generated name doubles as the "already done" marker, so the
-watcher does not chase its own output, and a file it cannot strip is moved to
-`~/outbox/rejected/` rather than left lying around - whatever sits in the top
-level has been cleaned, no exceptions.
-
-**The clipboard** (`clipboard_sanitize`, also from the autostart): copying a
-picture and pasting it into a chat never touches the disk, so neither of the
-other two ever sees it. One `wl-paste --watch` per image type strips what comes
-in and puts it back - only if that changed something, and never twice, since the
+**The clipboard** (`clipboard_sanitize`, started from the dwl autostart):
+copying a picture and pasting it into a chat never touches the disk, so the menu
+above never sees it. One `wl-paste --watch` per image type strips what comes in
+and puts it back - only if that changed something, and never twice, since the
 content it writes is remembered by hash.
 
 What none of this can fix is the **contents**: a screenshot still shows window
