@@ -268,7 +268,13 @@ scripts). The source->target mapping is stated explicitly in
   and `lastModified` leak as loudly as EXIF; copies go to
   `$XDG_RUNTIME_DIR/sanitized`. The two front-ends: **`sanitize_menu`** (rofi,
   `MOD+S` in `config/dwl/config.h`; `Return` = image on the clipboard,
-  `Shift+Return` = path, because `wl-copy` offers one MIME type per call) and
+  `Shift+Return` = path, because `wl-copy` offers one MIME type per call). That
+  one type is **always `image/png`** on `Return` - a non-PNG is re-encoded via
+  ffmpeg (and re-`sanitize`d) first, because a clipboard offer only advertising
+  `image/jpeg` shows up in `wl-paste -l` but comes back empty for every consumer
+  that asks for PNG, which is most of them (GTK/Qt/Electron/browsers, the Claude
+  CLI). A format ffmpeg cannot decode (SVG) falls back to copying the path.
+  The other front-end is
   **`clipboard_sanitize`** (one `wl-paste --watch` per MIME type in `TYPES` -
   png/jpeg/webp/tiff/gif/avif -, loop-safe via a sha256 of what it wrote).
   `sanitize_menu` is a **single** rofi window that filters live: the candidates

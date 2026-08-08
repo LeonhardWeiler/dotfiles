@@ -14,6 +14,14 @@
 #   Shift+Return  the path of the cleaned copy as plain text, for the "upload
 #                 a file" dialogs (Ctrl+L, then Ctrl+V).
 #
+# An offer on Return is always image/png, whatever the file was.  A Wayland
+# clipboard offer carries the types the source announces, and wl-copy announces
+# exactly the one it was given - so a JPEG handed over as image/jpeg is visible
+# in `wl-paste -l` but comes back empty for every consumer that asks for PNG,
+# which is most of them (GTK, Qt, Electron, the browsers, the Claude CLI).  It
+# looked copied and pasted nowhere.  PNG is lossless, so re-encoding for the
+# clipboard costs bytes, not pixels.
+#
 # The candidate list is built once and piped into rofi, which then does the
 # filtering in-process - that is what makes it live.  For that to stay snappy
 # the list has to stay small, so only files that carry metadata in the first
@@ -47,7 +55,7 @@ case "${1:-}" in
   *)         usage >&2; exit 1 ;;
 esac
 
-for cmd in rofi rg stat file wl-copy; do
+for cmd in rofi rg stat file wl-copy ffmpeg; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "$SELF: '$cmd' not found" >&2
     exit 1
@@ -124,14 +132,47 @@ Unsupported format - send it only if you know what is inside."
 
 MIME=$(file --mime-type -b -- "$CLEAN" 2>/dev/null)
 
+# Print a PNG rendering of the cleaned copy, or fail if the format cannot be
+# decoded as pixels (SVG is the one that lands here - `sanitize` runs it through
+# mat2 as a document, and ffmpeg has no decoder for it).
+#
+# The result goes through `sanitize` once more: the conversion is a fresh file
+# and gets whatever the PNG muxer felt like writing.  In practice +bitexact
+# already keeps ffmpeg from stamping its version in, but the guarantee this menu
+# makes is that nothing leaves untouched, so it is checked rather than assumed.
+#
+# Only the first frame of an animated GIF makes it across - a clipboard image
+# offer is a single still in every consumer anyway.
+as_png() {
+  case $MIME in
+    image/png) printf '%s\n' "$CLEAN"; return 0 ;;
+  esac
+
+  png=${CLEAN%.*}.png
+  ffmpeg -nostdin -v error -y -i "$CLEAN" \
+         -frames:v 1 -update 1 -fflags +bitexact -f image2 -c:v png \
+         "$png" </dev/null >/dev/null 2>&1 || return 1
+  "$SANITIZE" -i -k -q -- "$png" >/dev/null || return 1
+  printf '%s\n' "$png"
+}
+
 # wl-copy offers exactly one MIME type per invocation, so pasting the picture
 # and pasting its path are mutually exclusive - hence the two keys.
 case $MODE:$MIME in
   content:image/*)
-    wl-copy --type "$MIME" <"$CLEAN" || exit 1
-    message "Cleaned image on the clipboard, ready to paste.
+    # Not in a command substitution around wl-copy: it forks a server for the
+    # offer, and the substitution would wait for a process that outlives us.
+    if PNG=$(as_png); then
+      wl-copy --type image/png <"$PNG" || exit 1
+      message "Cleaned image on the clipboard, ready to paste.
+
+$PNG"
+    else
+      wl-copy -- "$CLEAN" || exit 1
+      message "$MIME cannot be handed over as an image, so the path was copied instead.
 
 $CLEAN"
+    fi
     ;;
   content:*)
     wl-copy -- "$CLEAN" || exit 1
