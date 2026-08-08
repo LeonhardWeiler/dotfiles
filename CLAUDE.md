@@ -261,10 +261,14 @@ scripts). The source->target mapping is stated explicitly in
   png/jpeg/webp/tiff/gif/avif -, loop-safe via a sha256 of what it wrote).
   `sanitize_menu` is a **single** rofi window that filters live: the candidates
   are piped in once and rofi does the matching, which only stays instant while
-  the list stays small - hence `EXT_RE`, which keeps the metadata-carrying
+  the list stays small - hence `EXTENSIONS`, which keeps the metadata-carrying
   formats (~19k of 278k files here) and drops what `sanitize` would reject on
   `Return` anyway. It deliberately passes **no `-p`**, so only the theme's
-  `Search...` placeholder shows, like `MOD+I`. The watcher runs from the dwl `autostart[]`, not
+  `Search...` placeholder shows, like `MOD+I`. The candidate list is built by
+  **`rg --files`** (threaded walk + extension globs, so only survivors are
+  `stat`ed) and sorted under **`LC_ALL=C`** - UTF-8 collation alone cost 170 ms
+  of the former ~350 ms, so keep that prefix on `sort`/`sed` and keep it *off*
+  the script as a whole (rofi and the file names need the real locale). The watcher runs from the dwl `autostart[]`, not
   as a systemd user unit - same reasoning as `bat_check`. Both front-ends locate
   `sanitize` via `dirname "$0"`, not `PATH`. A **watched `~/outbox` directory**
   was built and then dropped on purpose - do not reintroduce it without asking.

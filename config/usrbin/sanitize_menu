@@ -17,19 +17,18 @@
 # The candidate list is built once and piped into rofi, which then does the
 # filtering in-process - that is what makes it live.  For that to stay snappy
 # the list has to stay small, so only files that carry metadata in the first
-# place are offered (EXT_RE).  That is not an arbitrary cut: it is very nearly
-# the set `sanitize` can process, so what it drops would have errored out on
-# Return anyway.  Here it takes the candidates from 278k files down to 19k.
+# place are offered (EXTENSIONS).  That is not an arbitrary cut: it is very
+# nearly the set `sanitize` can process, so what it drops would have errored
+# out on Return anyway.  Here it takes the candidates from 278k files to 19k.
 #
-# Hidden directories are skipped: ~/.cache, ~/.mozilla and the rest hold no
-# file anyone means to send, and they would bury the real hits.
+# Hidden files and directories are skipped: ~/.cache, ~/.mozilla and the rest
+# hold no file anyone means to send, and they would bury the real hits.
 
 set -u
 
 SELF=${0##*/}
 
-# Matched against the whole "<mtime>\t<path>" line, hence anchored at the end.
-EXT_RE='\.(jpe?g|png|gif|webp|avif|tiff?|heic|heif|bmp|svg|mp4|mkv|mov|webm|avi|m4v|mp3|flac|ogg|opus|m4a|wav|aac|pdf|docx|odt|xlsx|ods|pptx|odp|epub|zip|tar|gz)$'
+EXTENSIONS='*.{jpg,jpeg,png,gif,webp,avif,tif,tiff,heic,heif,bmp,svg,mp4,mkv,mov,webm,avi,m4v,mp3,flac,ogg,opus,m4a,wav,aac,pdf,docx,odt,xlsx,ods,pptx,odp,epub,zip,tar,gz}'
 
 usage() {
   cat <<EOF
@@ -48,7 +47,7 @@ case "${1:-}" in
   *)         usage >&2; exit 1 ;;
 esac
 
-for cmd in rofi find file wl-copy; do
+for cmd in rofi rg stat file wl-copy; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "$SELF: '$cmd' not found" >&2
     exit 1
@@ -71,12 +70,32 @@ message() { rofi -e "$1"; }
 # sort has to buffer the whole list, so rofi's window comes up empty for a
 # moment - which is fine, nobody has finished typing by then.
 #
+# Three things keep that moment short, and the order of magnitude is not where
+# one would guess it:
+#
+#   * LC_ALL=C around sort - collation is what costs, not the comparison.
+#     Sorting these 19k lines takes 170 ms under de_DE.UTF-8 and 11 ms under C.
+#     It is set per command, not for the script: rofi and the file names it
+#     shows still want the real locale.
+#   * rg rather than find - it walks the tree on several threads and matches
+#     the extensions itself, so nothing has to be stat'ed that is not a
+#     candidate.  --no-ignore because a .gitignore has no say in what may be
+#     shared, and an explicit -g '!.*' because rg's hidden-file rule loses
+#     against an include glob (.icon.png would come through otherwise).
+#   * stat only on what survived the match - 19k of the 278k files.
+#
+# Together: ~350 ms down to ~80 ms.
+candidates() {
+  rg --files --no-ignore --no-messages --glob-case-insensitive \
+     -g "$EXTENSIONS" -g '!node_modules' -g '!.*' --null "$HOME" 2>/dev/null |
+  xargs -0 -r stat --printf '%Y\t%n\n' 2>/dev/null |
+  LC_ALL=C sort -rn |
+  LC_ALL=C sed -e 's|^[0-9]*\t||' -e "s|^$HOME/|~/|"
+}
+
 # No -p: the prompt would sit next to the input, and the theme's "Search..."
 # placeholder already says what the field is (same look as MOD+I).
-CHOICE=$(find "$HOME" \( -name '.*' -o -name node_modules \) -prune -o \
-              -type f -printf '%T@\t%p\n' 2>/dev/null |
-         grep -Ei "$EXT_RE" |
-         sort -rn | cut -f2- | sed "s|^$HOME/|~/|" |
+CHOICE=$(candidates |
          rofi -dmenu -i -no-custom \
               -mesg 'Return: copy the image   ·   Shift+Return: copy the path')
 RC=$?

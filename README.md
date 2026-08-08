@@ -439,10 +439,18 @@ MIME type per invocation.
 
 The filtering is rofi's own, over a list built once at startup - which only
 stays instant while that list stays small, so it holds just the formats that
-carry metadata at all (`EXT_RE` in the script). That is nearly the same set
+carry metadata at all (`EXTENSIONS` in the script). That is nearly the same set
 `sanitize` can process, so what it leaves out would have errored out on `Return`
-anyway; here it cuts 278k files down to 19k. Hidden directories are skipped
-too - nothing in `~/.cache` is meant to be sent.
+anyway; here it cuts 278k files down to 19k. Hidden files and directories are
+skipped too - nothing in `~/.cache` is meant to be sent.
+
+Building that list takes ~80 ms, and the way there is instructive. `rg --files`
+walks the tree on several threads and matches the extensions itself, so only
+the 19k survivors get `stat`'ed for their mtime. The surprise was the sort:
+ordering 19k lines costs **170 ms** under `de_DE.UTF-8` and **11 ms** under
+`LC_ALL=C` - collation, not comparison, is the expense. `LC_ALL=C` is therefore
+set on `sort` and `sed` alone, never for the script, since rofi and the file
+names it displays still want the real locale.
 
 **The clipboard** (`clipboard_sanitize`, started from the dwl autostart):
 copying a picture and pasting it into a chat never touches the disk, so the menu
