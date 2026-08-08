@@ -38,16 +38,136 @@
 
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
 
-  // `title` first: on YouTube's own grids it holds the full video title, while
-  // `aria-label` pads it with channel, age and duration ("… by X, 3 years ago,
-  // 12 minutes"). The link text is the natural title everywhere else, and the
-  // image alt is the last resort for a bare thumbnail link.
-  const linkTitle = (a) =>
-    clean(a.getAttribute("title")) ||
-    clean(a.textContent) ||
-    clean(a.getAttribute("aria-label")) ||
-    clean(a.querySelector("img[alt]")?.getAttribute("alt")) ||
-    "";
+  // A thumbnail link's own text is the duration badge, usually with the
+  // screen-reader spelling of the same number behind it ("13:07 13 minutes,
+  // 7 seconds"). Nothing that starts with a duration is a title, in any
+  // language - which is why this matches the digits and not the words.
+  const DURATION = /^\d{1,2}(?::\d{2}){1,2}\b/;
+  const plausible = (s) => s !== "" && !DURATION.test(s);
+
+  // The video a link points at, however it is spelled. Two links with the same
+  // id are two links to the same video, so a title found on one is the title
+  // for the other - that is what makes it safe to read the title off the card
+  // instead of off the link the pointer happens to sit on.
+  const videoId = (href) => {
+    try {
+      const u = new URL(href, location.href);
+      if (u.hostname.endsWith("youtu.be")) {
+        return u.pathname.slice(1).split("/")[0] || "";
+      }
+      const v = u.searchParams.get("v");
+      if (v) return v;
+      const m = u.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?#]+)/);
+      return m ? m[1] : "";
+    } catch {
+      return "";
+    }
+  };
+
+  // Everything a thumbnail link carries besides the title: the duration badge
+  // and its screen-reader text, "Watch later", the resume bar, icons. All of
+  // it is inside the <a>, so plain textContent picks it up - this is why the
+  // title used to come out as "13:07" or as a spelled-out duration.
+  const isNoise = (el) => {
+    const tag = el.tagName.toLowerCase();
+    if (
+      tag.startsWith("ytd-thumbnail-overlay") ||
+      tag === "svg" ||
+      tag === "yt-icon" ||
+      tag === "style" ||
+      tag === "script"
+    ) {
+      return true;
+    }
+    return /badge|overlay|time-status|progress|ytp-time|ytp-play/.test(
+      el.getAttribute("class") || ""
+    );
+  };
+
+  const visibleText = (el) => {
+    const copy = el.cloneNode(true);
+    for (const node of copy.querySelectorAll("*")) if (isNoise(node)) node.remove();
+    return clean(copy.textContent);
+  };
+
+  // One video and everything shown about it - its thumbnail link and its title
+  // link are siblings inside one of these.
+  const CARDS = [
+    "ytd-rich-item-renderer",
+    "ytd-rich-grid-media",
+    "ytd-video-renderer",
+    "ytd-grid-video-renderer",
+    "ytd-compact-video-renderer",
+    "ytd-playlist-video-renderer",
+    "ytd-playlist-panel-video-renderer",
+    "ytd-reel-item-renderer",
+    "ytd-movie-renderer",
+    "yt-lockup-view-model",
+    "ytm-shorts-lockup-view-model",
+  ].join(", ");
+
+  const TITLES = [
+    "a#video-title-link",
+    "#video-title",
+    ".yt-lockup-metadata-view-model__title",
+    "h3 a[title]",
+    "h3 a",
+    "h3",
+  ];
+
+  // Walks up from the hovered link looking for the title of the same video:
+  // first another link to that video id (grids pair a thumbnail link with a
+  // title link), then the title element of the enclosing card. Bounded to six
+  // levels so this stays inside the card and never scans a whole grid.
+  const titleNear = (a) => {
+    const id = videoId(a.href);
+    let el = a.parentElement;
+
+    for (let depth = 0; el && depth < 6 && el !== document.body; depth++) {
+      if (id) {
+        for (const link of el.querySelectorAll("a[href]")) {
+          if (link === a || videoId(link.href) !== id) continue;
+          const t = clean(link.getAttribute("title")) || visibleText(link);
+          if (plausible(t)) return t;
+        }
+      }
+
+      if (el.matches(CARDS)) {
+        for (const sel of TITLES) {
+          const node = el.querySelector(sel);
+          if (!node) continue;
+          const t = clean(node.getAttribute("title")) || visibleText(node);
+          if (plausible(t)) return t;
+        }
+      }
+
+      el = el.parentElement;
+    }
+
+    return "";
+  };
+
+  // `title` first: YouTube's title links carry the exact title in it. Then the
+  // card, which is what a bare thumbnail link needs. The link's own text comes
+  // after that (it is the natural title off YouTube), then the thumbnail alt,
+  // and only last `aria-label` - it pads the title with channel, views, age
+  // and duration, so it is better than nothing and worse than everything else.
+  const linkTitle = (a) => {
+    const own = clean(a.getAttribute("title"));
+    if (plausible(own)) return own;
+
+    const near = titleNear(a);
+    if (near) return near;
+
+    const text = visibleText(a);
+    if (plausible(text)) return text;
+
+    const alt = clean(a.querySelector("img[alt]")?.getAttribute("alt"));
+    if (plausible(alt)) return alt;
+
+    const label = clean(a.getAttribute("aria-label"));
+    return plausible(label) ? label : "";
+  };
 
   const send = (msg) => {
     // The background page can be gone during shutdown; nothing here is worth

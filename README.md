@@ -505,6 +505,16 @@ editor stays a non-event. Only code inside the page can see the pointer, hence
 the content script: it reports the hovered link, and the background page pairs
 that with the shortcut.
 
+The **title** is the part that needs care. A thumbnail link contains no title
+at all - its text is the duration badge plus the screen-reader spelling of the
+same number - so the content script does not read the link it is on. It reads
+the `title` attribute if there is one, otherwise it walks up to the card the
+link sits in and takes the title from **another link to the same video id**
+(grids pair a thumbnail link with a title link) or from the card's title
+element, and only falls back to the link's own text (overlays stripped), the
+thumbnail `alt` and finally `aria-label`, which pads the title with channel,
+views and duration.
+
 Both halves are needed because a page cannot write to a file. The bridge is
 **native messaging**: Zen starts `config/usrbin/yt_save` for one message and it
 exits again. That is what KeePassXC does here too, and it is why there is **no

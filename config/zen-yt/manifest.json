@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "yt-save",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Save the hovered or currently open YouTube link to the notes lists.",
 
   "browser_specific_settings": {

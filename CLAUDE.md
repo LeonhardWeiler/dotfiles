@@ -296,7 +296,12 @@ scripts). The source->target mapping is stated explicitly in
   `signingkey` in `config/git/config`. The two ends: `config/usrbin/yt_save` is
   the native messaging host (4-byte length prefix, then JSON, on stdin *and*
   stdout - **stdout belongs to the protocol**, every diagnostic goes to stderr),
-  `config/usrbin/yt_menu` is the rofi front-end on `MOD+Y`. Both commit into the
+  `config/usrbin/yt_menu` is the rofi front-end on `MOD+Y`. `content.js` must
+  **not** take a hovered link's own text as the title - on a thumbnail that is
+  the duration badge plus its screen-reader text; it resolves the title from
+  the `title` attribute, then from another anchor with the same video id or the
+  enclosing card (`ytd-*-renderer` / `yt-lockup-view-model`), and treats
+  anything starting with `\d+:\d+` as not-a-title. Both commit into the
   notes repo with `git commit -- <path>`, which leaves anything else staged
   there alone. An unsigned add-on only installs because Zen is built with
   `MOZ_REQUIRE_SIGNING=false`; a Zen build that changes that would take the
