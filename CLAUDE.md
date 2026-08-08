@@ -223,9 +223,11 @@ scripts). The source->target mapping is stated explicitly in
   pinned tag is missing locally, so an outage cannot block applying a `config.h`
   change.
 - **`Ctrl+Shift+Y` (copy last command + output)** spans three files that must
-  stay in sync: `config/bash/.bashrc` emits the **OSC-133** markers (`A`/`C`/`D`)
-  and stashes the command line in
-  `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` from a `DEBUG` trap;
+  stay in sync: `config/bash/foot-shell-integration.bash` (sourced from
+  `.bashrc`, own `links.conf` line to `~/.config/bash/`) emits the **OSC-133**
+  markers (`A`/`C`/`D`) and stashes the command line in
+  `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` from a `DEBUG` trap - it
+  overrides `PROMPT_COMMAND`, so it must be sourced *after* the prompt setup;
   `config/foot/foot.ini` binds `pipe-command-output` to
   `config/usrbin/copy-last-command`, which reads the output on stdin, the
   command from that file, and pipes `Input:`/`Output:` into `wl-copy`. Both

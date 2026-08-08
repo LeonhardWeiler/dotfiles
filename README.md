@@ -184,7 +184,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 
 | Component      | Path                               |
 | -------------- | ---------------------------------- |
-| Bash           | `~/.bashrc`                        |
+| Bash           | `~/.bashrc`, `~/.config/bash`      |
 | btop           | `~/.config/btop`                   |
 | Claude Code    | `~/.claude/{skills,settings.json}` |
 | dwl            | compiled + `/usr/local` session    |
@@ -325,11 +325,12 @@ zeile zwei
 
 Three pieces make that work:
 
-- `~/.bashrc` emits the **OSC-133** markers foot needs — `A` before each prompt,
-  `C` before a command's output and `D` after it. This also enables foot's
-  prompt jumping (`Ctrl+Shift+Z`/`X`).
+- `config/bash/foot-shell-integration.bash` (→ `~/.config/bash/`, sourced from
+  `~/.bashrc`) emits the **OSC-133** markers foot needs — `A` before each
+  prompt, `C` before a command's output and `D` after it. This also enables
+  foot's prompt jumping (`Ctrl+Shift+Z`/`X`).
 - The command line itself is *not* inside the marked output region, so the same
-  `.bashrc` writes it to `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` before
+  file writes it to `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` before
   running it (a `DEBUG` trap reading `history 1`).
 - `config/usrbin/copy-last-command` is bound to foot's `pipe-command-output`
   (`config/foot/foot.ini`). foot feeds it the output on stdin, the script reads
