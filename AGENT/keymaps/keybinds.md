@@ -197,11 +197,11 @@ Only these are overridden; everything else is mpv's default (`Space` pause,
 These run on their upstream bindings — listed so it is clear that nothing was
 changed, with the handful of keys worth remembering. There are two exceptions:
 rofi, where `Ctrl+J`/`Ctrl+K` were added to `config.rasi` for the sake of the
-system-wide `hjkl` axes, and foot, which adds `Ctrl+Shift+Y`:
+system-wide `hjkl` axes, and foot, which adds `Ctrl+Shift+Y`/`Ctrl+Shift+A`:
 
 | Program   | Config                         | Notable defaults                                                                                                                           |
 | --------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| foot      | `config/foot/foot.ini`         | `Ctrl+Shift+C`/`V` copy & paste, `Ctrl+Shift+R` search, `Ctrl+Shift+N` new window, `Ctrl++`/`-` font size, `Ctrl+Shift+Z`/`X` jump between prompts; **own binding**: `Ctrl+Shift+Y` copies the last command + its output (`copy-last-command`) |
+| foot      | `config/foot/foot.ini`         | `Ctrl+Shift+C`/`V` copy & paste, `Ctrl+Shift+R` search, `Ctrl+Shift+N` new window, `Ctrl++`/`-` font size, `Ctrl+Shift+Z`/`X` jump between prompts; **own bindings**: `Ctrl+Shift+Y` copies the last command + its output (`copy-last-command`), `Ctrl+Shift+A` copies every pair on screen (`copy-visible`) |
 | rofi      | `config/rofi/`                 | Type to filter, `↑`/`↓`, `Ctrl+J`/`Ctrl+K` or `Ctrl+N`/`Ctrl+P` to move, `Enter` to run, `Esc` to cancel, `Shift+Enter` runs in a terminal |
 | btop      | `config/btop/btop.conf`        | `Esc`/`m` menu, `q` quit, `+`/`-` update interval, `f` filter, `k` kill process                                                            |
 | waylock   | none (CLI flags in `config.h`) | Type the password, `Enter` to unlock — no other input                                                                                      |

@@ -342,6 +342,28 @@ copies its own last command. This assumes foot runs one process per window (no
 `--server`/`footclient`, which is how this system runs it), and the shell being
 a child of that process — the `Input:` line stays empty otherwise.
 
+`Ctrl+Shift+A` does the same for **everything on screen**, i.e. every pair since
+the last `clear`:
+
+```
+Input: echo eins
+Output:
+eins
+
+Input: printf "a\nb\n"
+Output:
+a
+b
+```
+
+That one is `config/usrbin/copy-visible` on foot's `pipe-visible`, and it works
+differently: foot pipes the visible screen as plain text, with no OSC-133
+markers left in it, so the script has to find the prompt lines itself. It does
+that with a regex built for this `PS1` (optional battery percentage, a
+space-free path starting in `~` or `/`, then `$ `) — **change the prompt and
+that regex has to follow**. Output above the first prompt (a command whose
+prompt has already scrolled off) is kept as a block with an empty `Input:`.
+
 ### Removable drives (`mount_menu`)
 
 `MOD+M` opens a rofi menu of every removable filesystem (`config/usrbin/mount_menu`,

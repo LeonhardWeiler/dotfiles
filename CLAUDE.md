@@ -234,6 +234,11 @@ scripts). The source->target mapping is stated explicitly in
   sides find each other by walking up to the owning **foot** process, so this
   breaks under `foot --server`/`footclient` (one process for all windows).
   Removing the OSC-133 markers would also kill foot's prompt jumping.
+  **`Ctrl+Shift+A`** is the same idea for the whole screen (everything since the
+  last `clear`): `pipe-visible` -> `config/usrbin/copy-visible`. foot pipes that
+  as plain text with no markers left in it, so the script splits the blocks by
+  matching **prompt lines** with a regex that mirrors `PS1` - editing `PS1` in
+  `.bashrc` means editing `PROMPT_RE` in `copy-visible`.
 - **Removable drives**: `config/usrbin/mount_menu` (rofi, bound to `MOD+M` in
   `config/dwl/config.h`) mounts/unmounts/ejects them with plain
   `mount`/`umount` via `sudo -n` (the passwordless `wheel` rule from

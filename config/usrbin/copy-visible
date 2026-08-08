@@ -1,0 +1,89 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Copy everything currently on screen (i.e. everything since the last `clear`)
+# to the clipboard, split into command/output pairs:
+#
+#   Input: <command line>
+#   Output:
+#   <output>
+#
+#   Input: <next command line>
+#   ...
+#
+# Meant to be run from foot's `pipe-visible` key binding, which feeds the
+# visible screen text on stdin.  Unlike copy-last-command, there are no OSC-133
+# markers to go by here - foot pipes plain text - so the split is done by
+# recognising prompt lines.
+#
+# That ties this script to PS1 in config/bash/.bashrc ('${battery}\w \$ '): an
+# optional battery percentage, the working directory (always starting in `~`
+# or `/`, never containing a space), then `$ ` or `# ` for root.  Change the
+# prompt and this pattern has to follow.
+
+set -u
+
+PROMPT_RE='^([0-9]+% )?[~/][^ ]* [$#]( |$)'
+
+# Drop the padding foot pipes along with the screen cells, then cut the text
+# into blocks at every prompt line.
+sed 's/[[:space:]]*$//' | awk -v prompt="$PROMPT_RE" '
+  function trimmed(arr, n,   last) {   # index of the last non-blank line
+    last = n
+    while (last > 0 && arr[last] == "")
+      last--
+    return last
+  }
+
+  function separate() {
+    if (blocks++)
+      print ""
+  }
+
+  # Output of a command whose prompt has already scrolled off the screen.
+  function flush_head(   i, last) {
+    if (head_done)
+      return
+    head_done = 1
+    last = trimmed(head, nhead)
+    if (!last)
+      return
+    separate()
+    print "Input:"
+    print "Output:"
+    for (i = 1; i <= last; i++)
+      print head[i]
+  }
+
+  function flush(   i, last) {
+    if (!started)
+      return
+    last = trimmed(lines, nout)
+    if (command == "" && !last)   # the empty prompt we were sitting on
+      return
+    separate()
+    print "Input: " command
+    print "Output:"
+    for (i = 1; i <= last; i++)
+      print lines[i]
+  }
+
+  match($0, prompt) {
+    flush_head()
+    flush()
+    command = substr($0, RSTART + RLENGTH)
+    started = 1
+    nout = 0
+    next
+  }
+
+  !started { head[++nhead] = $0; next }
+
+  { lines[++nout] = $0 }
+
+  END {
+    flush_head()
+    flush()
+  }
+' | wl-copy
