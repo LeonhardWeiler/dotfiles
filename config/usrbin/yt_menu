@@ -3,15 +3,17 @@
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
 # rofi front-end for the two YouTube lists in the notes repo: type a name, hit
-# Return, the video opens in a new browser window. The other half of the same
+# Return, the video opens in a new browser tab. The other half of the same
 # workflow lives in the browser - the `yt-save` extension and `yt_save` put the
 # entries there in the first place.
 #
 # Both lists are in one window, prefixed, so "W " narrows it to the watchlist:
 #
-#   Return        open
-#   Shift+Return  open and take the entry off the list
-#   Alt+Delete    take it off the list without opening
+#   Return         open
+#   Alt+BackSpace  take it off the list without opening
+#
+# Removing does not end the menu: it reopens with the shortened list and the
+# text that was typed, so several entries can go in one pass.
 #
 # Removed lines are not deleted but moved to yt/watched.md with the date, so
 # "already seen" stays answerable without digging through the git history.
@@ -34,9 +36,8 @@ Usage: $SELF
 
 rofi menu for the YouTube lists in $YT_DIR.
 
-  Return        open the entry
-  Shift+Return  open it and move it to watched.md
-  Alt+Delete    move it to watched.md without opening
+  Return         open the entry in a new browser tab
+  Alt+BackSpace  move it to watched.md without opening
 
   -h, --help  show this help
 EOF
@@ -56,6 +57,24 @@ for cmd in rofi awk sed; do
 done
 
 message() { rofi -e "$1"; }
+
+# Does the carried-over filter still match one of the rows? Approximates
+# rofi's default matcher: every space-separated word has to be in the line,
+# case-insensitively. Without this, removing the very entry that was searched
+# for would reopen the menu on an empty list with a dead filter in the field.
+filter_matches() {
+  [ -n "$1" ] || return 0
+  printf '%s\n' "$2" | awk -v pat="$1" '
+    BEGIN { n = split(tolower(pat), word, / +/) }
+    {
+      line = tolower($0)
+      for (i = 1; i <= n; i++) if (index(line, word[i]) == 0) next
+      found = 1
+      exit
+    }
+    END { exit !found }
+  '
+}
 
 # ── index ───────────────────────────────────────────────────────────────────
 
@@ -88,56 +107,6 @@ index_of() {
   ' "$2"
 }
 
-# The watchlist first: it is the list with something to do on it.
-INDEX=$(index_of W "$YT_DIR/watchlist.md"; index_of R "$YT_DIR/remember.md")
-
-[ -n "$INDEX" ] || {
-  message "Nothing on the YouTube lists.
-
-$YT_DIR"
-  exit 0
-}
-
-# ── pick ────────────────────────────────────────────────────────────────────
-
-# `-format i` hands back the row number rather than its text, so two entries
-# with the same name cannot be confused for one another.
-#
-# No -p: the theme's "Search..." placeholder already says what the field is
-# (same look as MOD+I and MOD+S).
-CHOICE=$(printf '%s\n' "$INDEX" |
-         awk -F"$TAB" '{ printf "[%s] %s\n", $1, $4 }' |
-         rofi -dmenu -i -no-custom -format i \
-              -kb-custom-2 'Alt+Delete' \
-              -mesg 'Return: open   ·   Shift+Return: open + remove   ·   Alt+Delete: remove')
-RC=$?
-
-case $RC in
-  0)  ACTION=open ;;
-  10) ACTION=both ;;    # Shift+Return, rofi's alternate accept
-  11) ACTION=remove ;;  # kb-custom-2
-  *)  exit 0 ;;         # cancelled
-esac
-
-# `-format i` yields a row number and nothing else; anything but that means we
-# are not talking to the rofi we think we are, and no line may be deleted on
-# the strength of it.
-case ${CHOICE:-} in
-  ""|*[!0-9]*) exit 0 ;;
-esac
-
-ROW=$(printf '%s\n' "$INDEX" | sed -n "$((CHOICE + 1))p")
-[ -n "$ROW" ] || exit 0
-
-IFS=$TAB read -r TAG LNO URL TITLE <<EOF
-$ROW
-EOF
-
-case $TAG in
-  W) FILE=$YT_DIR/watchlist.md; LIST=watchlist ;;
-  *) FILE=$YT_DIR/remember.md;  LIST=remember ;;
-esac
-
 # ── act ─────────────────────────────────────────────────────────────────────
 
 open_entry() {
@@ -145,7 +114,7 @@ open_entry() {
     message "'$BROWSER_CMD' not found."
     exit 1
   }
-  "$BROWSER_CMD" --new-window "$URL" >/dev/null 2>&1 &
+  "$BROWSER_CMD" --new-tab "$URL" >/dev/null 2>&1 &
 }
 
 commit() {
@@ -182,8 +151,76 @@ Reopen it and try again."
   commit "yt/${FILE##*/}" "yt/${WATCHED##*/}"
 }
 
-case $ACTION in
-  open)   open_entry ;;
-  both)   open_entry; remove_entry ;;
-  remove) remove_entry ;;
-esac
+# ── the menu ────────────────────────────────────────────────────────────────
+
+# Removing an entry loops back into rofi instead of ending the run, so a
+# handful of them can go without reopening the menu by hand. The list is built
+# again every time round - the file changed, and so did every line number
+# below the deleted one.
+FILTER=
+
+while :; do
+  # The watchlist first: it is the list with something to do on it.
+  INDEX=$(index_of W "$YT_DIR/watchlist.md"; index_of R "$YT_DIR/remember.md")
+
+  [ -n "$INDEX" ] || {
+    message "Nothing on the YouTube lists.
+
+$YT_DIR"
+    exit 0
+  }
+
+  # `-format 'i f'` hands back the row number rather than its text, so two
+  # entries with the same name cannot be confused for one another, plus what
+  # was typed into the field - that goes back in via -filter on the next round
+  # so a removal does not throw the search away.
+  #
+  # No -p: the theme's "Search..." placeholder already says what the field is
+  # (same look as MOD+I and MOD+S).
+  ROWS=$(printf '%s\n' "$INDEX" | awk -F"$TAB" '{ printf "[%s] %s\n", $1, $4 }')
+  filter_matches "$FILTER" "$ROWS" || FILTER=
+
+  OUT=$(printf '%s\n' "$ROWS" |
+        rofi -dmenu -i -no-custom -format 'i f' -filter "$FILTER" \
+             -kb-custom-2 'Alt+BackSpace' \
+             -mesg 'Return: open   ·   Alt+BackSpace: remove')
+  RC=$?
+
+  case $RC in
+    0)  ACTION=open ;;
+    11) ACTION=remove ;;  # kb-custom-2
+    *)  exit 0 ;;         # cancelled
+  esac
+
+  # "<row> <filter>": the row number is everything up to the first space, the
+  # filter is the rest and may hold spaces of its own.
+  CHOICE=${OUT%% *}
+  case $OUT in
+    *' '*) FILTER=${OUT#* } ;;
+    *)     FILTER= ;;
+  esac
+
+  # The row number is a number and nothing else; anything but that means we are
+  # not talking to the rofi we think we are, and no line may be deleted on the
+  # strength of it.
+  case ${CHOICE:-} in
+    ""|*[!0-9]*) exit 0 ;;
+  esac
+
+  ROW=$(printf '%s\n' "$INDEX" | sed -n "$((CHOICE + 1))p")
+  [ -n "$ROW" ] || exit 0
+
+  IFS=$TAB read -r TAG LNO URL TITLE <<EOF
+$ROW
+EOF
+
+  case $TAG in
+    W) FILE=$YT_DIR/watchlist.md; LIST=watchlist ;;
+    *) FILE=$YT_DIR/remember.md;  LIST=remember ;;
+  esac
+
+  case $ACTION in
+    open)   open_entry; exit 0 ;;
+    remove) remove_entry ;;
+  esac
+done

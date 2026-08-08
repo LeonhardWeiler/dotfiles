@@ -528,12 +528,15 @@ both lists, prefixed, so typing `W ` narrows it to the watchlist:
 [R] nice sounds/background track
 ```
 
-`Enter` opens the entry in a new browser window, `Shift+Enter` opens it **and**
-takes it off the list, `Alt+Delete` takes it off without opening. Removed lines
-are not deleted but moved to `yt/watched.md` with the date. The pick comes back
-from rofi as a row number (`-format i`), not as its text, so two entries with the
-same name cannot be confused - and the line is only removed if the url is still
-on it, in case the file was edited while the menu was open.
+`Enter` opens the entry in a new browser tab, `Alt+BackSpace` takes it off the
+list without opening. Removed lines are not deleted but moved to
+`yt/watched.md` with the date. A removal does **not** end the menu: rofi comes
+back with the shortened list and the text that was typed (dropped once it
+matches nothing), so several entries can go in one pass. The pick comes back
+from rofi as a row number plus that text (`-format 'i f'`), not as the entry
+text, so two entries with the same name cannot be confused - and the line is
+only removed if the url is still on it, in case the file was edited while the
+menu was open.
 
 **Setup**, once. `./install` links `at.leo.yt_save.json` into
 `~/.mozilla/native-messaging-hosts` (Firefox-based browsers look there whatever

@@ -41,9 +41,10 @@ Close sits on the right pinky, three columns away from the `hjkl` cluster, so a
 navigation slip cannot reach it. Lock is on a key that is **unbound** on the
 plain `MOD` layer, so no stray Shift can lock the screen.
 
-Inside `MOD+Y`: `Enter` opens the entry, `Shift+Enter` opens it and moves it to
-`yt/watched.md`, `Alt+Delete` moves it there without opening. Filling those
-lists is the browser's half of the job — see the `yt-save` add-on below.
+Inside `MOD+Y`: `Enter` opens the entry in a new browser tab, `Alt+BackSpace`
+moves it to `yt/watched.md` without opening and reopens the menu on the
+shortened list. Filling those lists is the browser's half of the job — see the
+`yt-save` add-on below.
 
 ### Layout / focus
 

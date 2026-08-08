@@ -303,8 +303,12 @@ scripts). The source->target mapping is stated explicitly in
   feature with it. **rofi exit codes**: `10` is `Shift+Return` (alternate
   accept, the same assumption `sanitize_menu` runs on), and `kb-custom-N`
   returns `9 + N` - so `kb-custom-1` would collide with it. `yt_menu` therefore
-  binds `Alt+Delete` to `kb-custom-2` and reads `11`, which was measured against
-  the installed rofi rather than taken from the manpage.
+  binds `Alt+BackSpace` to `kb-custom-2` and reads `11`, which was measured
+  against the installed rofi rather than taken from the manpage. It has **no**
+  `Shift+Return` action (removed on purpose, not to be reintroduced) and loops:
+  a removal rebuilds the index and reopens rofi with `-filter` set to what was
+  typed (`-format 'i f'` returns row number *and* filter), dropping the filter
+  when it no longer matches a row.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).
