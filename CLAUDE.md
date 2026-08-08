@@ -305,9 +305,10 @@ scripts). The source->target mapping is stated explicitly in
   of the title ("… 28 minutes", the a11y spelling of the badge) is cut off,
   guarded three ways - the words must be time words (en/de list), the numbers
   must be the card badge's, and the preceding word must not be `in`/`unter`/… -
-  so "… in 11 Minutes" and "Die 3 Musketiere" survive. Both commit into the
-  notes repo with `git commit -- <path>`, which leaves anything else staged
-  there alone. An unsigned add-on only installs because Zen is built with
+  so "… in 11 Minutes" and "Die 3 Musketiere" survive. Neither script commits -
+  they only write the files, every commit in the notes repo is made by hand
+  (they used to auto-commit; do not reintroduce that).
+  An unsigned add-on only installs because Zen is built with
   `MOZ_REQUIRE_SIGNING=false`; a Zen build that changes that would take the
   feature with it. **rofi exit codes**: `10` is `Shift+Return` (alternate
   accept, the same assumption `sanitize_menu` runs on), and `kb-custom-N`

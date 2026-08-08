@@ -8,9 +8,10 @@
 # daemon, no port and nothing listening between two keypresses.
 #
 # It appends `- [title](url)` to yt/remember.md or yt/watchlist.md in the notes
-# repo, commits that one file, and flashes wob green through `osd` - the same
-# confirmation `dictate` gives.  A link already on either list is not added a
-# second time; that flashes red instead, so the keypress always answers.
+# repo and flashes wob green through `osd` - the same confirmation `dictate`
+# gives.  A link already on either list is not added a second time; that
+# flashes red instead, so the keypress always answers.  It deliberately does
+# *not* commit: every commit in the notes repo is made by hand.
 #
 # Wire format (Mozilla native messaging): a 4-byte message length in native
 # byte order, then that many bytes of UTF-8 JSON, on stdin and on stdout.
@@ -225,19 +226,6 @@ ENTRY=$ENTRY awk '
 
 cat "$TMP" >"$FILE" || fail "could not write $FILE"
 rm -f "$TMP"
-
-# ── commit ──────────────────────────────────────────────────────────────────
-
-REL=yt/${FILE##*/}
-if git -C "$NOTES" rev-parse --git-dir >/dev/null 2>&1; then
-  # `commit -- <path>` commits this file alone and leaves anything else staged
-  # in the index alone; a file git has never seen has to be added first for
-  # that pathspec to match at all.
-  git -C "$NOTES" ls-files --error-unmatch -- "$REL" >/dev/null 2>&1 ||
-    git -C "$NOTES" add -- "$REL" >/dev/null 2>&1
-  git -C "$NOTES" commit -q -m "[$REL] changed" -- "$REL" >/dev/null 2>&1 ||
-    echo "$SELF: commit failed" >&2
-fi
 
 flash done
 reply added "$ENTRY"

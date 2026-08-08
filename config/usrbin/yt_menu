@@ -17,6 +17,8 @@
 #
 # Removed lines are not deleted but moved to yt/watched.md with the date, so
 # "already seen" stays answerable without digging through the git history.
+#
+# Nothing here commits: every commit in the notes repo is made by hand.
 
 set -uf
 
@@ -117,16 +119,6 @@ open_entry() {
   "$BROWSER_CMD" --new-tab "$URL" >/dev/null 2>&1 &
 }
 
-commit() {
-  git -C "$NOTES" rev-parse --git-dir >/dev/null 2>&1 || return 0
-  for path in "$@"; do
-    git -C "$NOTES" ls-files --error-unmatch -- "$path" >/dev/null 2>&1 ||
-      git -C "$NOTES" add -- "$path" >/dev/null 2>&1
-  done
-  git -C "$NOTES" commit -q -m "[yt/${FILE##*/}] changed" -- "$@" >/dev/null 2>&1 ||
-    echo "$SELF: commit failed" >&2
-}
-
 remove_entry() {
   # The index was built before rofi opened; an editor may have saved the file
   # in the meantime, and deleting by stale line number would take out the
@@ -147,8 +139,6 @@ Reopen it and try again."
 
   [ -s "$WATCHED" ] || printf '# watched\n\n' >"$WATCHED"
   printf -- '- %s [%s](%s) (%s)\n' "$(date +%F)" "$TITLE" "$URL" "$LIST" >>"$WATCHED"
-
-  commit "yt/${FILE##*/}" "yt/${WATCHED##*/}"
 }
 
 # ── the menu ────────────────────────────────────────────────────────────────

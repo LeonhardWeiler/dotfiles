@@ -530,8 +530,8 @@ userscript talking to `127.0.0.1`, and none of that survived.
 
 `yt_save` strips the tracking parameters (`si`, `pp`, `feature`, `utm_*`; `v`,
 `list` and a timestamp that came with the link are kept, none is ever added),
-refuses a link already on either list, appends the entry, commits that one file,
-and flashes wob green through `osd` - the confirmation `dictate` gives. A
+refuses a link already on either list, appends the entry, and flashes wob green
+through `osd` - the confirmation `dictate` gives. A
 duplicate flashes **red** instead, so the keypress always answers. New entries
 go into the section above the first `##` heading, which is what keeps them out
 of the "godot" block at the bottom of the watchlist.
@@ -554,6 +554,9 @@ from rofi as a row number plus that text (`-format 'i f'`), not as the entry
 text, so two entries with the same name cannot be confused - and the line is
 only removed if the url is still on it, in case the file was edited while the
 menu was open.
+
+Neither script commits. Both only write the files in `~/files/repos/notes/yt/`;
+every commit in the notes repo is made by hand.
 
 **Setup**, once. `./install` links `at.leo.yt_save.json` into
 `~/.mozilla/native-messaging-hosts` (Firefox-based browsers look there whatever
