@@ -1,0 +1,87 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Watch ~/outbox and strip the metadata from everything that lands in it, in
+# place.  The point is a habit rather than a tool: put a file there, and
+# whatever you do with it afterwards - upload dialog, mail attachment, chat -
+# it is already clean, without having to remember a command first.
+#
+# Cleaned files are renamed to "<kind>-<8 hex digits>.<ext>", which doubles as
+# the marker that keeps this from chasing its own tail: a file matching that
+# pattern is treated as done and skipped, so our own output does not trigger
+# another round.  (A file that arrives already named that way is skipped too -
+# unlikely enough to be worth the simplicity of having no state file.)
+#
+# A file whose format cannot be stripped is moved to ~/outbox/rejected/ instead
+# of being left where it is.  Otherwise the whole promise of the directory
+# breaks: everything sitting in the top level has been cleaned, no exceptions.
+#
+# Started from the dwl autostart (config/dwl/config.h).
+
+set -u
+
+SELF=${0##*/}
+OUTBOX=${SANITIZE_OUTBOX:-$HOME/outbox}
+
+usage() {
+  cat <<EOF
+Usage: $SELF [DIR]
+
+Strip metadata from every file placed in DIR (default: $OUTBOX).
+
+  -h, --help  show this help
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  "")        ;;
+  -*)        usage >&2; exit 1 ;;
+  *)         OUTBOX=$1 ;;
+esac
+
+command -v inotifywait >/dev/null 2>&1 || {
+  echo "$SELF: 'inotifywait' not found" >&2
+  exit 1
+}
+
+SANITIZE=$(dirname -- "$0")/sanitize
+[ -x "$SANITIZE" ] || {
+  echo "$SELF: '$SANITIZE' not found" >&2
+  exit 1
+}
+
+REJECTED=$OUTBOX/rejected
+mkdir -p "$REJECTED" || exit 1
+
+# Files this script produced; see the header for why the name is the marker.
+CLEANED_RE='^(image|video|audio|document)-[0-9a-f]{8}(\.|$)'
+
+handle() {
+  target=$OUTBOX/$1
+
+  [ -f "$target" ] || return 0
+  printf '%s' "$1" | grep -Eq "$CLEANED_RE" && return 0
+
+  if "$SANITIZE" -i -q -- "$target"; then
+    return 0
+  fi
+
+  # Out of the way, so the top level keeps its guarantee.
+  mv -f -- "$target" "$REJECTED/" 2>/dev/null
+  echo "$SELF: cannot strip '$1', moved to ${REJECTED##*/}/" >&2
+}
+
+# Anything dropped in while this was not running still counts as unhandled.
+for existing in "$OUTBOX"/*; do
+  [ -e "$existing" ] || continue
+  handle "${existing##*/}"
+done
+
+# close_write covers a copy that is still being written; moved_to covers a
+# rename from the same filesystem, which is complete the moment it appears.
+inotifywait -m -q -e close_write -e moved_to --format '%f' "$OUTBOX" |
+  while IFS= read -r name; do
+    handle "$name"
+  done

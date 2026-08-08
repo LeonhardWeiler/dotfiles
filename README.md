@@ -396,6 +396,66 @@ Because everything runs through `sudo -n`, the menu reports an error instead of
 hanging if that sudo rule is missing. Encrypted volumes are not supported: this
 kernel is built without device-mapper, so dm-crypt and LVM do not exist here.
 
+### Stripping metadata from files that leave the machine (`sanitize`)
+
+A photo carries the camera model and its serial number, the lens, the GPS
+position and the second it was taken; a PDF names the author and the scanner; a
+video names the device. None of that should follow a file out of the house, so
+there are three ways to get rid of it - one deliberate, two automatic - all
+built on `config/usrbin/sanitize`.
+
+`sanitize` picks its tool by file type, because no single one is good at
+everything:
+
+| Type          | Tool                                | Why                                                                        |
+| ------------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| images        | `exiftool -all=`                    | cuts out the metadata segments and leaves the pixels alone - **lossless**   |
+| audio / video | `ffmpeg -c copy -map_metadata -1`   | drops container tags and chapters without re-encoding                       |
+| everything else | `mat2`                            | PDF, docx/odt, svg, epub, archives - metadata hides in places exiftool does not write |
+
+Two things leak as loudly as EXIF and are handled as well:
+
+- **The file name.** `IMG_20240513_142233.jpg` states date and time outright, so
+  the result is renamed to `image-<8 hex digits>.jpg` (`--keep-name` opts out).
+- **The modification time.** A browser upload sends the file's `lastModified`
+  along with the bytes. The copy is stamped with the current time - that tells
+  the recipient nothing they do not know already, while a fixed fake date would
+  announce that the file was scrubbed.
+
+A format `mat2` does not understand is a **hard error**, never a silent pass:
+better no file than one that only looks clean. To see what survived:
+`exiftool -a -G1 -s <file>`.
+
+By default the original is untouched and the copy goes to
+`$XDG_RUNTIME_DIR/sanitized` - a tmpfs that dies with the session, so cleaned
+copies never pile up on disk.
+
+**`MOD+S` - the rofi menu** (`sanitize_menu`): type part of a file name, get the
+matches below `~` newest-first, pick one. `Return` puts the cleaned **image
+itself** on the clipboard (paste into Signal, a mail, a browser field);
+`Shift+Return` puts the **path** of the cleaned copy there, for "upload a file"
+dialogs (`Ctrl+L`, then `Ctrl+V`). Two keys because `wl-copy` can offer only one
+MIME type per invocation. Hidden directories are skipped - nothing in
+`~/.cache` is meant to be sent.
+
+**`~/outbox` - the airlock** (`outbox_watch`, started from the dwl autostart):
+everything dropped in there is stripped in place and renamed. Put a file in the
+directory and send it from there with any program at all; no command to
+remember. The generated name doubles as the "already done" marker, so the
+watcher does not chase its own output, and a file it cannot strip is moved to
+`~/outbox/rejected/` rather than left lying around - whatever sits in the top
+level has been cleaned, no exceptions.
+
+**The clipboard** (`clipboard_sanitize`, also from the autostart): copying a
+picture and pasting it into a chat never touches the disk, so neither of the
+other two ever sees it. One `wl-paste --watch` per image type strips what comes
+in and puts it back - only if that changed something, and never twice, since the
+content it writes is remembered by hash.
+
+What none of this can fix is the **contents**: a screenshot still shows window
+titles, paths and a clock, and a "redacted" PDF may still carry the text
+underneath the black box.
+
 ### Screen locker (waylock)
 
 dwl's `lockcmd` is [waylock](https://codeberg.org/ifreund/waylock), replacing the

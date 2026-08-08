@@ -25,6 +25,7 @@ godot 4.7.1-1
 grim 1.5.0-2
 hdparm 9.65-3
 helium-browser-bin 0.15.1.1-1
+inotify-tools 4.25.9.0-1
 iperf3 3.21-1
 iptables 1:1.8.13-1
 jq 1.8.2-1
@@ -36,6 +37,7 @@ linux 7.1.6.arch1-1
 linux-firmware 20260622-1
 linux-headers 7.1.6.arch1-1
 mandoc 1.14.6-5
+mat2 0.15.0-1
 mesa 1:26.1.6-1
 mesa-utils 9.0.0-7
 mpv 1:0.41.0-4
@@ -49,6 +51,7 @@ npm 12.0.2-1
 ntfs-3g 2026.7.7-1
 obs-studio 32.2.1-6
 openssh 10.4p1-3
+perl-image-exiftool 13.55-1
 pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1
 pipewire-pulse 1:1.6.8-1

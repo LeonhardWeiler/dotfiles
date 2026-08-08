@@ -1,0 +1,134 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# rofi front-end for `sanitize`: type part of a file name, pick the file from
+# the hits below $HOME, and get a metadata-free copy of it on the clipboard.
+# The original is never touched - the copy lands in a tmpfs directory that
+# disappears with the session.
+#
+# Two ways to paste, because "share a file" means two different things:
+#
+#   Return        the image itself, so Ctrl+V drops it into Signal, a mail or
+#                 a browser text field.  Only images can go this way; anything
+#                 else falls back to the path.
+#   Shift+Return  the path of the cleaned copy as plain text, for the "upload
+#                 a file" dialogs (Ctrl+L, then Ctrl+V).
+#
+# Hidden directories are skipped: ~/.cache, ~/.mozilla and the rest hold no
+# file anyone means to send, and they would bury the real hits.
+
+set -u
+
+SELF=${0##*/}
+MAX_HITS=300
+
+usage() {
+  cat <<EOF
+Usage: $SELF
+
+rofi menu that copies a metadata-free version of a file below \$HOME:
+search by name, Return copies the image, Shift+Return the path.
+
+  -h, --help  show this help
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  "")        ;;
+  *)         usage >&2; exit 1 ;;
+esac
+
+for cmd in rofi find file wl-copy; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "$SELF: '$cmd' not found" >&2
+    exit 1
+  }
+done
+
+# Taken from next to this script rather than from PATH: dwl spawns us with
+# whatever environment the session started with.
+SANITIZE=$(dirname -- "$0")/sanitize
+[ -x "$SANITIZE" ] || {
+  echo "$SELF: '$SANITIZE' not found" >&2
+  exit 1
+}
+
+# The rofi theme hides the prompt (inputbar shows only the entry); this menu
+# needs it, so it is switched back on per invocation instead of in config.rasi.
+SHOW_PROMPT='inputbar { children: [ "prompt", "entry" ]; }'
+
+message() { rofi -e "$1"; }
+
+# ── ask for the search string ───────────────────────────────────────────────
+
+# An empty candidate list makes this a plain input box; without -no-custom the
+# typed text is what comes back.
+QUERY=$(: | rofi -dmenu -p 'sanitize' -theme-str "$SHOW_PROMPT" \
+                 -mesg 'name of the file to search for in ~') || exit 0
+[ -n "$QUERY" ] || exit 0
+
+# ── search ──────────────────────────────────────────────────────────────────
+
+# Newest first: the file worth sending is usually the one just created.
+HITS=$(find "$HOME" \( -name '.*' -o -name node_modules \) -prune -o \
+            -type f -iname "*$QUERY*" -printf '%T@\t%p\n' 2>/dev/null |
+       sort -rn | cut -f2- | head -n "$MAX_HITS" |
+       sed "s|^$HOME/|~/|")
+
+[ -n "$HITS" ] || { message "No file matching \"$QUERY\" below ~."; exit 1; }
+
+# ── pick one ────────────────────────────────────────────────────────────────
+
+CHOICE=$(printf '%s\n' "$HITS" |
+         rofi -dmenu -i -no-custom -p 'file' -theme-str "$SHOW_PROMPT" \
+              -mesg 'Return: copy the image   ·   Shift+Return: copy the path')
+RC=$?
+
+case $RC in
+  0)  MODE=content ;;
+  10) MODE=path ;;      # Shift+Return, rofi's alternate accept
+  *)  exit 0 ;;         # cancelled
+esac
+
+[ -n "$CHOICE" ] || exit 0
+case $CHOICE in
+  '~/'*) FILE=$HOME/${CHOICE#'~/'} ;;
+  *)     FILE=$CHOICE ;;
+esac
+
+# ── strip and copy ──────────────────────────────────────────────────────────
+
+CLEAN=$("$SANITIZE" -q -- "$FILE") || {
+  message "Could not strip metadata from
+$CHOICE
+
+Unsupported format - send it only if you know what is inside."
+  exit 1
+}
+
+MIME=$(file --mime-type -b -- "$CLEAN" 2>/dev/null)
+
+# wl-copy offers exactly one MIME type per invocation, so pasting the picture
+# and pasting its path are mutually exclusive - hence the two keys.
+case $MODE:$MIME in
+  content:image/*)
+    wl-copy --type "$MIME" <"$CLEAN" || exit 1
+    message "Cleaned image on the clipboard, ready to paste.
+
+$CLEAN"
+    ;;
+  content:*)
+    wl-copy -- "$CLEAN" || exit 1
+    message "$MIME cannot be pasted as content, so the path was copied instead.
+
+$CLEAN"
+    ;;
+  *)
+    wl-copy -- "$CLEAN" || exit 1
+    message "Path of the cleaned copy on the clipboard.
+
+$CLEAN"
+    ;;
+esac

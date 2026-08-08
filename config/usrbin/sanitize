@@ -1,0 +1,188 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Strip identifying metadata from a file before it leaves this machine: EXIF
+# (camera, lens, serial number, GPS, date/time, thumbnail), XMP/IPTC, PNG text
+# chunks, PDF/Office authorship, container tags in audio and video.
+#
+# By default the original is left alone and a cleaned copy is written to
+# $SANITIZE_OUTDIR (a tmpfs directory that dies with the session); the path of
+# each result is printed on stdout, one per line, so front-ends can pick it up.
+#
+# The right tool depends on the format, so the file type decides:
+#
+#   image/*        exiftool -all=   removes the metadata segments and leaves the
+#                                   pixels untouched - lossless, unlike a
+#                                   re-encode.  ICC profiles go too: a colour
+#                                   profile can name the capturing device.
+#   audio, video   ffmpeg -c copy   drops container tags and chapters without
+#                                   re-encoding.  +bitexact keeps ffmpeg from
+#                                   stamping its own version into the output.
+#   everything     mat2             purpose-built for PDF, docx/odt, svg, epub
+#   else                            and archives, where metadata hides in a
+#                                   dozen places exiftool does not write.
+#
+# Two things leak just as loudly as EXIF and are handled here as well:
+#
+#   * the file name - "IMG_20240513_142233.jpg" states date and time outright,
+#     so the result gets a neutral name unless --keep-name says otherwise.
+#   * the modification time - a browser upload sends the file's lastModified
+#     timestamp along with the bytes.  The result is stamped with the current
+#     time: that reveals nothing the recipient does not already know, while a
+#     fixed fake date would announce that the file was scrubbed.
+#
+# What no tool can fix: the contents.  A screenshot still shows window titles,
+# paths and a clock; a "redacted" PDF may still carry the text underneath.
+#
+# To check what survived:  exiftool -a -G1 -s <file>
+
+set -u
+
+SELF=${0##*/}
+OUTDIR=${SANITIZE_OUTDIR:-${XDG_RUNTIME_DIR:-/tmp}/sanitized}
+INPLACE=0
+KEEPNAME=0
+QUIET=0
+STATUS=0
+
+usage() {
+  cat <<EOF
+Usage: $SELF [-i] [-k] [-o DIR] [-q] FILE...
+
+Write a metadata-free copy of each FILE and print its path.
+
+  -i, --in-place    replace the original instead of writing a copy
+  -k, --keep-name   keep the original file name (it may leak date or place)
+  -o, --out DIR     where to write the copies (default: $OUTDIR)
+  -q, --quiet       no progress on stderr, only errors
+  -h, --help        show this help
+EOF
+}
+
+warn() { [ "$QUIET" = 1 ] || printf '%s: %s\n' "$SELF" "$1" >&2; }
+err()  { printf '%s: %s\n' "$SELF" "$1" >&2; STATUS=1; }
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    -i|--in-place)  INPLACE=1 ;;
+    -k|--keep-name) KEEPNAME=1 ;;
+    -o|--out)       [ $# -ge 2 ] || { usage >&2; exit 1; }; OUTDIR=$2; shift ;;
+    -q|--quiet)     QUIET=1 ;;
+    -h|--help)      usage; exit 0 ;;
+    --)             shift; break ;;
+    -*)             usage >&2; exit 1 ;;
+    *)              break ;;
+  esac
+  shift
+done
+
+[ $# -gt 0 ] || { usage >&2; exit 1; }
+
+for cmd in file exiftool mat2 ffmpeg; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "$SELF: '$cmd' not found" >&2
+    exit 1
+  }
+done
+
+# A tmpfs work area, so a half-cleaned file never sits next to the original and
+# never reaches the disk.
+WORK=$(mktemp -d "${XDG_RUNTIME_DIR:-/tmp}/sanitize.XXXXXX") || exit 1
+trap 'rm -rf "$WORK"' EXIT HUP INT TERM
+
+# Two files picked in the same second must not collide, hence random rather
+# than a counter - and a counter would leak how much has been shared today.
+neutral_name() {
+  printf '%s-%s%s' "$1" \
+    "$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')" "$2"
+}
+
+# The extension is what the receiving application goes by, so it is kept even
+# though the name around it is thrown away.
+extension() {
+  case $1 in
+    *.*) printf '.%s' "${1##*.}" ;;
+    *)   ;;
+  esac
+}
+
+for src; do
+  [ -f "$src" ] || { err "not a file: $src"; continue; }
+  [ -r "$src" ] || { err "not readable: $src"; continue; }
+
+  MIME=$(file --mime-type -b -- "$src" 2>/dev/null) || MIME=
+  case $MIME in
+    image/svg+xml) KIND=document ;;   # XML, not pixels - exiftool cannot help
+    image/*)       KIND=image ;;
+    video/*)       KIND=video ;;
+    audio/*)       KIND=audio ;;
+    *)             KIND=document ;;
+  esac
+
+  EXT=$(extension "$src")
+  TMP=$WORK/work$EXT
+  rm -f "$TMP"
+  cp -- "$src" "$TMP" || { err "cannot copy: $src"; continue; }
+
+  OK=1
+  case $KIND in
+    image)
+      exiftool -all= -overwrite_original -q -q -- "$TMP" || OK=0
+      ;;
+    video|audio)
+      # -c copy keeps the streams as they are; only the container is rewritten.
+      # The track handler name ("GoPro AVC encoder" and the like) is not a tag
+      # and survives -map_metadata, but remuxing replaces it with the muxer's
+      # generic default, which is what we want.
+      ffmpeg -nostdin -v error -y -i "$TMP" \
+             -map_metadata -1 -map_chapters -1 -c copy \
+             -fflags +bitexact "$WORK/av$EXT" </dev/null || OK=0
+      [ "$OK" = 1 ] && mv -f "$WORK/av$EXT" "$TMP"
+      ;;
+    document)
+      # mat2 refuses formats it does not understand, which is the honest
+      # answer: better a hard error than a file that looks scrubbed.
+      mat2 --inplace -- "$TMP" >/dev/null || OK=0
+      ;;
+  esac
+
+  [ "$OK" = 1 ] || { err "could not strip metadata: $src"; continue; }
+
+  if [ "$KEEPNAME" = 1 ]; then
+    NAME=$(basename -- "$src")
+  else
+    NAME=$(neutral_name "$KIND" "$EXT")
+  fi
+
+  if [ "$INPLACE" = 1 ] && [ "$KEEPNAME" = 1 ]; then
+    # Written straight over the original - never derived from dirname/basename,
+    # which would build a second path to the same file and make the cleanup
+    # below delete the result.
+    DEST=$src
+  elif [ "$INPLACE" = 1 ]; then
+    DEST=$(dirname -- "$src")/$NAME
+  else
+    mkdir -p "$OUTDIR" || { err "cannot create $OUTDIR"; continue; }
+    DEST=$OUTDIR/$NAME
+  fi
+
+  # A generated name never lands on an existing file by accident; if it does,
+  # something is wrong and overwriting would destroy data.
+  if [ "$KEEPNAME" = 0 ] && [ -e "$DEST" ]; then
+    err "target exists: $DEST"
+    continue
+  fi
+
+  mv -f "$TMP" "$DEST" || { err "cannot write: $DEST"; continue; }
+  chmod 600 "$DEST" 2>/dev/null
+  touch "$DEST"                       # drop the original modification time
+  if [ "$INPLACE" = 1 ] && [ "$KEEPNAME" = 0 ]; then
+    rm -f -- "$src"
+  fi
+
+  warn "cleaned ${src##*/} -> $DEST"
+  printf '%s\n' "$DEST"
+done
+
+exit "$STATUS"

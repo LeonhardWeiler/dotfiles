@@ -1,0 +1,105 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Strip metadata from images as they pass through the clipboard.  Copying a
+# picture in a file manager or a browser and pasting it into a chat never
+# touches the disk, so neither `sanitize` nor the ~/outbox watcher ever sees
+# it - this closes that path.
+#
+# One `wl-paste --watch` per image type, since wl-paste hands over a single
+# MIME type at a time.  Each new clipboard image is stripped and, only if that
+# changed anything, put back.
+#
+# Two guards keep this from looping on its own output: the content we write is
+# remembered by hash and ignored when it comes back, and an image that was
+# already clean is left alone instead of being copied again.
+#
+# Started from the dwl autostart (config/dwl/config.h).
+
+set -u
+
+SELF=${0##*/}
+STATE_DIR=${XDG_RUNTIME_DIR:-/tmp}/clipboard-sanitize
+TYPES='image/png image/jpeg image/webp image/tiff'
+
+usage() {
+  cat <<EOF
+Usage: $SELF
+
+Watch the Wayland clipboard and strip metadata from images copied into it.
+Types: $TYPES
+
+  --handle MIME   internal: clean one clipboard payload read from stdin
+  -h, --help      show this help
+EOF
+}
+
+SANITIZE=$(dirname -- "$0")/sanitize
+
+# ── one clipboard payload (called by wl-paste --watch) ──────────────────────
+
+handle() {
+  mime=$1
+  case $mime in
+    image/png)  ext=.png ;;
+    image/jpeg) ext=.jpg ;;
+    image/webp) ext=.webp ;;
+    image/tiff) ext=.tif ;;
+    *)          ext=.bin ;;
+  esac
+
+  state=$STATE_DIR/$(printf '%s' "$mime" | tr / -)
+  # mktemp rather than a fixed name: copying twice in quick succession runs
+  # two of these at once.
+  tmp=$(mktemp "$STATE_DIR/clip.XXXXXX$ext") || exit 0
+  trap 'rm -f "$tmp"' EXIT HUP INT TERM
+
+  cat >"$tmp"
+  [ -s "$tmp" ] || exit 0
+
+  before=$(sha256sum <"$tmp" | cut -d' ' -f1)
+
+  # Our own output coming back around.
+  [ -r "$state" ] && [ "$before" = "$(cat "$state")" ] && exit 0
+
+  "$SANITIZE" -i -k -q -- "$tmp" >/dev/null || exit 0
+
+  after=$(sha256sum <"$tmp" | cut -d' ' -f1)
+  [ "$after" = "$before" ] && exit 0     # nothing to strip, leave it be
+
+  printf '%s' "$after" >"$state"
+  wl-copy --type "$mime" <"$tmp"
+}
+
+# ── entry point ─────────────────────────────────────────────────────────────
+
+case "${1:-}" in
+  --handle)  [ $# -eq 2 ] || { usage >&2; exit 1; }; handle "$2"; exit 0 ;;
+  -h|--help) usage; exit 0 ;;
+  "")        ;;
+  *)         usage >&2; exit 1 ;;
+esac
+
+for cmd in wl-paste wl-copy sha256sum; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "$SELF: '$cmd' not found" >&2
+    exit 1
+  }
+done
+
+[ -x "$SANITIZE" ] || {
+  echo "$SELF: '$SANITIZE' not found" >&2
+  exit 1
+}
+
+mkdir -p "$STATE_DIR" || exit 1
+chmod 700 "$STATE_DIR" 2>/dev/null
+
+# A watcher per type; if one dies the others keep going, so `wait` without an
+# argument is the right thing - it returns only when all of them are gone.
+for type in $TYPES; do
+  wl-paste --type "$type" --watch "$0" --handle "$type" &
+done
+
+wait

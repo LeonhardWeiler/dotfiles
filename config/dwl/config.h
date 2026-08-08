@@ -41,6 +41,17 @@ static const char *const autostart[] = {
     "while true; do \"$HOME/.local/bin/bat_check\"; sleep 120; done",
     NULL,
 
+    /* Metadata never leaves this machine by accident: one watcher strips
+     * everything dropped into ~/outbox, the other strips images copied to the
+     * clipboard.  MOD+s is the third way in, for files staying where they are. */
+    "sh", "-c",
+    "\"$HOME/.local/bin/outbox_watch\"",
+    NULL,
+
+    "sh", "-c",
+    "\"$HOME/.local/bin/clipboard_sanitize\"",
+    NULL,
+
     NULL
 };
 
@@ -133,6 +144,12 @@ static const Key keys[] = {
 	 * stretch, and `m` is the mnemonic - right hand, so no penalty against the
 	 * left-thumb MOD. */
 	{ MODKEY,                       XKB_KEY_m,       spawn, SHCMD("~/.local/bin/mount_menu") },
+
+	/* Copy a file without its metadata (rofi: search, pick, paste). A ★ action,
+	 * so the mnemonic is allowed to cost something: `s` is left-hand home row
+	 * (1.0) against the left thumb on MOD (+1.0) = 2.0, still cheaper than
+	 * every free key on the right hand except `,`. */
+	{ MODKEY,                       XKB_KEY_s,       spawn, SHCMD("~/.local/bin/sanitize_menu") },
 
 	/* Window operations on the right-hand home row - the hand already rests
 	 * there for ALT+HJKL below. killclient sits on the pinky (o), three columns

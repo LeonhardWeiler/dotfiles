@@ -29,6 +29,7 @@ that **`hjkl` means the same thing everywhere**: `h`/`l` the horizontal axis,
 | `MOD+I`       | App launcher (`rofi -show drun`)               |
 | `MOD+N`       | Browser (zen-browser)                          |
 | `MOD+M`       | Drive menu (`mount_menu`) — _m_ount            |
+| `MOD+S`       | Copy a file without its metadata (`sanitize_menu`) — _s_anitize |
 | `MOD+O`       | Close the focused window                       |
 | `MOD+E`       | Toggle fullscreen                              |
 | `MOD+V`       | Toggle floating for the focused window         |
