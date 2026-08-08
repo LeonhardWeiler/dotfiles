@@ -11,6 +11,27 @@
 # MIME type at a time.  Each new clipboard image is stripped and, only if that
 # changed anything, put back.
 #
+# What goes back is a single offer of image/png, whatever came in.  Both halves
+# of that are forced by how a Wayland clipboard works:
+#
+#   * one type, because wl-copy announces exactly the one it is given.  A
+#     source offering png and jpeg side by side loses the second one the moment
+#     we rewrite it - there is no way to hand back what we did not take.
+#   * png, because that is the type consumers ask for.  Leaving a jpeg-only
+#     clipboard as image/jpeg keeps it visible in `wl-paste -l` and unreachable
+#     for GTK, Qt, Electron and the browsers, so a re-encode there loses
+#     nothing that was working.
+#
+# The one thing that does get lost is the motion of an animated GIF, which comes
+# out as its first frame.  It is accepted because image/gif barely reaches a
+# clipboard in the first place - the browsers rasterise a copied GIF to
+# image/png, and a file manager copies a path, not pixels.
+#
+# Only one watcher may act on a given clipboard, or two of them race to rewrite
+# it and which one wins is a coin toss.  The one that acts is the first TYPES
+# entry the clipboard actually offers, and image/png heads that list - so a
+# source that already speaks PNG is taken at its word and nothing is re-encoded.
+#
 # Two guards keep this from looping on its own output: the content we write is
 # remembered by hash and ignored when it comes back, and an image that was
 # already clean is left alone instead of being copied again.
@@ -21,7 +42,11 @@ set -u
 
 SELF=${0##*/}
 STATE_DIR=${XDG_RUNTIME_DIR:-/tmp}/clipboard-sanitize
+# Order matters: the first entry the clipboard offers is the one that gets
+# handled, so image/png stays in front.
 TYPES='image/png image/jpeg image/webp image/tiff image/gif image/avif'
+# One file, not one per type: everything we write goes out as image/png.
+STATE=$STATE_DIR/last-output
 
 usage() {
   cat <<EOF
@@ -39,8 +64,22 @@ SANITIZE=$(dirname -- "$0")/sanitize
 
 # ── one clipboard payload (called by wl-paste --watch) ──────────────────────
 
+# The first entry of TYPES the clipboard currently offers, or nothing.
+preferred_type() {
+  offered=$(wl-paste --list-types 2>/dev/null) || return 1
+  for candidate in $TYPES; do
+    if printf '%s\n' "$offered" | grep -qxF -- "$candidate"; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
 handle() {
   mime=$1
+  # The extension is how `sanitize` and the tools under it know what they are
+  # looking at - the payload arrives on a pipe with no name of its own.
   case $mime in
     image/png)  ext=.png ;;
     image/jpeg) ext=.jpg ;;
@@ -51,27 +90,35 @@ handle() {
     *)          ext=.bin ;;
   esac
 
-  state=$STATE_DIR/$(printf '%s' "$mime" | tr / -)
   # mktemp rather than a fixed name: copying twice in quick succession runs
   # two of these at once.
   tmp=$(mktemp "$STATE_DIR/clip.XXXXXX$ext") || exit 0
-  trap 'rm -f "$tmp"' EXIT HUP INT TERM
+  out=
+  trap 'rm -f "$tmp" ${out:+"$out"}' EXIT HUP INT TERM
 
+  # Read before deciding to bail: wl-paste is on the other end of this pipe with
+  # the payload still to write, and walking away early only earns it an EPIPE.
   cat >"$tmp"
   [ -s "$tmp" ] || exit 0
+
+  # Somebody else's turn - see the header.
+  [ "$mime" = "$(preferred_type)" ] || exit 0
 
   before=$(sha256sum <"$tmp" | cut -d' ' -f1)
 
   # Our own output coming back around.
-  [ -r "$state" ] && [ "$before" = "$(cat "$state")" ] && exit 0
+  [ -r "$STATE" ] && [ "$before" = "$(cat "$STATE")" ] && exit 0
 
-  "$SANITIZE" -i -k -q -- "$tmp" >/dev/null || exit 0
+  out=$("$SANITIZE" -q --png -o "$STATE_DIR" -- "$tmp") || exit 0
+  [ -s "$out" ] || exit 0
 
-  after=$(sha256sum <"$tmp" | cut -d' ' -f1)
-  [ "$after" = "$before" ] && exit 0     # nothing to strip, leave it be
+  after=$(sha256sum <"$out" | cut -d' ' -f1)
+  # Nothing to strip and nothing to re-encode - leave the clipboard alone rather
+  # than take a multi-type offer away from it for no gain.
+  [ "$after" = "$before" ] && exit 0
 
-  printf '%s' "$after" >"$state"
-  wl-copy --type "$mime" <"$tmp"
+  printf '%s' "$after" >"$STATE"
+  wl-copy --type image/png <"$out"
 }
 
 # ── entry point ─────────────────────────────────────────────────────────────

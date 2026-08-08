@@ -268,15 +268,27 @@ scripts). The source->target mapping is stated explicitly in
   and `lastModified` leak as loudly as EXIF; copies go to
   `$XDG_RUNTIME_DIR/sanitized`. The two front-ends: **`sanitize_menu`** (rofi,
   `MOD+S` in `config/dwl/config.h`; `Return` = image on the clipboard,
-  `Shift+Return` = path, because `wl-copy` offers one MIME type per call). That
-  one type is **always `image/png`** on `Return` - a non-PNG is re-encoded via
-  ffmpeg (and re-`sanitize`d) first, because a clipboard offer only advertising
-  `image/jpeg` shows up in `wl-paste -l` but comes back empty for every consumer
-  that asks for PNG, which is most of them (GTK/Qt/Electron/browsers, the Claude
-  CLI). A format ffmpeg cannot decode (SVG) falls back to copying the path.
-  The other front-end is
+  `Shift+Return` = path, because `wl-copy` offers one MIME type per call) and
   **`clipboard_sanitize`** (one `wl-paste --watch` per MIME type in `TYPES` -
   png/jpeg/webp/tiff/gif/avif -, loop-safe via a sha256 of what it wrote).
+- **Everything that reaches the clipboard as an image goes out as
+  `image/png`**, via `sanitize --png` (the conversion is `ffmpeg … -c:v png`,
+  and it lives in `sanitize` because deciding it from a MIME type is format
+  knowledge; SVG is rasterised too, through ffmpeg's `librsvg` decoder, and
+  moves from mat2's hands into exiftool's along the way). Reason: a Wayland
+  offer only carries the types its source announces and `wl-copy` announces
+  exactly the one it is given, so an `image/jpeg`-only offer shows up in
+  `wl-paste -l` and then comes back **empty** for every consumer that asks for
+  PNG - which is most of them (GTK/Qt/Electron/browsers, the Claude CLI). It
+  looks copied and pastes nowhere. In `sanitize_menu` only `Return` gets
+  `--png` (a file handed over by path keeps its format); what is still not a
+  PNG afterwards (PDF, office docs) falls back to copying the path.
+  `clipboard_sanitize` has the same problem from the other side: **every**
+  re-copy collapses a multi-type offer to one type, so exactly one watcher may
+  act - the one whose type is the **first `TYPES` entry the clipboard offers**
+  (hence `image/png` heads that list: a source that already speaks PNG is taken
+  at its word and nothing is re-encoded). An animated GIF loses its motion
+  there, accepted knowingly.
   `sanitize_menu` is a **single** rofi window that filters live: the candidates
   are piped in once and rofi does the matching, which only stays instant while
   the list stays small - hence `EXTENSIONS`, which keeps the metadata-carrying

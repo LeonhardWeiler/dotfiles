@@ -19,8 +19,9 @@
 # exactly the one it was given - so a JPEG handed over as image/jpeg is visible
 # in `wl-paste -l` but comes back empty for every consumer that asks for PNG,
 # which is most of them (GTK, Qt, Electron, the browsers, the Claude CLI).  It
-# looked copied and pasted nowhere.  PNG is lossless, so re-encoding for the
-# clipboard costs bytes, not pixels.
+# looked copied and pasted nowhere.  The re-encoding is `sanitize --png`, not
+# something done here: which formats are pixels is format knowledge, and that
+# lives in `sanitize`.  PNG is lossless, so this costs bytes, not pixels.
 #
 # The candidate list is built once and piped into rofi, which then does the
 # filtering in-process - that is what makes it live.  For that to stay snappy
@@ -55,7 +56,7 @@ case "${1:-}" in
   *)         usage >&2; exit 1 ;;
 esac
 
-for cmd in rofi rg stat file wl-copy ffmpeg; do
+for cmd in rofi rg stat file wl-copy; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "$SELF: '$cmd' not found" >&2
     exit 1
@@ -122,7 +123,14 @@ esac
 
 # ── strip and copy ──────────────────────────────────────────────────────────
 
-CLEAN=$("$SANITIZE" -q -- "$FILE") || {
+# --png only on the way to the clipboard: Shift+Return hands over a file, and a
+# file has no reason to stop being the format it was.
+case $MODE in
+  content) PNG=--png ;;
+  path)    PNG= ;;
+esac
+
+CLEAN=$("$SANITIZE" -q ${PNG:+"$PNG"} -- "$FILE") || {
   message "Could not strip metadata from
 $CHOICE
 
@@ -132,47 +140,18 @@ Unsupported format - send it only if you know what is inside."
 
 MIME=$(file --mime-type -b -- "$CLEAN" 2>/dev/null)
 
-# Print a PNG rendering of the cleaned copy, or fail if the format cannot be
-# decoded as pixels (SVG is the one that lands here - `sanitize` runs it through
-# mat2 as a document, and ffmpeg has no decoder for it).
-#
-# The result goes through `sanitize` once more: the conversion is a fresh file
-# and gets whatever the PNG muxer felt like writing.  In practice +bitexact
-# already keeps ffmpeg from stamping its version in, but the guarantee this menu
-# makes is that nothing leaves untouched, so it is checked rather than assumed.
-#
-# Only the first frame of an animated GIF makes it across - a clipboard image
-# offer is a single still in every consumer anyway.
-as_png() {
-  case $MIME in
-    image/png) printf '%s\n' "$CLEAN"; return 0 ;;
-  esac
-
-  png=${CLEAN%.*}.png
-  ffmpeg -nostdin -v error -y -i "$CLEAN" \
-         -frames:v 1 -update 1 -fflags +bitexact -f image2 -c:v png \
-         "$png" </dev/null >/dev/null 2>&1 || return 1
-  "$SANITIZE" -i -k -q -- "$png" >/dev/null || return 1
-  printf '%s\n' "$png"
-}
-
 # wl-copy offers exactly one MIME type per invocation, so pasting the picture
 # and pasting its path are mutually exclusive - hence the two keys.
+#
+# image/png rather than image/*: --png already turned everything that can be
+# drawn into one, SVG included, so what is left here is a PDF or an office
+# document - something no application takes off the clipboard as content.
 case $MODE:$MIME in
-  content:image/*)
-    # Not in a command substitution around wl-copy: it forks a server for the
-    # offer, and the substitution would wait for a process that outlives us.
-    if PNG=$(as_png); then
-      wl-copy --type image/png <"$PNG" || exit 1
-      message "Cleaned image on the clipboard, ready to paste.
-
-$PNG"
-    else
-      wl-copy -- "$CLEAN" || exit 1
-      message "$MIME cannot be handed over as an image, so the path was copied instead.
+  content:image/png)
+    wl-copy --type image/png <"$CLEAN" || exit 1
+    message "Cleaned image on the clipboard, ready to paste.
 
 $CLEAN"
-    fi
     ;;
   content:*)
     wl-copy -- "$CLEAN" || exit 1

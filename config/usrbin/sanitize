@@ -32,6 +32,13 @@
 #     time: that reveals nothing the recipient does not already know, while a
 #     fixed fake date would announce that the file was scrubbed.
 #
+# --png exists for the one destination that dictates a format: the Wayland
+# clipboard.  An offer carries the types its source announces, and image/png is
+# what the consumers ask for - a JPEG offered as image/jpeg is advertised and
+# then comes back empty in GTK, Qt, Electron and the browsers.  Deciding that
+# from a MIME type is format knowledge, and format knowledge lives here rather
+# than in the front-ends.
+#
 # What no tool can fix: the contents.  A screenshot still shows window titles,
 # paths and a clock; a "redacted" PDF may still carry the text underneath.
 #
@@ -44,17 +51,20 @@ OUTDIR=${SANITIZE_OUTDIR:-${XDG_RUNTIME_DIR:-/tmp}/sanitized}
 INPLACE=0
 KEEPNAME=0
 QUIET=0
+TOPNG=0
 STATUS=0
 
 usage() {
   cat <<EOF
-Usage: $SELF [-i] [-k] [-o DIR] [-q] FILE...
+Usage: $SELF [-i] [-k] [-o DIR] [-p] [-q] FILE...
 
 Write a metadata-free copy of each FILE and print its path.
 
   -i, --in-place    replace the original instead of writing a copy
   -k, --keep-name   keep the original file name (it may leak date or place)
   -o, --out DIR     where to write the copies (default: $OUTDIR)
+  -p, --png         re-encode images as PNG, the type a clipboard offer can
+                    rely on; other formats keep theirs
   -q, --quiet       no progress on stderr, only errors
   -h, --help        show this help
 EOF
@@ -68,6 +78,7 @@ while [ $# -gt 0 ]; do
     -i|--in-place)  INPLACE=1 ;;
     -k|--keep-name) KEEPNAME=1 ;;
     -o|--out)       [ $# -ge 2 ] || { usage >&2; exit 1; }; OUTDIR=$2; shift ;;
+    -p|--png)       TOPNG=1 ;;
     -q|--quiet)     QUIET=1 ;;
     -h|--help)      usage; exit 0 ;;
     --)             shift; break ;;
@@ -121,9 +132,43 @@ for src; do
   esac
 
   EXT=$(extension "$src")
+
+  # Converted before the stripping below, not after: a fresh PNG carries
+  # whatever its muxer felt like writing, and stripping it afterwards would mean
+  # a second pass over a file that was already declared clean.
+  #
+  # The gate is the MIME type rather than KIND, so an SVG is rasterised too even
+  # though it was routed to mat2 as a document a moment ago - ffmpeg reaches it
+  # through librsvg.  Whatever comes out is a PNG in earnest, which is why KIND
+  # moves with it: the result belongs to exiftool now, not to mat2.  A format
+  # with no decoder behind it is stripped as it is, and the caller sees that in
+  # the type of the result.
+  CONVERTED=0
+  case $TOPNG:$MIME in
+    1:image/png) ;;                     # already what --png is asking for
+    1:image/*)
+      # -update 1 writes one file instead of a numbered sequence, so an animated
+      # GIF arrives as its first frame - which is all a clipboard offer carries.
+      if ffmpeg -nostdin -v error -y -i "$src" \
+                -frames:v 1 -update 1 -fflags +bitexact -f image2 -c:v png \
+                "$WORK/png.png" </dev/null >/dev/null 2>&1
+      then
+        EXT=.png
+        KIND=image
+        CONVERTED=1
+      else
+        warn "cannot render as png, keeping $MIME: ${src##*/}"
+      fi
+      ;;
+  esac
+
   TMP=$WORK/work$EXT
   rm -f "$TMP"
-  cp -- "$src" "$TMP" || { err "cannot copy: $src"; continue; }
+  if [ "$CONVERTED" = 1 ]; then
+    mv -f "$WORK/png.png" "$TMP"
+  else
+    cp -- "$src" "$TMP" || { err "cannot copy: $src"; continue; }
+  fi
 
   OK=1
   case $KIND in
