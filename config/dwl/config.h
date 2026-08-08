@@ -175,8 +175,10 @@ static const Key keys[] = {
 	/* Quit goes through a rofi confirmation - it tears down the whole session,
 	 * so it must not be a single accidental chord. It also sits on the far left
 	 * pinky, away from every frequent binding. `pkill dwl` is the confirmed
-	 * path. */
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       spawn, SHCMD("printf 'no\\nyes' | rofi -dmenu -p 'quit dwl?' | grep -qx yes && pkill dwl") },
+	 * path. `-sync` because rofi maps the window before it has read stdin: with
+	 * a list this short the window would otherwise pop up empty and then grow
+	 * by two rows, since the theme sizes it to the list. */
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_q,       spawn, SHCMD("printf 'no\\nyes' | rofi -dmenu -sync -p 'quit dwl?' | grep -qx yes && pkill dwl") },
 
 	/* Tags 1-9 */
 	TAGKEYS(          XKB_KEY_1, XKB_KEY_exclam,                       0),
