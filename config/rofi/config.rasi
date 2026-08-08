@@ -107,7 +107,11 @@ listview {
   scrollbar: false;
   layout: vertical;
   reverse: false;
-  fixed-height: true;
+  /* The window is only as tall as the list needs, `lines` being the cap: a
+     two-entry menu (the MOD+Shift+Q quit prompt) gets two rows, not ten empty
+     ones. With `dynamic` it keeps shrinking/growing while the filter narrows
+     the list. */
+  fixed-height: false;
   fixed-columns: true;
 
   spacing: 5px;
