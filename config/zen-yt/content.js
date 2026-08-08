@@ -65,9 +65,11 @@
   };
 
   // Everything a thumbnail link carries besides the title: the duration badge
-  // and its screen-reader text, "Watch later", the resume bar, icons. All of
-  // it is inside the <a>, so plain textContent picks it up - this is why the
-  // title used to come out as "13:07" or as a spelled-out duration.
+  // and its screen-reader text, "Watch later", the resume bar, icons, and the
+  // whole chrome of the inline preview player that starts inside the link on
+  // hover ("Tap to unmute", "Shopping", "If playback doesn't begin shortly…").
+  // All of it is inside the <a>, so plain textContent picks it up - this is
+  // why the title used to come out as "13:07" or as that wall of button text.
   const isNoise = (el) => {
     const tag = el.tagName.toLowerCase();
     if (
@@ -79,7 +81,10 @@
     ) {
       return true;
     }
-    return /badge|overlay|time-status|progress|ytp-time|ytp-play/.test(
+    // `ytp-` is the player's own namespace: its title link keeps the title in
+    // a text node of its own, so dropping every ytp- element below the node
+    // being read loses the buttons and keeps the title.
+    return /badge|overlay|time-status|progress|ytp-/.test(
       el.getAttribute("class") || ""
     );
   };
