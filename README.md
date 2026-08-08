@@ -311,6 +311,36 @@ sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
   `PATH` via `~/.local/bin`; the same script the pacman hook uses).
 - To install all packages from `programs.txt`, run `./setup/install-programs`
 
+### Copying the last command and its output (`copy-last-command`)
+
+`Ctrl+Shift+Y` in foot puts the last command **and** its output on the
+clipboard, ready to paste somewhere else:
+
+```
+Input: printf "zeile eins\nzeile zwei\n"
+Output:
+zeile eins
+zeile zwei
+```
+
+Three pieces make that work:
+
+- `~/.bashrc` emits the **OSC-133** markers foot needs — `A` before each prompt,
+  `C` before a command's output and `D` after it. This also enables foot's
+  prompt jumping (`Ctrl+Shift+Z`/`X`).
+- The command line itself is *not* inside the marked output region, so the same
+  `.bashrc` writes it to `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` before
+  running it (a `DEBUG` trap reading `history 1`).
+- `config/usrbin/copy-last-command` is bound to foot's `pipe-command-output`
+  (`config/foot/foot.ini`). foot feeds it the output on stdin, the script reads
+  the command back from the file above — keyed by the foot process that spawned
+  both — and pipes the result into `wl-copy`.
+
+Because the two halves are matched through the owning foot process, each window
+copies its own last command. This assumes foot runs one process per window (no
+`--server`/`footclient`, which is how this system runs it), and the shell being
+a child of that process — the `Input:` line stays empty otherwise.
+
 ### Removable drives (`mount_menu`)
 
 `MOD+M` opens a rofi menu of every removable filesystem (`config/usrbin/mount_menu`,

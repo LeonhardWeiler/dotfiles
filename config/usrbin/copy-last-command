@@ -1,0 +1,53 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Copy the last command and its output to the clipboard, formatted as
+#
+#   Input: <command line>
+#   Output:
+#   <output>
+#
+# Meant to be run from foot's `pipe-command-output` key binding: foot feeds the
+# output of the last command on stdin (delimited by the OSC-133 markers our
+# .bashrc emits), while the command line itself is read back from the file that
+# same .bashrc writes, keyed by the foot process owning the window.
+
+set -u
+
+# The foot instance that spawned us is our parent; walk up the chain anyway so
+# an intermediate process cannot break the lookup.
+foot_pid() {
+  pid=$PPID
+  while [ "$pid" -gt 1 ] 2>/dev/null; do
+    read -r comm < "/proc/$pid/comm" 2>/dev/null || return 1
+    if [ "$comm" = foot ]; then
+      printf '%s' "$pid"
+      return 0
+    fi
+    next=
+    while read -r key value; do
+      if [ "$key" = PPid: ]; then
+        next=$value
+        break
+      fi
+    done < "/proc/$pid/status" 2>/dev/null
+    [ -n "$next" ] || return 1
+    pid=$next
+  done
+  return 1
+}
+
+# Strip the trailing padding foot pipes along with the screen cells.
+output=$(sed 's/[[:space:]]*$//')
+
+command_line=
+if pid=$(foot_pid); then
+  file="${XDG_RUNTIME_DIR:-/tmp}/foot-last-command.$pid"
+  [ -r "$file" ] && command_line=$(cat "$file")
+fi
+
+{
+  printf 'Input: %s\n' "$command_line"
+  printf 'Output:\n%s\n' "$output"
+} | wl-copy

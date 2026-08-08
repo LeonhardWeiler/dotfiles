@@ -222,6 +222,16 @@ scripts). The source->target mapping is stated explicitly in
   `config.h` stays the authority). `build-dwl` only contacts the remote when the
   pinned tag is missing locally, so an outage cannot block applying a `config.h`
   change.
+- **`Ctrl+Shift+Y` (copy last command + output)** spans three files that must
+  stay in sync: `config/bash/.bashrc` emits the **OSC-133** markers (`A`/`C`/`D`)
+  and stashes the command line in
+  `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` from a `DEBUG` trap;
+  `config/foot/foot.ini` binds `pipe-command-output` to
+  `config/usrbin/copy-last-command`, which reads the output on stdin, the
+  command from that file, and pipes `Input:`/`Output:` into `wl-copy`. Both
+  sides find each other by walking up to the owning **foot** process, so this
+  breaks under `foot --server`/`footclient` (one process for all windows).
+  Removing the OSC-133 markers would also kill foot's prompt jumping.
 - **Removable drives**: `config/usrbin/mount_menu` (rofi, bound to `MOD+M` in
   `config/dwl/config.h`) mounts/unmounts/ejects them with plain
   `mount`/`umount` via `sudo -n` (the passwordless `wheel` rule from
