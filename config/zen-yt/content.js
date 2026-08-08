@@ -95,6 +95,59 @@
     return clean(copy.textContent);
   };
 
+  // ── the duration YouTube appends for screen readers ───────────────────────
+  //
+  // Where the badge is not an element of its own, the same number is glued to
+  // the end of the title instead - as an aria-label ("Windows has driven me to
+  // tears.... 28 minutes") or as an extra text node inside the title link.
+  // Removing an element cannot help there, so the suffix is cut off the string.
+
+  // Only these words are cut, so a trailing number stays put unless it is
+  // spelled out as a length ("Die 3 Musketiere" survives, "… 3 minutes" does
+  // not). en/de is what this browser shows; another language simply keeps the
+  // suffix rather than risking the wrong words.
+  const TIME_WORD =
+    /^(h|hr|hrs|hour|hours|std|stunde|stunden|min|mins|minute|minutes|minuten|sec|secs|second|seconds|sek|sekunde|sekunden)$/;
+
+  // A title that ends in a length of its own ("… in 11 Minutes") must keep it.
+  // What tells the two apart is the word in front: YouTube appends its suffix
+  // straight after the title, a title says "in"/"under"/"unter" first.
+  const BEFORE_A_LENGTH = new Set([
+    "in", "under", "over", "about", "than", "within", "only", "just", "for",
+    "approximately", "approx", "ca", "circa", "unter", "über", "ueber",
+    "binnen", "knapp", "etwa", "rund", "nur", "als",
+  ]);
+
+  const TRAILING = /(?:[\s,·]+(?:and\s+|und\s+)?\d{1,3}\s*\p{L}+\.?)+$/u;
+
+  // The length as the badge in the card spells it, as numbers: "28:14" -> the
+  // 28 and the 14 that a screen reader would say. The suffix is only cut when
+  // its numbers are the badge's, so a title cannot lose a word to a number
+  // that has nothing to do with the video.
+  const badgeNumbers = (card) => {
+    const m = (card.textContent || "").match(/\b(\d{1,2}):([0-5]\d)(?::([0-5]\d))?\b/);
+    return m ? m.slice(1).filter((n) => n !== undefined).map(Number) : [];
+  };
+
+  const withoutLength = (card, s) => {
+    const tail = s.match(TRAILING);
+    if (!tail) return s;
+
+    const units = tail[0].match(/\d{1,3}\s*\p{L}+/gu) || [];
+    const words = units.map((u) => u.replace(/[\d\s.]/g, "").toLowerCase());
+    if (!units.length || !words.every((w) => TIME_WORD.test(w))) return s;
+
+    const numbers = units.map((u) => Number(u.match(/\d+/)[0]));
+    const badge = badgeNumbers(card);
+    if (badge.length && !numbers.every((n) => badge.includes(n))) return s;
+
+    const rest = s.slice(0, s.length - tail[0].length).trim();
+    if (rest.length < 3) return s;
+
+    const last = (rest.split(/\s+/).pop() || "").toLowerCase().replace(/[^\p{L}]/gu, "");
+    return BEFORE_A_LENGTH.has(last) ? s : rest;
+  };
+
   // One video and everything shown about it - its thumbnail link and its title
   // link are siblings inside one of these.
   const CARDS = [
@@ -158,20 +211,26 @@
   // and only last `aria-label` - it pads the title with channel, views, age
   // and duration, so it is better than nothing and worse than everything else.
   const linkTitle = (a) => {
-    const own = clean(a.getAttribute("title"));
-    if (plausible(own)) return own;
+    const found = () => {
+      const own = clean(a.getAttribute("title"));
+      if (plausible(own)) return own;
 
-    const near = titleNear(a);
-    if (near) return near;
+      const near = titleNear(a);
+      if (near) return near;
 
-    const text = visibleText(a);
-    if (plausible(text)) return text;
+      const text = visibleText(a);
+      if (plausible(text)) return text;
 
-    const alt = clean(a.querySelector("img[alt]")?.getAttribute("alt"));
-    if (plausible(alt)) return alt;
+      const alt = clean(a.querySelector("img[alt]")?.getAttribute("alt"));
+      if (plausible(alt)) return alt;
 
-    const label = clean(a.getAttribute("aria-label"));
-    return plausible(label) ? label : "";
+      const label = clean(a.getAttribute("aria-label"));
+      return plausible(label) ? label : "";
+    };
+
+    // Every source can carry the length at the end, so it is cut off once, at
+    // the end, rather than in each of them.
+    return withoutLength(a.closest(CARDS) || a, found());
   };
 
   const send = (msg) => {

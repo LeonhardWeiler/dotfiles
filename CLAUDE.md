@@ -301,7 +301,11 @@ scripts). The source->target mapping is stated explicitly in
   the duration badge plus its screen-reader text; it resolves the title from
   the `title` attribute, then from another anchor with the same video id or the
   enclosing card (`ytd-*-renderer` / `yt-lockup-view-model`), and treats
-  anything starting with `\d+:\d+` as not-a-title. Both commit into the
+  anything starting with `\d+:\d+` as not-a-title. A length glued to the *end*
+  of the title ("… 28 minutes", the a11y spelling of the badge) is cut off,
+  guarded three ways - the words must be time words (en/de list), the numbers
+  must be the card badge's, and the preceding word must not be `in`/`unter`/… -
+  so "… in 11 Minutes" and "Die 3 Musketiere" survive. Both commit into the
   notes repo with `git commit -- <path>`, which leaves anything else staged
   there alone. An unsigned add-on only installs because Zen is built with
   `MOZ_REQUIRE_SIGNING=false`; a Zen build that changes that would take the

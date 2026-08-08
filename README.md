@@ -515,6 +515,13 @@ element, and only falls back to the link's own text (overlays stripped), the
 thumbnail `alt` and finally `aria-label`, which pads the title with channel,
 views and duration.
 
+Where the length is not an element but glued to the end of the string
+("Windows has driven me to tears.... 28 minutes"), it is cut off the title
+instead - but only when the words are lengths (`minutes`, `Minuten`, `hours`,
+…), the numbers are the ones in the card's duration badge, and the word in
+front is not an `in`/`under`/`unter`. That is what keeps
+"… Explained in 11 Minutes" and "Die 3 Musketiere" intact.
+
 Both halves are needed because a page cannot write to a file. The bridge is
 **native messaging**: Zen starts `config/usrbin/yt_save` for one message and it
 exits again. That is what KeePassXC does here too, and it is why there is **no
