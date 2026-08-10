@@ -32,9 +32,9 @@ kdenlive 26.04.3-2
 keepassxc 2.7.12-3
 less 1:704-1
 libnotify 0.8.8-1
-linux 7.1.6.arch1-1
+linux 7.1.7.arch1-1
 linux-firmware 20260622-1
-linux-headers 7.1.6.arch1-1
+linux-headers 7.1.7.arch1-1
 mandoc 1.14.6-5
 mat2 0.15.0-1
 mesa 1:26.1.6-1
@@ -49,7 +49,7 @@ noto-fonts-emoji 1:2.051-1
 npm 12.0.2-1
 ntfs-3g 2026.7.7-1
 obs-studio 32.2.1-6
-openssh 10.4p1-3
+openssh 10.4p1-4
 perl-image-exiftool 13.55-1
 pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1
