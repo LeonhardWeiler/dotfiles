@@ -11,8 +11,6 @@ return {
       "gofumpt",
       "typstyle",
       "golangci-lint",
-      "roslyn-language-server",
-      "csharpier",
     },
   },
 }

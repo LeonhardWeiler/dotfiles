@@ -32,12 +32,6 @@ return {
         },
       })
 
-      -- Ohne dies behandelt tinymist jede geoeffnete .typ-Datei als eigenes
-      -- Wurzeldokument, wodurch einzelne Kapitel Fehler wie fehlende Labels
-      -- oder fehlende heading-numbering melden. "lockDatabase" liest die
-      -- Datei tinymist.lock im Projekt-Root und analysiert Kapitel im
-      -- Kontext des dort eingetragenen Hauptdokuments. Existiert keine
-      -- tinymist.lock, faellt tinymist automatisch auf "singleFile" zurueck.
       vim.lsp.config("tinymist", {
         settings = {
           projectResolution = "lockDatabase",

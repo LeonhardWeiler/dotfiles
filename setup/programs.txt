@@ -13,7 +13,6 @@ cpupower 7.1.8-1
 devtools 1:1.5.1-1
 dmidecode 3.7-1
 dosfstools 4.2-5
-dotnet-sdk 10.0.10.sdk110-1
 efibootmgr 18-4
 exfatprogs 1.4.2-1
 figma-agent-linux-bin 0.4.3-1
@@ -24,11 +23,10 @@ glmark2 2023.01-2
 godot 4.7.1-1
 grim 1.5.0-2
 hdparm 9.65-3
-helium-browser-bin 0.15.3.1-1
+helium-browser-bin 0.15.4.1-1
 iperf3 3.21-1
 iptables 1:1.8.13-1
 jq 1.8.2-1
-kdenlive 26.04.3-2
 keepassxc 2.7.12-3
 less 1:704-1
 libnotify 0.8.8-1
@@ -54,7 +52,6 @@ perl-image-exiftool 13.55-1
 pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1
 pipewire-pulse 1:1.6.8-1
-plasticscm-client-gui 11.0.16.10303-1
 ps_mem 3.14-2
 python-pip 26.2.1-1
 qt5-wayland 5.15.19+kde+r55-1
@@ -64,7 +61,6 @@ ripgrep 15.2.0-1
 rofi 2.0.0-1
 rsync 3.4.4-1
 rt-tests 2.10-1
-sideband 1.9.8-1
 signal-desktop 8.22.0-1
 slurp 1.5.0-2
 smem 1.5-8
@@ -73,7 +69,6 @@ sysbench 1.0.20-2
 thunderbird 153.0.2-1
 ttf-jetbrains-mono-nerd 3.5.0-1
 typst 1:0.15.1-2
-unityhub 3.19.5-1
 unzip 6.0-23
 vulkan-radeon 1:26.1.6-1
 vulkan-tools 1.4.357.0-1
