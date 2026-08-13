@@ -27,7 +27,7 @@ helium-browser-bin 0.15.4.1-1
 iperf3 3.21-1
 iptables 1:1.8.13-1
 jq 1.8.2-1
-keepassxc 2.7.12-3
+keepassxc 2.7.12-4
 less 1:704-1
 libnotify 0.8.8-1
 linux 7.1.8.arch1-3
@@ -35,7 +35,7 @@ linux-firmware 20260810-1
 linux-headers 7.1.8.arch1-3
 mandoc 1.14.6-5
 mat2 0.15.0-1
-mesa 1:26.1.6-1
+mesa 1:26.1.7-1
 mesa-utils 9.0.0-7
 mpv 1:0.41.0-4
 neovim 0.12.4-1
@@ -66,11 +66,11 @@ slurp 1.5.0-2
 smem 1.5-8
 stress-ng 0.21.04-2
 sysbench 1.0.20-2
-thunderbird 153.0.2-1
+thunderbird 153.0.2-2
 ttf-jetbrains-mono-nerd 3.5.0-1
 typst 1:0.15.1-2
 unzip 6.0-23
-vulkan-radeon 1:26.1.6-1
+vulkan-radeon 1:26.1.7-1
 vulkan-tools 1.4.357.0-1
 wayland 1.26.0-1
 wayland-protocols 1.49-1
@@ -87,5 +87,5 @@ wtype 0.4-2
 xdg-desktop-portal-wlr 0.8.2-1
 yay 13.0.1-1
 yt-dlp 2026.07.04-1
-zen-browser-bin 1.21.13b-1
+zen-browser-bin 1.21.14b-1
 zip 3.0-13
