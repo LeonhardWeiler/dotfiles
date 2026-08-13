@@ -2,7 +2,7 @@ acpi 1.8-2
 amd-ucode 20260810-1
 android-tools 37.0.0-2
 aseprite 1.3.18.1-3
-audacity 1:3.7.8-3
+audacity 1:3.7.8-4
 base-devel 1-2
 bc 1.08.2-1
 brightnessctl 0.5.1-3
