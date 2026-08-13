@@ -46,7 +46,7 @@ noto-fonts-cjk 20240730-1
 noto-fonts-emoji 1:2.051-1
 npm 12.0.2-1
 ntfs-3g 2026.7.7-1
-obs-studio 32.2.1-6
+obs-studio 32.2.1-7
 openssh 10.5p1-1
 perl-image-exiftool 13.55-1
 pipewire 1:1.6.8-1
@@ -59,7 +59,7 @@ qt5ct 1.9-2
 restic 0.19.1-1
 ripgrep 15.2.0-1
 rofi 2.0.0-1
-rsync 3.4.4-1
+rsync 3.5.0-1
 rt-tests 2.10-1
 signal-desktop 8.22.0-1
 slurp 1.5.0-2
