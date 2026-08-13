@@ -61,7 +61,7 @@ ripgrep 15.2.0-1
 rofi 2.0.0-1
 rsync 3.5.0-1
 rt-tests 2.10-1
-signal-desktop 8.22.0-1
+signal-desktop 8.23.0-1
 slurp 1.5.0-2
 smem 1.5-8
 stress-ng 0.21.04-2
