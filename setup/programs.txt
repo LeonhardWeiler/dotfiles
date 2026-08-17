@@ -8,7 +8,7 @@ bc 1.08.2-1
 brightnessctl 0.5.1-3
 btop 1.4.7-1
 clinfo 3.0.25.02.14-1
-clpeak 2.0.18-1
+clpeak 2.0.19-1
 cpupower 7.1.8-1
 devtools 1:1.5.1-1
 dmidecode 3.7-1
@@ -88,4 +88,4 @@ xdg-desktop-portal-wlr 0.8.2-1
 yay 13.0.1-1
 yt-dlp 2026.07.04-1
 zen-browser-bin 1.21.14b-1
-zip 3.0-13
+zip 3.0-14
