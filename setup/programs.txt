@@ -39,7 +39,7 @@ mat2 0.15.0-1
 mesa 1:26.2.1-1
 mesa-utils 9.0.0-7
 mpv 1:0.41.0-4
-neovim 0.12.4-1
+neovim 0.12.5-1
 networkmanager 1.58.1-1
 nodejs-lts-jod 22.23.2-1
 noto-fonts 1:2026.08.01-1
