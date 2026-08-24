@@ -5,10 +5,11 @@ aseprite 1.3.18.2-1
 audacity 1:3.7.8-4
 base-devel 1-2
 bc 1.08.2-1
+beets 2.13.1-1
 brightnessctl 0.5.1-3
 btop 1.4.7-1
 clinfo 3.0.25.02.14-1
-clpeak 2.1.2-1
+clpeak 2.1.3-1
 cpupower 7.2-1
 devtools 1:1.5.1-1
 dmidecode 3.7-1
@@ -38,6 +39,7 @@ mandoc 1.14.6-5
 mat2 0.15.0-1
 mesa 1:26.2.1-1
 mesa-utils 9.0.0-7
+mixxx 2.5.6-5
 mpv 1:0.41.0-4
 neovim 0.12.5-1
 networkmanager 1.58.1-1
@@ -54,9 +56,12 @@ pipewire 1:1.6.8-1
 pipewire-alsa 1:1.6.8-1
 pipewire-pulse 1:1.6.8-1
 ps_mem 3.14-2
+python-discogs-client 2.9-1
 python-pip 26.2.1-1
+python-pyacoustid 1.3.1-1
 qt5-wayland 5.15.19+kde+r55-1
 qt5ct 1.9-2
+realtime-privileges 5-1
 restic 0.19.1-1
 ripgrep 15.2.0-1
 rofi 2.0.0-1
