@@ -570,6 +570,45 @@ directly and skips the packing.
 If a keypress produces no flash at all, the host never ran - the extension logs
 why in the console of `about:debugging`.
 
+### Audio (PipeWire) and DJing with Mixxx
+
+Three files in `config/pipewire/`, and **which directory each is linked into is
+the whole point** - PipeWire reads three separate drop-in directories and
+silently ignores keys that land in the wrong one:
+
+| File | Target | Read by |
+| --- | --- | --- |
+| `99-custom.conf` | `~/.config/pipewire/pipewire.conf.d/` | the daemon - clock rate and quantum |
+| `10-eq.conf` | `~/.config/pipewire/pipewire.conf.d/` | the daemon - loads the EQ filter-chain |
+| `20-dj-jack.conf` | `~/.config/pipewire/jack.conf.d/` | the JACK bridge, i.e. Mixxx |
+
+Both daemon files used to be linked into `pipewire-pulse.conf.d/`, which only
+`pipewire-pulse` reads. It parses `context.modules`, so the EQ loaded anyway and
+the setup looked fine - but `default.clock.*` is a daemon key and was dropped on
+the floor, so none of the clock config had ever been active. `pw-metadata -n
+settings` is the check: it prints what the graph is *actually* running.
+
+**Mixxx is a JACK client** (`api="JACK Audio Connection Kit"` in
+`~/.mixxx/soundconfig.xml`), so `jack.conf.d/20-dj-jack.conf` - not the
+PulseAudio path - sets its latency: 256 frames @ 48 kHz (5.3 ms), with
+`node.lock-quantum` so another app starting mid-set cannot renegotiate the
+buffer size and glitch playback. Mixxx' own latency dropdown is inert under
+JACK; the buffer size comes from here. **A JACK client does not survive a
+PipeWire restart** - after `./install` plus a restart of the units, restart
+Mixxx too.
+
+`default.clock.allowed-rates` is deliberately a **single** value. With 44100 in
+the list PipeWire retunes the card whenever a lone 44.1 kHz stream plays, and
+that costs a moment of audio - a dropout mid-set. 44.1 kHz material is resampled
+instead, at `resample.quality = 10`. `min-quantum` is 256 so no client can pull
+the graph low enough to underrun the EQ.
+
+The EQ (`10-eq.conf`, LSP `graph_equalizer_x16_stereo`) is a bass-leaning
+desktop curve - `g_3` is +15 dB - and is the default sink, so browser and
+desktop audio run through it. **Mixxx does not**: as a JACK client it connects
+straight to the ALSA sink, keeping the DJ master flat. Do not route Mixxx
+through the EQ; mixing against a +15 dB shelf is mixing blind.
+
 ### Screen locker (waylock)
 
 dwl's `lockcmd` is [waylock](https://codeberg.org/ifreund/waylock), replacing the
