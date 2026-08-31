@@ -651,6 +651,24 @@ Mixxx is already switched over: `[ControllerPreset]` in `mixxx.cfg` points at
 on a fresh machine the mapping has to be picked once in *Preferences →
 Controllers*.
 
+Changes made so far, all four verified against the manufacturer's manual and with
+note numbers captured via `--controller-debug`:
+
+| Control | Was | Is now |
+| --- | --- | --- |
+| `4 BEAT/EXIT` | Reloop (a DDJ-400 leftover) | starts a 4 beat loop, cancels a running one |
+| `SHIFT + 4 BEAT/EXIT` | `reloop_andstop` | Reloop |
+| Key Shift pads | dead | key shift, -4..+3 semitones, lit pad shows the current pitch |
+| `SHIFT + BEAT ◄ / ►` | unmapped | BPM tap for deck 1 / deck 2 |
+| `SMART FADER` | unmapped | vinyl mode toggle, state on its own LED |
+
+Two deliberate deviations from the manual. The Key Shift row is `-4..+3` rather
+than the documented `+4/+5/+6/+7`, because Mixxx' `pitch` spans `-6..+6` and `+7`
+has no representation; symmetric keeps the whole range usable. And `SMART CFX`
+(`0x96`/`0x00`, shift `0x96`/`0x08`) stays **free** although it does send MIDI -
+unlike Smart Fader it has a plausible Mixxx equivalent in a QuickEffect chain on
+the metaknob, so it should keep its name for whoever builds that.
+
 What own changes exist is a diff against the stock file:
 
 ```sh
