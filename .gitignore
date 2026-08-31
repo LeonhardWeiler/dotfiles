@@ -13,3 +13,11 @@ ssh/
 *.key
 id_ed25519
 id_rsa
+
+# Mixxx: broadcast profiles hold the Icecast/Shoutcast password in PLAIN TEXT
+# whenever SecureCredentialsStorage is 0. Never track them, and never track the
+# library DB (absolute track paths + play history), the waveform caches or logs.
+*.bcp.xml
+mixxxdb.sqlite
+mixxx.log*
+analysis/

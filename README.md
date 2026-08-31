@@ -609,6 +609,41 @@ desktop audio run through it. **Mixxx does not**: as a JACK client it connects
 straight to the ALSA sink, keeping the DJ master flat. Do not route Mixxx
 through the EQ; mixing against a +15 dB shelf is mixing blind.
 
+#### What of `~/.mixxx/` is tracked
+
+Only the two hand-written files, **per file** - `~/.mixxx/` itself stays a real
+directory because Mixxx keeps state next to its config:
+
+| Path | Tracked | Why |
+| --- | --- | --- |
+| `Custom.kbd.cfg` | yes | hand-written keyboard mapping |
+| `soundconfig.xml` | yes | JACK/DDJ-FLX4 routing, 48 kHz |
+| `controllers/` | yes (glob, empty) | drop own controller mappings here |
+| `mixxx.cfg` | no | rewritten on every exit; holds the search history |
+| `mixxxdb.sqlite` | **never** | library: absolute track paths + play history |
+| `analysis/` | **never** | 586 MB of waveform caches |
+| `mixxx.log*` | **never** | track file names end up in there |
+| `broadcast_profiles/*.bcp.xml` | **never** | Icecast password in **plain text** |
+
+The last four are in `.gitignore` as a second line of defence, since **this repo
+is public**. The broadcast profile is the sharp edge: with
+`<SecureCredentialsStorage>0</SecureCredentialsStorage>` Mixxx writes the
+streaming password unencrypted into that XML.
+
+Own controller mappings never go into `/usr/share/mixxx/controllers/` (a package
+update overwrites them). Copy the pair into `config/mixxx/controllers/` and
+rename the `<name>` inside so it is distinguishable in the preferences:
+
+```sh
+cp /usr/share/mixxx/controllers/Pioneer-DDJ-FLX4.midi.xml    ~/dotfiles/config/mixxx/controllers/
+cp /usr/share/mixxx/controllers/Pioneer-DDJ-FLX4-script.js   ~/dotfiles/config/mixxx/controllers/
+./install
+```
+
+Develop them with `mixxx --controller-debug --controller-abort-on-warning
+--developer`; `--developer` also unlocks the Developer Tools menu, which lists
+every control object live.
+
 ### Screen locker (waylock)
 
 dwl's `lockcmd` is [waylock](https://codeberg.org/ifreund/waylock), replacing the

@@ -119,7 +119,7 @@ scripts). The source->target mapping is stated explicitly in
 
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
   `dwl`, `foot`, `git`, `keepassxc`, `locale`, `logind`, `mimeapps`,
-  `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
+  `mixxx`, `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
   `systemd-system`, `usrbin`, `wallpaper`, `wbg`, `wob`, `zen-yt`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
   wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
@@ -128,7 +128,14 @@ scripts). The source->target mapping is stated explicitly in
   contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
   are preserved. `claude` does **not** track
-  `.claude.json`/sessions/history/cache (auth/state/secrets).
+  `.claude.json`/sessions/history/cache (auth/state/secrets). `mixxx` is linked
+  the same way (two single files plus a `controllers/*` glob): `~/.mixxx/` must
+  stay real because Mixxx keeps `mixxxdb.sqlite` (library + play history),
+  `analysis/` (~600 MB of waveform caches) and its logs in there. `mixxx.cfg` is
+  deliberately **not** tracked - Mixxx rewrites it on every exit and it carries
+  the library search history. `broadcast_profiles/*.bcp.xml` must never be
+  tracked: with `SecureCredentialsStorage 0` the streaming password sits in it
+  in plain text, and **this repo is public** (hence the `.gitignore` entries).
 - **`setup/`** = deployment machinery: `links.conf` (link map, default config of
   `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
   script, without a `.sh` extension), and the **data lists the installer reads
