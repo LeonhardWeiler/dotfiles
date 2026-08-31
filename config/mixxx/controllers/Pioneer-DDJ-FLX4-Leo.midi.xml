@@ -2265,6 +2265,169 @@
             </control>
             <!-- SAMPLER MODE END -->
 
+            <!-- KEY SHIFT MODE START -->
+            <control>
+                <description>PAD 1 (DECK1) KEY SHIFT MODE - press - Shift the key by -4 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x70</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 2 (DECK1) KEY SHIFT MODE - press - Shift the key by -3 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x71</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 3 (DECK1) KEY SHIFT MODE - press - Shift the key by -2 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x72</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 4 (DECK1) KEY SHIFT MODE - press - Shift the key by -1 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x73</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 5 (DECK1) KEY SHIFT MODE - press - Shift the key by 0 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x74</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 6 (DECK1) KEY SHIFT MODE - press - Shift the key by +1 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x75</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 7 (DECK1) KEY SHIFT MODE - press - Shift the key by +2 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x76</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 8 (DECK1) KEY SHIFT MODE - press - Shift the key by +3 semitones</description>
+                <group>[Channel1]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x97</status>
+                <midino>0x77</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 1 (DECK2) KEY SHIFT MODE - press - Shift the key by -4 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x70</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 2 (DECK2) KEY SHIFT MODE - press - Shift the key by -3 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x71</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 3 (DECK2) KEY SHIFT MODE - press - Shift the key by -2 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x72</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 4 (DECK2) KEY SHIFT MODE - press - Shift the key by -1 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x73</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 5 (DECK2) KEY SHIFT MODE - press - Shift the key by 0 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x74</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 6 (DECK2) KEY SHIFT MODE - press - Shift the key by +1 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x75</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 7 (DECK2) KEY SHIFT MODE - press - Shift the key by +2 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x76</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
+                <description>PAD 8 (DECK2) KEY SHIFT MODE - press - Shift the key by +3 semitones</description>
+                <group>[Channel2]</group>
+                <key>PioneerDDJFLX4.keyShiftPadPressed</key>
+                <status>0x99</status>
+                <midino>0x77</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <!-- KEY SHIFT MODE END -->
+
             <!-- PAD Section END -->
         </controls>
         <outputs>

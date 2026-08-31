@@ -36,6 +36,8 @@
 //      * Toggle quantize (Shift + channel cue)
 //      * 4 BEAT/EXIT starts a 4 beat loop per the manufacturer's manual;
 //        Reloop moved to SHIFT + 4 BEAT/EXIT (replacing reloop_andstop)
+//      * Key Shift pad mode, laid out -4..+3 semitones instead of the
+//        manufacturer's +4..+7 row, which exceeds Mixxx' pitch range
 //
 //  Not implemented (after discussion and trial attempts):
 //      * Loop Section:
@@ -45,7 +47,6 @@
 //        * Keyboard mode
 //        * Pad FX1
 //        * Pad FX2
-//        * Keyshift mode
 //
 //  Not implemented yet (but might be in the future):
 //      * Smart CFX
@@ -270,6 +271,11 @@ PioneerDDJFLX4.init = function() {
 
     engine.makeConnection("[Channel1]", "loop_enabled", PioneerDDJFLX4.loopToggle);
     engine.makeConnection("[Channel2]", "loop_enabled", PioneerDDJFLX4.loopToggle);
+
+    engine.makeConnection("[Channel1]", "pitch", PioneerDDJFLX4.keyShiftLights);
+    engine.makeConnection("[Channel2]", "pitch", PioneerDDJFLX4.keyShiftLights);
+    PioneerDDJFLX4.keyShiftLights(engine.getValue("[Channel1]", "pitch"), "[Channel1]");
+    PioneerDDJFLX4.keyShiftLights(engine.getValue("[Channel2]", "pitch"), "[Channel2]");
 
     for (i = 1; i <= 3; i++) {
         engine.makeConnection("[EffectRack1_EffectUnit1_Effect" + i +"]", "enabled", PioneerDDJFLX4.toggleFxLight);
@@ -718,6 +724,39 @@ PioneerDDJFLX4.samplerPlayOutputCallbackFunction = function(value, group, _contr
             0x30 + padIndex,
             group);
     }
+};
+
+// Key Shift mode: every pad sets the key of the running track to a fixed semitone
+// offset. Mixxx' "pitch" control spans -6..+6 semitones, so the manufacturer's
+// +4/+5/+6/+7 top row does not fit. The pads are laid out symmetrically instead,
+// which keeps the full range usable and allows shifting down as well.
+PioneerDDJFLX4.keyShiftOffsets = [-4, -3, -2, -1, 0, 1, 2, 3];
+
+PioneerDDJFLX4.keyShiftPadStatus = function(group) {
+    return group === "[Channel1]" ? 0x97 : 0x99;
+};
+
+PioneerDDJFLX4.keyShiftPadPressed = function(_channel, control, value, _status, group) {
+    if (value === 0) {
+        return;
+    }
+
+    const offset = PioneerDDJFLX4.keyShiftOffsets[control - 0x70];
+    if (offset === undefined) {
+        return;
+    }
+
+    engine.setValue(group, "pitch", offset);
+};
+
+// Light the pad matching the current pitch, so the mode shows where the track sits.
+// A pitch set from elsewhere (or an offset we have no pad for) simply lights nothing.
+PioneerDDJFLX4.keyShiftLights = function(value, group) {
+    const status = PioneerDDJFLX4.keyShiftPadStatus(group);
+
+    PioneerDDJFLX4.keyShiftOffsets.forEach(function(offset, i) {
+        midi.sendShortMsg(status, 0x70 + i, offset === Math.round(value) ? 0x7F : 0x00);
+    });
 };
 
 PioneerDDJFLX4.padModeKeyPressed = function(_channel, _control, value, _status, _group) {
