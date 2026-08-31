@@ -34,12 +34,11 @@
 //
 //      * 32 beat jump forward & back (Shift + </> CUE/LOOP CALL arrows)
 //      * Toggle quantize (Shift + channel cue)
+//      * 4 BEAT/EXIT starts a 4 beat loop per the manufacturer's manual;
+//        Reloop moved to SHIFT + 4 BEAT/EXIT (replacing reloop_andstop)
 //
 //  Not implemented (after discussion and trial attempts):
 //      * Loop Section:
-//        * -4BEAT auto loop (hacky---prefer a clean way to set a 4 beat loop
-//                            from a previous position on long press)
-//
 //        * CUE/LOOP CALL - memory & delete (complex and not useful. Hot cues are sufficient)
 //
 //      * Secondary pad modes (trial attempts complex and too experimental)
@@ -433,6 +432,21 @@ PioneerDDJFLX4.toggleLoopAdjustOut = function(channel, _control, value, _status,
     }
     PioneerDDJFLX4.loopAdjustOut[channel] = !PioneerDDJFLX4.loopAdjustOut[channel];
     PioneerDDJFLX4.loopAdjustIn[channel] = false;
+};
+
+// The FLX4 labels this button 4 BEAT/EXIT, not RELOOP/EXIT as the DDJ-400 did:
+// it starts a four beat loop from the current position, and cancels the loop while
+// one is running. Reloop lives on the shift layer.
+PioneerDDJFLX4.fourBeatLoopPressed = function(_channel, _control, value, _status, group) {
+    if (value === 0) {
+        return;
+    }
+
+    if (engine.getValue(group, "loop_enabled")) {
+        engine.setValue(group, "reloop_toggle", 1);
+    } else {
+        engine.setValue(group, "beatloop_4_activate", 1);
+    }
 };
 
 // Two signals are sent here so that the light stays lit/unlit in its shift state too
