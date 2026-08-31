@@ -987,6 +987,16 @@
             </control>
 
             <control>
+                <description>SMART FADER - press - Toggle vinyl (scratch) mode for both jog wheels</description>
+                <group>[Master]</group>
+                <key>PioneerDDJFLX4.toggleVinylMode</key>
+                <status>0x96</status>
+                <midino>0x01</midino>
+                <options>
+                    <Script-Binding/>
+                </options>
+            </control>
+            <control>
                 <description>BEAT LEFT +SHIFT - press - Tap the BPM of deck 1</description>
                 <group>[Channel1]</group>
                 <key>bpm_tap</key>

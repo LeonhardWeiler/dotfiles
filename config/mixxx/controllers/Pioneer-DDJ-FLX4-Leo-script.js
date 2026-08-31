@@ -41,6 +41,7 @@
 //      * BPM tap on SHIFT + BEAT </> - left taps deck 1, right taps deck 2,
 //        mirroring the deck layout. Mixxx has no equivalent of the manual's
 //        BPM Auto/BPM Tap effect tempo modes, so the buttons were free.
+//      * Vinyl mode toggle on SMART FADER, which reports the state on its LED
 //
 //  Not implemented (after discussion and trial attempts):
 //      * Loop Section:
@@ -186,6 +187,32 @@ PioneerDDJFLX4.sendKeepAlive = function() {
 
 // Jog wheel constants
 PioneerDDJFLX4.vinylMode = true;
+
+// The FLX4 has no vinyl mode button of its own - rekordbox toggles it from the
+// keyboard. SMART FADER is the only button on the unit that nothing else claims
+// (its own function needs BPM interpolation Mixxx does not offer), so it carries
+// the toggle and reports the state on its own LED. SMART CFX is deliberately left
+// free: unlike Smart Fader it has a plausible Mixxx equivalent in a QuickEffect
+// chain, and should keep its name when someone builds that.
+PioneerDDJFLX4.vinylModeLight = {
+    status: 0x96,
+    data1: 0x01,
+};
+
+PioneerDDJFLX4.setVinylModeLight = function() {
+    midi.sendShortMsg(PioneerDDJFLX4.vinylModeLight.status,
+        PioneerDDJFLX4.vinylModeLight.data1,
+        PioneerDDJFLX4.vinylMode ? 0x7F : 0x00);
+};
+
+PioneerDDJFLX4.toggleVinylMode = function(_channel, _control, value) {
+    if (value === 0) {
+        return;
+    }
+
+    PioneerDDJFLX4.vinylMode = !PioneerDDJFLX4.vinylMode;
+    PioneerDDJFLX4.setVinylModeLight();
+};
 PioneerDDJFLX4.alpha = 1.0/8;
 PioneerDDJFLX4.beta = PioneerDDJFLX4.alpha/32;
 
@@ -284,6 +311,8 @@ PioneerDDJFLX4.init = function() {
         engine.makeConnection("[EffectRack1_EffectUnit1_Effect" + i +"]", "enabled", PioneerDDJFLX4.toggleFxLight);
     }
     engine.makeConnection("[EffectRack1_EffectUnit1]", "focused_effect", PioneerDDJFLX4.toggleFxLight);
+
+    PioneerDDJFLX4.setVinylModeLight();
 
     PioneerDDJFLX4.keepAliveTimer = engine.beginTimer(200, PioneerDDJFLX4.sendKeepAlive);
 
