@@ -987,6 +987,26 @@
             </control>
 
             <control>
+                <description>BEAT LEFT +SHIFT - press - Tap the BPM of deck 1</description>
+                <group>[Channel1]</group>
+                <key>bpm_tap</key>
+                <status>0x94</status>
+                <midino>0x66</midino>
+                <options>
+                    <Normal/>
+                </options>
+            </control>
+            <control>
+                <description>BEAT RIGHT +SHIFT - press - Tap the BPM of deck 2</description>
+                <group>[Channel2]</group>
+                <key>bpm_tap</key>
+                <status>0x94</status>
+                <midino>0x6B</midino>
+                <options>
+                    <Normal/>
+                </options>
+            </control>
+            <control>
                 <description>BEAT LEFT - press - select previous effect unit</description>
                 <group>[EffectRack1_EffectUnit1]</group>
                 <key>PioneerDDJFLX4.beatFxLeftPressed</key>

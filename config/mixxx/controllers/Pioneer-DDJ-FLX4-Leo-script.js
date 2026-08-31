@@ -38,6 +38,9 @@
 //        Reloop moved to SHIFT + 4 BEAT/EXIT (replacing reloop_andstop)
 //      * Key Shift pad mode, laid out -4..+3 semitones instead of the
 //        manufacturer's +4..+7 row, which exceeds Mixxx' pitch range
+//      * BPM tap on SHIFT + BEAT </> - left taps deck 1, right taps deck 2,
+//        mirroring the deck layout. Mixxx has no equivalent of the manual's
+//        BPM Auto/BPM Tap effect tempo modes, so the buttons were free.
 //
 //  Not implemented (after discussion and trial attempts):
 //      * Loop Section:
