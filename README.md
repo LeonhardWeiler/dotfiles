@@ -618,7 +618,7 @@ directory because Mixxx keeps state next to its config:
 | --- | --- | --- |
 | `Custom.kbd.cfg` | yes | hand-written keyboard mapping |
 | `soundconfig.xml` | yes | JACK/DDJ-FLX4 routing, 48 kHz |
-| `controllers/` | yes (glob, empty) | drop own controller mappings here |
+| `controllers/` | yes (glob) | own DDJ-FLX4 mapping fork |
 | `mixxx.cfg` | no | rewritten on every exit; holds the search history |
 | `mixxxdb.sqlite` | **never** | library: absolute track paths + play history |
 | `analysis/` | **never** | 586 MB of waveform caches |
@@ -630,19 +630,45 @@ is public**. The broadcast profile is the sharp edge: with
 `<SecureCredentialsStorage>0</SecureCredentialsStorage>` Mixxx writes the
 streaming password unencrypted into that XML.
 
-Own controller mappings never go into `/usr/share/mixxx/controllers/` (a package
-update overwrites them). Copy the pair into `config/mixxx/controllers/` and
-rename the `<name>` inside so it is distinguishable in the preferences:
+#### The DDJ-FLX4 mapping
+
+`config/mixxx/controllers/` holds a **fork of the mapping Mixxx ships**, so it
+can be developed further without a package update overwriting it:
+
+| File | Forked from |
+| --- | --- |
+| `Pioneer-DDJ-FLX4-Leo.midi.xml` | `/usr/share/mixxx/controllers/Pioneer-DDJ-FLX4.midi.xml` |
+| `Pioneer-DDJ-FLX4-Leo-script.js` | `/usr/share/mixxx/controllers/Pioneer-DDJ-FLX4-script.js` |
+
+Three things had to change so both mappings can coexist in the preferences
+dialog: `<name>` is `Pioneer DDJ-FLX4 (Leo)`, the `<file filename=…>` in
+`<scriptfiles>` points at the renamed `.js`, and `<author>` keeps the upstream
+credit. `functionprefix` stays `PioneerDDJFLX4` - only one mapping is loaded at
+a time, so it does not collide, and keeping it means the JS needs no rewrite.
+
+Mixxx is already switched over: `[ControllerPreset]` in `mixxx.cfg` points at
+`~/.mixxx/controllers/Pioneer-DDJ-FLX4-Leo.midi.xml`. That file is untracked, so
+on a fresh machine the mapping has to be picked once in *Preferences →
+Controllers*.
+
+What own changes exist is a diff against the stock file:
 
 ```sh
-cp /usr/share/mixxx/controllers/Pioneer-DDJ-FLX4.midi.xml    ~/dotfiles/config/mixxx/controllers/
-cp /usr/share/mixxx/controllers/Pioneer-DDJ-FLX4-script.js   ~/dotfiles/config/mixxx/controllers/
-./install
+diff /usr/share/mixxx/controllers/Pioneer-DDJ-FLX4-script.js \
+     ~/.mixxx/controllers/Pioneer-DDJ-FLX4-Leo-script.js
 ```
 
-Develop them with `mixxx --controller-debug --controller-abort-on-warning
---developer`; `--developer` also unlocks the Developer Tools menu, which lists
-every control object live.
+Develop with `mixxx --controller-debug --controller-abort-on-warning
+--developer`: the first two log every MIDI byte and turn controller-API misuse
+into hard errors, `--developer` unlocks the Developer Tools menu, which lists
+every control object live. The mapping API (`engine.getValue`,
+`engine.makeConnection`, `engine.beginTimer`, `midi.sendShortMsg`) plus the
+`midi-components-0.0.js` helper library are documented in the Mixxx manual;
+the JS engine is Qt's, so modern syntax works.
+
+Since the files are symlinks into this repo, editing them in `~/.mixxx/` and
+editing them in `config/mixxx/` is the same thing - but only Mixxx' **restart**
+(or *Preferences → Controllers*, re-selecting the mapping) reloads them.
 
 ### Screen locker (waylock)
 

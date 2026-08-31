@@ -136,6 +136,12 @@ scripts). The source->target mapping is stated explicitly in
   the library search history. `broadcast_profiles/*.bcp.xml` must never be
   tracked: with `SecureCredentialsStorage 0` the streaming password sits in it
   in plain text, and **this repo is public** (hence the `.gitignore` entries).
+  `config/mixxx/controllers/` is a **fork of the DDJ-FLX4 mapping Mixxx ships**
+  (`Pioneer-DDJ-FLX4-Leo.midi.xml` + `-Leo-script.js`) so a package update cannot
+  overwrite it - renamed `<name>`, and the `<file filename=…>` in `<scriptfiles>`
+  points at the renamed `.js` (the `functionprefix` deliberately stays
+  `PioneerDDJFLX4`). Reloading a mapping needs a Mixxx restart; develop with
+  `mixxx --controller-debug --controller-abort-on-warning --developer`.
 - **`setup/`** = deployment machinery: `links.conf` (link map, default config of
   `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
   script, without a `.sh` extension), and the **data lists the installer reads
