@@ -1,0 +1,243 @@
+#!/bin/sh
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+#
+# Build the LateNight-Leo Mixxx skin into the Mixxx settings directory.
+#
+# The skin is *derived*, not vendored: it is generated from the LateNight skin
+# that the mixxx package ships, recolored into our palette (palette.conf) and
+# then patched with the handful of things a color rule cannot decide
+# (overrides/). Only palette.conf, recolor.awk and overrides/ live in the repo,
+# a few kB instead of the ~3.4 MB of upstream assets - the same trade
+# build-dwl and build-wbg make. Rerun it after a mixxx update, or after
+# touching the palette; it wipes and rewrites the destination every time.
+#
+# Upstream is CC BY-SA 3.0, so the generated skin is too, and its skin.xml
+# keeps the original attribution block with a note about what was changed.
+#
+# Usage: build-skin [-n]
+#   -n   print what would happen, write nothing
+
+set -eu
+
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SKIN_NAME=LateNight-Leo
+UPSTREAM_NAME=LateNight
+# The scheme we keep. LateNight ships PaleMoon and Classic; PaleMoon is the
+# flat one and the one already in use, Classic is dropped.
+UPSTREAM_SCHEME=PaleMoon
+SCHEME_NAME=Leo
+# The upstream version this was last checked against. A mismatch is a warning,
+# not an error: the build usually still works, but the overrides are written
+# against a specific skin.xml and may need a look.
+KNOWN_VERSION=2.4.0.01
+
+SRC=${MIXXX_SKIN_DIR:-/usr/share/mixxx/skins}/$UPSTREAM_NAME
+DEST=${MIXXX_SETTINGS_DIR:-$HOME/.mixxx}/skins/$SKIN_NAME
+
+DRY=0
+[ "${1:-}" = "-n" ] && DRY=1
+
+die() { printf 'build-skin: %s\n' "$*" >&2; exit 1; }
+note() { printf 'build-skin: %s\n' "$*"; }
+
+[ -d "$SRC" ] || die "upstream skin not found: $SRC (is mixxx installed?)"
+[ -f "$HERE/palette.conf" ] || die "missing palette.conf next to this script"
+[ -f "$HERE/recolor.awk" ] || die "missing recolor.awk next to this script"
+
+version=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' "$SRC/skin.xml" | head -1)
+if [ "$version" != "$KNOWN_VERSION" ]; then
+    note "warning: upstream $UPSTREAM_NAME is $version, overrides were written" \
+         "against $KNOWN_VERSION - check the result"
+fi
+
+# --- Read the palette ------------------------------------------------------
+# `<name> <value>` lines, `#` comments. Hue families accumulate into one
+# pipe-separated string for recolor.awk, with the palette name already
+# resolved to its hex value.
+
+pal() {
+    sed -n "s/^$1[[:space:]]\{1,\}\(.*\)$/\1/p" "$HERE/palette.conf" | head -1
+}
+
+for key in bg fg surface border border_focus dim accent warn green orange blue \
+           cyan magenta neutral_max_s surface_max_s accent_min_s accent_max_s \
+           bright_l bright_s_factor font_family font_size; do
+    value=$(pal "$key")
+    [ -n "$value" ] || die "palette.conf: missing '$key'"
+    eval "P_$key=\$value"
+done
+
+HUE_FAMILIES=$(
+    awk '
+        /^[a-z_]+[ \t]+#/ { colors[$1] = $2; next }
+        $1 == "hue_family" {
+            hex = colors[$4]
+            if (hex == "") { print "unknown palette color: " $4 > "/dev/stderr"; exit 1 }
+            printf "%s%s %s %s", sep, $2, $3, hex
+            sep = "|"
+        }
+        END { print "" }
+    ' "$HERE/palette.conf"
+)
+[ -n "$HUE_FAMILIES" ] || die "palette.conf: no hue_family rules"
+
+recolor() {
+    awk -v NEUTRAL_MAX_S="$P_neutral_max_s" \
+        -v SURFACE_MAX_S="$P_surface_max_s" \
+        -v ACCENT_MIN_S="$P_accent_min_s" \
+        -v ACCENT_MAX_S="$P_accent_max_s" \
+        -v BRIGHT_L="$P_bright_l" \
+        -v BRIGHT_S_FACTOR="$P_bright_s_factor" \
+        -v HUE_FAMILIES="$HUE_FAMILIES" \
+        -f "$HERE/recolor.awk"
+}
+
+if [ "$DRY" = 1 ]; then
+    note "would build $SKIN_NAME"
+    note "  from   $SRC ($version)"
+    note "  into   $DEST"
+    note "  accent $P_accent, bg $P_bg, fg $P_fg"
+    note "  hues   $HUE_FAMILIES"
+    exit 0
+fi
+
+# --- Copy the parts we keep ------------------------------------------------
+# Everything except the Classic scheme's assets and stylesheet, and the two
+# upstream preview screenshots (they show upstream's colors, not ours).
+
+note "building $SKIN_NAME from $SRC ($version)"
+rm -rf "$DEST"
+mkdir -p "$DEST"
+
+(cd "$SRC" && find . -type f \
+    ! -path './classic/*' \
+    ! -name 'style_classic.qss' \
+    ! -name 'skin_preview_*.png' \
+    -print) | while IFS= read -r rel; do
+    mkdir -p "$DEST/$(dirname "$rel")"
+    cp "$SRC/$rel" "$DEST/$rel"
+done
+
+# --- Drop the Classic scheme from skin.xml ---------------------------------
+# One <Scheme> block, matched by its <Name>. Done before the classic/ asset
+# sweep below so the block's own references do not drag the theme back in.
+
+awk -v drop="Classic" '
+    /<Scheme>/ { buf = $0 "\n"; inblock = 1; isdrop = 0; next }
+    inblock {
+        buf = buf $0 "\n"
+        if ($0 ~ "<Name>" drop "</Name>") isdrop = 1
+        if ($0 ~ /<\/Scheme>/) {
+            if (!isdrop) printf "%s", buf
+            inblock = 0
+        }
+        next
+    }
+    { print }
+' "$DEST/skin.xml" > "$DEST/skin.xml.tmp" && mv "$DEST/skin.xml.tmp" "$DEST/skin.xml"
+
+grep -q "<Name>$UPSTREAM_SCHEME</Name>" "$DEST/skin.xml" \
+    || die "the $UPSTREAM_SCHEME scheme did not survive dropping Classic"
+
+# --- Pull in the classic/ assets that survive -------------------------------
+# waveform.xml uses classic/style/mark_*.svg regardless of the active scheme,
+# so a blind `rm -rf classic` would leave dangling icon paths. Collect what is
+# still referenced and copy exactly that.
+
+refs=$(grep -rho "skins:$UPSTREAM_NAME/classic/[^\"'<) ]*" "$DEST" | sort -u || true)
+if [ -n "$refs" ]; then
+    printf '%s\n' "$refs" | while IFS= read -r ref; do
+        rel=${ref#skins:$UPSTREAM_NAME/}
+        [ -f "$SRC/$rel" ] || { note "warning: dangling reference $ref"; continue; }
+        mkdir -p "$DEST/$(dirname "$rel")"
+        cp "$SRC/$rel" "$DEST/$rel"
+    done
+    note "kept $(printf '%s\n' "$refs" | wc -l) classic asset(s) still referenced"
+fi
+
+# --- Rewrite internal paths and the manifest -------------------------------
+# `skins:LateNight/...` would resolve to the *upstream* directory and silently
+# load upstream's assets, so every reference has to be renamed with the skin.
+
+find "$DEST" \( -name '*.xml' -o -name '*.qss' \) -print | while IFS= read -r f; do
+    sed -i "s|skins:$UPSTREAM_NAME/|skins:$SKIN_NAME/|g" "$f"
+done
+
+sed -i \
+    -e "s|<title>$UPSTREAM_NAME</title>|<title>$SKIN_NAME</title>|" \
+    -e "s|<Name>$UPSTREAM_SCHEME</Name>|<Name>$SCHEME_NAME</Name>|" \
+    "$DEST/skin.xml"
+
+# Attribution: upstream is CC BY-SA, so say who wrote it and what we changed.
+awk -v skin="$SKIN_NAME" -v scheme="$SCHEME_NAME" '
+    NR == 1 {
+        print "<!--"
+        print "  " skin " - a recolored derivative of the LateNight skin that"
+        print "  ships with Mixxx, generated by config/mixxx/skins/build-skin"
+        print "  in the leonhardweiler/dotfiles repository. Do not edit by hand:"
+        print "  every change belongs in palette.conf or overrides/ and is lost"
+        print "  on the next build."
+        print ""
+        print "  Changes from upstream: colors remapped onto the palette of the"
+        print "  surrounding setup (hue and saturation replaced, lightness kept),"
+        print "  the Classic scheme removed, the " scheme " scheme renamed from"
+        print "  PaleMoon."
+        print ""
+        print "  Upstream LateNight is CC BY-SA 3.0 by jus <s.brandt@mixxx.org>,"
+        print "  Owen Williams and ronso0; this derivative carries the same"
+        print "  license. The original notice follows."
+        print "-->"
+    }
+    { print }
+' "$DEST/skin.xml" > "$DEST/skin.xml.tmp" && mv "$DEST/skin.xml.tmp" "$DEST/skin.xml"
+
+# --- Recolor ---------------------------------------------------------------
+
+find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) -print \
+| while IFS= read -r f; do
+    recolor < "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+done
+count=$(find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) | wc -l)
+note "recolored $count file(s)"
+
+# --- Overrides -------------------------------------------------------------
+# What the color rule cannot decide: which *role* a color plays. A warning has
+# to stay legible as a warning, a play marker has to be findable at a glance,
+# and neither follows from the hue it happened to have upstream.
+
+if [ -f "$HERE/overrides/scheme-vars.conf" ]; then
+    # FD 3, not stdin: same reason install-programs does it - nothing in the
+    # loop body may eat the list.
+    while read -r name value <&3; do
+        case $name in ''|\#*) continue ;; esac
+        grep -q "name=\"$name\"" "$DEST/skin.xml" \
+            || { note "warning: scheme variable '$name' not in skin.xml"; continue; }
+        sed -i "s|\(<SetVariable name=\"$name\">\)[^<]*\(</SetVariable>\)|\1$value\2|" \
+            "$DEST/skin.xml"
+    done 3< "$HERE/overrides/scheme-vars.conf"
+    note "applied scheme variable overrides"
+fi
+
+if [ -f "$HERE/overrides/style.qss" ]; then
+    # Qt stylesheets are last-rule-wins, so appending is enough to override.
+    {
+        printf '\n/* --- overrides from dotfiles config/mixxx/skins/overrides --- */\n'
+        sed -e "s|@bg@|$P_bg|g" \
+            -e "s|@fg@|$P_fg|g" \
+            -e "s|@surface@|$P_surface|g" \
+            -e "s|@border@|$P_border|g" \
+            -e "s|@border_focus@|$P_border_focus|g" \
+            -e "s|@dim@|$P_dim|g" \
+            -e "s|@accent@|$P_accent|g" \
+            -e "s|@warn@|$P_warn|g" \
+            -e "s|@font_family@|$P_font_family|g" \
+            -e "s|@font_size@|$P_font_size|g" \
+            "$HERE/overrides/style.qss"
+    } >> "$DEST/style_palemoon.qss"
+    note "appended style overrides"
+fi
+
+note "done: $DEST"
+note "select it in Mixxx: Preferences > Interface > Skin = $SKIN_NAME," \
+     "Color scheme = $SCHEME_NAME"
