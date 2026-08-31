@@ -490,6 +490,21 @@ do_wbg() {
 }
 register_step wbg do_wbg "Build + install wbg (wallpaper program) from source"
 
+# Build + install the Mixxx skin. Like dwl, the skin is generated rather than
+# linked: config/mixxx/skins/build-skin derives it from the LateNight skin the
+# mixxx package ships, recolors it into palette.conf and writes the result to
+# ~/.mixxx/skins/LateNight-Leo, so there is nothing in links.conf for it. This
+# IS the "apply" step for config/mixxx/skins changes, and it has to be rerun
+# after a mixxx update too, since the upstream skin it derives from moves with
+# the package. Not a default step.
+do_mixxx_skin() {
+  local script="$BASEDIR/config/mixxx/skins/build-skin"
+  [ -x "$script" ] || { warn "config/mixxx/skins/build-skin missing - skipped"; return 0; }
+  info "Building + installing the Mixxx skin (config/mixxx/skins/build-skin)"
+  run 0 "$script" || warn "Mixxx skin build failed"
+}
+register_step mixxx-skin do_mixxx_skin "Build + install the Mixxx skin from config/mixxx/skins"
+
 # ── Argument parsing ─────────────────────────────────────────────────────────
 # Runs AFTER the register_step calls above, so the step flags can be matched
 # against the registry instead of a hand-maintained list.
