@@ -1,0 +1,79 @@
+/* SPDX-License-Identifier: ISC
+ * Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+ *
+ * Style overrides for LateNight-Leo, appended to the generated stylesheet by
+ * build-skin. Placeholders of the form at-name-at are filled from
+ * palette.conf.
+ *
+ * Only what the blanket recolor cannot get right belongs here. The recolor
+ * works on hue and saturation, so it leaves upstream's *neutrals* exactly as
+ * they were - and the library, which is where the eyes actually live while
+ * playing, is built almost entirely out of neutrals. Those need to line up
+ * with rofi, not merely be "some dark grey".
+ *
+ * Qt style sheets resolve by selector specificity first and source order only
+ * as the tie-break, so every rule below repeats upstream's selector list
+ * verbatim. A shorter, "cleaner" selector would silently lose.
+ */
+
+/* --- Library surfaces -----------------------------------------------------
+ * Upstream sits on #0f0f0f with #0a0a0a alternating rows. Both move onto the
+ * one background the terminal and the launcher use, and the alternating row
+ * becomes a lift rather than a dip - a row lighter than the page reads as a
+ * row, a row darker than the page reads as a gap. */
+
+WTrackTableView,
+WLibraryTextBrowser,
+WLibrarySidebar,
+#SkinSettings,
+WSearchLineEdit,
+WTrackPropertyEditor,
+WLibrary QLineEdit,
+WLibrary QPlainTextEdit,
+#spinBoxTransition,
+#LibraryBPMSpinBox {
+  background-color: @bg@;
+}
+
+WTrackTableView,
+WLibraryTextBrowser,
+WLibrarySidebar {
+  alternate-background-color: #191919;
+  selection-color: @fg@;
+  selection-background-color: @surface@;
+}
+
+/* --- Selection ------------------------------------------------------------
+ * rofi marks the selected row with `selected` (#2d2d2d) and leaves the text
+ * at the normal foreground; upstream instead tints the row blue-grey. Same
+ * treatment here, so a track list and a launcher list read the same way. */
+
+WLibrarySidebar::item:selected,
+WTrackTableView::item:selected,
+#LibraryBPMButton::item:selected,
+#LibraryPlayedCheckbox::item:selected {
+  background-color: @surface@;
+}
+
+/* The keyboard cursor, moved with Ctrl+arrows, is a *different* thing from
+ * the selection and has to stay distinguishable from it: an outline on an
+ * almost-unchanged background, the way dwl marks the focused window with a
+ * border rather than a fill. */
+WTrackTableView::item:!selected:focus {
+  background-color: #1a1a1a;
+  outline: 1px solid @border_focus@;
+}
+
+/* --- Search ---------------------------------------------------------------
+ * The search field is the one widget here with a direct rofi counterpart, so
+ * it gets rofi's treatment: 1px border, square, accent when focused. */
+
+WSearchLineEdit {
+  border: 1px solid @border@;
+  border-radius: 0px;
+  color: @fg@;
+}
+
+WSearchLineEdit:focus {
+  border: 1px solid @accent@;
+}

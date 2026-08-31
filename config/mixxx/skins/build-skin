@@ -201,6 +201,16 @@ done
 count=$(find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) | wc -l)
 note "recolored $count file(s)"
 
+# --- Font ------------------------------------------------------------------
+# Replaced in place rather than appended: Qt style sheets resolve by selector
+# specificity, not by source order, so a trailing `* { font-family: ... }`
+# loses against upstream's `WTrackTableViewHeader { font-family: "Open Sans" }`.
+
+sed -i "s|font-family: \"Open Sans Semibold\", \"Open Sans\";|font-family: \"$P_font_family\";|g; \
+        s|font-family: \"Open Sans\";|font-family: \"$P_font_family\";|g" \
+    "$DEST/style.qss"
+note "set font family to $P_font_family"
+
 # --- Overrides -------------------------------------------------------------
 # What the color rule cannot decide: which *role* a color plays. A warning has
 # to stay legible as a warning, a play marker has to be findable at a glance,
@@ -209,8 +219,20 @@ note "recolored $count file(s)"
 if [ -f "$HERE/overrides/scheme-vars.conf" ]; then
     # FD 3, not stdin: same reason install-programs does it - nothing in the
     # loop body may eat the list.
-    while read -r name value <&3; do
+    while read -r name value comment <&3; do
         case $name in ''|\#*) continue ;; esac
+        # A value that names a palette color is resolved from palette.conf, so
+        # the palette stays the only place a color is written down.
+        case $value in
+            '#'*) ;;
+            *)
+                resolved=$(pal "$value")
+                case $resolved in
+                    '#'*) value=$resolved ;;
+                    *) die "overrides/scheme-vars.conf: '$value' is not a palette color" ;;
+                esac
+                ;;
+        esac
         grep -q "name=\"$name\"" "$DEST/skin.xml" \
             || { note "warning: scheme variable '$name' not in skin.xml"; continue; }
         sed -i "s|\(<SetVariable name=\"$name\">\)[^<]*\(</SetVariable>\)|\1$value\2|" \
