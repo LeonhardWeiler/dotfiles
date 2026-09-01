@@ -160,11 +160,21 @@ if [ -n "$refs" ]; then
 fi
 
 # --- Rewrite internal paths and the manifest -------------------------------
-# `skins:LateNight/...` would resolve to the *upstream* directory and silently
-# load upstream's assets, so every reference has to be renamed with the skin.
+# LateNight addresses its own files as `skins:LateNight/...`, and that prefix
+# must go: `skins:` is a Qt search path that resolves *only* into the packaged
+# skin directory, so left alone it loads upstream's assets, and renamed to
+# `skins:LateNight-Leo/` it resolves to nothing at all - Qt hands the string
+# back unchanged and Mixxx then reads it as a relative path, looking for
+# `$HOME/skins:LateNight-Leo/...`. The skin loads and comes up empty.
+#
+# Absolute paths avoid the question entirely. The alternative is `skin:`
+# (singular, relative to the loaded skin - what Deere uses), but it behaves
+# differently in stylesheets than in templates, where Deere resorts to
+# `url(skin:/../Deere/...)`. The skin is regenerated on every build anyway, so
+# baking in the destination costs nothing and cannot be misresolved.
 
 find "$DEST" \( -name '*.xml' -o -name '*.qss' \) -print | while IFS= read -r f; do
-    sed -i "s|skins:$UPSTREAM_NAME/|skins:$SKIN_NAME/|g" "$f"
+    sed -i "s|skins:$UPSTREAM_NAME/|$DEST/|g" "$f"
 done
 
 sed -i \
@@ -305,6 +315,48 @@ if [ -f "$HERE/overrides/style.qss" ]; then
     } >> "$DEST/style_palemoon.qss"
     note "appended style overrides"
 fi
+
+# --- Verify every reference resolves ---------------------------------------
+# The path bug above produced a skin that loaded cleanly and rendered nothing,
+# because a missing template is only a warning in Mixxx' log. Checking that
+# every referenced file exists turns that into a build failure instead.
+
+# XML comments are stripped first: LateNight documents the button styling with
+# an `url(skins:LateNight/path/to/btn_icon.svg)` example, and a path inside a
+# comment is not a reference. QSS comments carry no url() and need no filter.
+strip_xml_comments() {
+    awk '{
+        line = $0; out = ""
+        while (length(line)) {
+            if (inc) {
+                p = index(line, "-->")
+                if (!p) { line = ""; break }
+                line = substr(line, p + 3); inc = 0
+            } else {
+                p = index(line, "<!--")
+                if (!p) { out = out line; break }
+                out = out substr(line, 1, p - 1)
+                line = substr(line, p + 4); inc = 1
+            }
+        }
+        print out
+    }' "$1"
+}
+
+missing=0
+for ref in $(find "$DEST" \( -name '*.xml' -o -name '*.qss' \) -print \
+             | while IFS= read -r f; do strip_xml_comments "$f"; done \
+             | grep -oE '(src="|url\()[^")]*' \
+             | sed -e 's/^src="//' -e 's/^url(//' | sort -u); do
+    case $ref in
+        /*) ;;                      # absolute: check it
+        *) continue ;;              # relative to something else, or a variable
+    esac
+    case $ref in *'<'*) continue ;; esac   # contains an unexpanded <Variable>
+    [ -e "$ref" ] || { note "MISSING: $ref"; missing=$((missing + 1)); }
+done
+[ "$missing" -eq 0 ] || die "$missing referenced file(s) do not exist"
+note "all absolute references resolve"
 
 note "done: $DEST"
 note "select it in Mixxx: Preferences > Interface > Skin = $SKIN_NAME," \
