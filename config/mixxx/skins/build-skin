@@ -62,7 +62,8 @@ pal() {
 
 for key in bg fg surface border border_focus dim accent warn green orange blue \
            cyan magenta neutral_max_s surface_max_s accent_min_s accent_max_s \
-           bright_l bright_s_factor font_family font_size; do
+           bright_l bright_s_factor alert_min_s alert_max_s font_family \
+           font_size; do
     value=$(pal "$key")
     [ -n "$value" ] || die "palette.conf: missing '$key'"
     eval "P_$key=\$value"
@@ -82,15 +83,17 @@ HUE_FAMILIES=$(
 )
 [ -n "$HUE_FAMILIES" ] || die "palette.conf: no hue_family rules"
 
-recolor() {
-    awk -v NEUTRAL_MAX_S="$P_neutral_max_s" \
-        -v SURFACE_MAX_S="$P_surface_max_s" \
-        -v ACCENT_MIN_S="$P_accent_min_s" \
-        -v ACCENT_MAX_S="$P_accent_max_s" \
-        -v BRIGHT_L="$P_bright_l" \
-        -v BRIGHT_S_FACTOR="$P_bright_s_factor" \
-        -v HUE_FAMILIES="$HUE_FAMILIES" \
-        -f "$HERE/recolor.awk"
+# `alert_pattern` is a list, so it is read separately from the single-value keys.
+P_alert_pattern=$(pal alert_pattern)
+[ -n "$P_alert_pattern" ] || die "palette.conf: missing 'alert_pattern'"
+
+# Does this file's name mark it as an alert asset?
+is_alert() {
+    _name=$(basename "$1")
+    for _pat in $P_alert_pattern; do
+        case $_name in *"$_pat"*) return 0 ;; esac
+    done
+    return 1
 }
 
 if [ "$DRY" = 1 ]; then
@@ -196,10 +199,53 @@ awk -v skin="$SKIN_NAME" -v scheme="$SCHEME_NAME" '
 
 find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) -print \
 | while IFS= read -r f; do
-    recolor < "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+    if is_alert "$f"; then
+        MIN=$P_alert_min_s MAX=$P_alert_max_s
+    else
+        MIN=$P_accent_min_s MAX=$P_accent_max_s
+    fi
+    awk -v NEUTRAL_MAX_S="$P_neutral_max_s" \
+        -v SURFACE_MAX_S="$P_surface_max_s" \
+        -v ACCENT_MIN_S="$MIN" -v ACCENT_MAX_S="$MAX" \
+        -v BRIGHT_L="$P_bright_l" -v BRIGHT_S_FACTOR="$P_bright_s_factor" \
+        -v HUE_FAMILIES="$HUE_FAMILIES" \
+        -f "$HERE/recolor.awk" < "$f" > "$f.tmp" && mv "$f.tmp" "$f"
 done
 count=$(find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) | wc -l)
 note "recolored $count file(s)"
+
+# The VU meters, the latency bar and a couple of buttons ship as PNG, and a
+# bright green level bar in an otherwise muted skin is the loudest thing on
+# screen. They are tiny (the largest is 59x5), so the same rule can simply be
+# applied per pixel: decode to raw RGBA, run it through recolor.awk's pixel
+# mode, encode back. LC_ALL=C is required - it is what makes awk's %c write one
+# byte instead of a UTF-8 sequence.
+
+png_count=0
+for f in $(find "$DEST" -name '*.png'); do
+    size=$(ffprobe -v error -select_streams v:0 \
+        -show_entries stream=width,height -of csv=s=x:p=0 "$f" 2>/dev/null) || continue
+    [ -n "$size" ] || continue
+    if is_alert "$f"; then
+        MIN=$P_alert_min_s MAX=$P_alert_max_s
+    else
+        MIN=$P_accent_min_s MAX=$P_accent_max_s
+    fi
+    ffmpeg -v error -i "$f" -f rawvideo -pix_fmt rgba - 2>/dev/null \
+        | od -An -tu1 -v -w4 \
+        | LC_ALL=C awk -v MODE=pixels \
+            -v NEUTRAL_MAX_S="$P_neutral_max_s" \
+            -v SURFACE_MAX_S="$P_surface_max_s" \
+            -v ACCENT_MIN_S="$MIN" \
+            -v ACCENT_MAX_S="$MAX" \
+            -v BRIGHT_L="$P_bright_l" \
+            -v BRIGHT_S_FACTOR="$P_bright_s_factor" \
+            -v HUE_FAMILIES="$HUE_FAMILIES" \
+            -f "$HERE/recolor.awk" \
+        | ffmpeg -v error -y -f rawvideo -pix_fmt rgba -s "$size" -i - "$f.tmp.png" \
+        && mv "$f.tmp.png" "$f" && png_count=$((png_count + 1))
+done
+note "recolored $png_count png(s)"
 
 # --- Font ------------------------------------------------------------------
 # Replaced in place rather than appended: Qt style sheets resolve by selector

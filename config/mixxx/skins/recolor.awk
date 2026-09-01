@@ -1,7 +1,18 @@
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
-# Rewrite every color literal on stdin into the palette, and print the result.
+# Rewrite colors into the palette. Two modes, one rule:
+#
+#   default        stdin is text (SVG/QSS/XML); rewrite every color literal
+#                  in it and print the text back.
+#   MODE=pixels    stdin is `od -An -tu1 -v -w4` output of a raw RGBA image,
+#                  one pixel per line; write the recolored pixels back as raw
+#                  bytes. This exists because the VU meters ship as PNG, not
+#                  SVG, and a bright green level bar is not something the skin
+#                  can be left with. Doing it here rather than with an image
+#                  filter keeps the color rule in exactly one place.
+#                  Must be run under LC_ALL=C: that is what makes awk's %c
+#                  emit one byte rather than a multi-byte UTF-8 encoding.
 #
 # The rule, in one sentence: keep the lightness, replace hue and saturation.
 # Lightness is what upstream encodes a button's *state* in - unpressed,
@@ -145,6 +156,19 @@ function convert(rgb,   r, g, b, h, s, l, tgt, th, ns) {
 function is_alnum(c) { return c ~ /^[0-9A-Za-z_]$/ }
 
 BEGIN { load_families() }
+
+# --- Pixel mode ------------------------------------------------------------
+# Fully transparent pixels carry no visible color; recoloring them would only
+# change what shows through a resize filter later.
+
+MODE == "pixels" {
+    a = $4
+    if (a == 0) { printf "%c%c%c%c", $1, $2, $3, a; next }
+    new = convert(num2hex($1) num2hex($2) num2hex($3))
+    printf "%c%c%c%c", hex2num(substr(new, 1, 2)), hex2num(substr(new, 3, 2)), \
+                       hex2num(substr(new, 5, 2)), a
+    next
+}
 
 {
     out = ""
