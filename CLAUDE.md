@@ -156,7 +156,14 @@ scripts). The source->target mapping is stated explicitly in
   instead of ~2.7 MB of upstream assets. Same trade as `build-dwl`/`build-wbg`,
   and like dwl it needs an **apply** step: `./install --mixxx-skin`, which must
   also be rerun after a **mixxx update** because the upstream skin moves with the
-  package. The rule is *keep lightness, replace hue and saturation* - lightness
+  package. Internal paths are rewritten to **absolute**: `skins:` is a Qt search path
+  resolving only into the *packaged* skin dir, so `skins:LateNight-Leo/` resolves
+  to nothing and Mixxx falls back to reading it relative to `$HOME` - the skin
+  then loads and renders **nothing**, since a missing template is only a log
+  warning (`skins:default-menu-styles-linux.qss` is deliberately left alone, it
+  really is a packaged file). `build-skin` verifies every reference exists after
+  each build and fails otherwise, because that bug is invisible at runtime.
+  The rule is *keep lightness, replace hue and saturation* - lightness
   is where upstream encodes button states, gradients and shadows, so keeping it
   is what makes a blanket recolor safe. Saturation classifies: neutral (left
   alone) / tinted surface (flattened to grey, this is what removes PaleMoon's

@@ -717,6 +717,20 @@ moves with the package:
 Then pick it once in *Preferences → Interface*: skin `LateNight-Leo`, color
 scheme `Leo`. The skin only reloads on a Mixxx restart.
 
+**Paths are rewritten to absolute.** Worth knowing before touching
+`build-skin`: LateNight addresses its own files as `skins:LateNight/...`, and
+`skins:` is a Qt search path that resolves **only** into the packaged skin
+directory. Left alone it loads upstream's assets; renamed to
+`skins:LateNight-Leo/` it resolves to nothing, Qt hands the string back
+unchanged, and Mixxx reads it as a relative path - looking for
+`$HOME/skins:LateNight-Leo/decks/deck.xml`. The skin then loads and renders
+*nothing*, because a missing template is only a warning in Mixxx' log. Absolute
+paths sidestep the question; `build-skin` also verifies after every build that
+each referenced file exists, and fails if one does not.
+
+(`skins:default-menu-styles-linux.qss` is left as-is on purpose - that one
+really does live in the packaged directory.)
+
 **The recolor rule** is one sentence: convert every color to HSL, replace hue
 and saturation from the palette, **keep lightness**. Keeping lightness is what
 makes a blanket recolor safe - upstream encodes a button's state (unpressed,
