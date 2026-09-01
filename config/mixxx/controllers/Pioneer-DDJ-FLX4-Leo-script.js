@@ -41,7 +41,10 @@
 //      * BPM tap on SHIFT + BEAT </> - left taps deck 1, right taps deck 2,
 //        mirroring the deck layout. Mixxx has no equivalent of the manual's
 //        BPM Auto/BPM Tap effect tempo modes, so the buttons were free.
-//      * Vinyl mode toggle on SMART FADER, which reports the state on its LED
+//      * Vinyl mode toggle on SMART FADER, state shown on that button's LED
+//      * BEAT FX CH SELECT picks the effect unit, not just the routing:
+//        deck 1 drives unit 1, deck 2 drives unit 2, 1&2 keeps unit 1 on both.
+//        Each deck keeps its own effect, slot and mix.
 //
 //  Not implemented (after discussion and trial attempts):
 //      * Loop Section:
@@ -189,20 +192,25 @@ PioneerDDJFLX4.sendKeepAlive = function() {
 PioneerDDJFLX4.vinylMode = true;
 
 // The FLX4 has no vinyl mode button of its own - rekordbox toggles it from the
-// keyboard. SMART FADER is the only button on the unit that nothing else claims
-// (its own function needs BPM interpolation Mixxx does not offer), so it carries
-// the toggle and reports the state on its own LED. SMART CFX is deliberately left
+// keyboard - so SMART FADER carries the toggle. SMART CFX is deliberately left
 // free: unlike Smart Fader it has a plausible Mixxx equivalent in a QuickEffect
 // chain, and should keep its name when someone builds that.
-PioneerDDJFLX4.vinylModeLight = {
-    status: 0x96,
-    data1: 0x01,
-};
+//
+// The button's LED is driven by writing back to 0x96/0x01 - the same address it
+// sends on. That is an assumption, not a verified output address: on this
+// hardware input and output are not always the same channel (the stock script's
+// 0x9F/0x00 "track loaded" animation is a command, not an LED). Writing here may
+// switch Smart Fader on inside the unit, which drives EQ LOW on both decks from
+// the fader positions. If deck 1's LOW knob ever starts dragging deck 2's along,
+// set this to false - that is the first thing to rule out.
+PioneerDDJFLX4.vinylModeLightEnabled = true;
 
 PioneerDDJFLX4.setVinylModeLight = function() {
-    midi.sendShortMsg(PioneerDDJFLX4.vinylModeLight.status,
-        PioneerDDJFLX4.vinylModeLight.data1,
-        PioneerDDJFLX4.vinylMode ? 0x7F : 0x00);
+    if (!PioneerDDJFLX4.vinylModeLightEnabled) {
+        return;
+    }
+
+    midi.sendShortMsg(0x96, 0x01, PioneerDDJFLX4.vinylMode ? 0x7F : 0x00);
 };
 
 PioneerDDJFLX4.toggleVinylMode = function(_channel, _control, value) {
@@ -266,7 +274,11 @@ PioneerDDJFLX4.toggleLight = function(midiIn, active) {
 //
 
 PioneerDDJFLX4.init = function() {
-    engine.setValue("[EffectRack1_EffectUnit1]", "show_focus", 1);
+    // Both units are driven from the Beat FX section now, so both need focus
+    // display, soft takeover and light connections.
+    for (let unit = 1; unit <= 2; unit++) {
+        engine.setValue("[EffectRack1_EffectUnit" + unit + "]", "show_focus", 1);
+    }
 
     engine.makeConnection("[Channel1]", "vu_meter", PioneerDDJFLX4.vuMeterUpdate);
     engine.makeConnection("[Channel2]", "vu_meter", PioneerDDJFLX4.vuMeterUpdate);
@@ -276,10 +288,12 @@ PioneerDDJFLX4.init = function() {
 
     engine.softTakeover("[Channel1]", "rate", true);
     engine.softTakeover("[Channel2]", "rate", true);
-    engine.softTakeover("[EffectRack1_EffectUnit1_Effect1]", "meta", true);
-    engine.softTakeover("[EffectRack1_EffectUnit1_Effect2]", "meta", true);
-    engine.softTakeover("[EffectRack1_EffectUnit1_Effect3]", "meta", true);
-    engine.softTakeover("[EffectRack1_EffectUnit1]", "mix", true);
+    for (let unit = 1; unit <= 2; unit++) {
+        for (let slot = 1; slot <= 3; slot++) {
+            engine.softTakeover("[EffectRack1_EffectUnit" + unit + "_Effect" + slot + "]", "meta", true);
+        }
+        engine.softTakeover("[EffectRack1_EffectUnit" + unit + "]", "mix", true);
+    }
 
     const samplerCount = 16;
     if (engine.getValue("[App]", "num_samplers") < samplerCount) {
@@ -307,10 +321,14 @@ PioneerDDJFLX4.init = function() {
     PioneerDDJFLX4.keyShiftLights(engine.getValue("[Channel1]", "pitch"), "[Channel1]");
     PioneerDDJFLX4.keyShiftLights(engine.getValue("[Channel2]", "pitch"), "[Channel2]");
 
-    for (i = 1; i <= 3; i++) {
-        engine.makeConnection("[EffectRack1_EffectUnit1_Effect" + i +"]", "enabled", PioneerDDJFLX4.toggleFxLight);
+    for (let unit = 1; unit <= 2; unit++) {
+        for (let slot = 1; slot <= 3; slot++) {
+            engine.makeConnection("[EffectRack1_EffectUnit" + unit + "_Effect" + slot + "]",
+                "enabled", PioneerDDJFLX4.toggleFxLight);
+        }
+        engine.makeConnection("[EffectRack1_EffectUnit" + unit + "]",
+            "focused_effect", PioneerDDJFLX4.toggleFxLight);
     }
-    engine.makeConnection("[EffectRack1_EffectUnit1]", "focused_effect", PioneerDDJFLX4.toggleFxLight);
 
     PioneerDDJFLX4.setVinylModeLight();
 
@@ -361,23 +379,66 @@ PioneerDDJFLX4.toggleFxLight = function(_value, _group, _control) {
     PioneerDDJFLX4.toggleLight(PioneerDDJFLX4.lights.shiftBeatFx, enabled);
 };
 
+// The unit has one Beat FX processor and a CH SELECT switch, so the stock mapping
+// drove a single Mixxx effect unit and used the switch only for routing. Mixxx has
+// four units and this setup runs four decks, so the switch picks the unit instead:
+// deck 1 gets unit 1, deck 2 gets unit 2, and each keeps its own effect, slot and
+// mix across switching. The 1&2 position keeps unit 1 and routes it to both decks,
+// which is the only way to get the manual's behaviour of one effect on both.
+//
+// The switch reports both positions separately (0x94/0x10 for channel 1, 0x95/0x11
+// for channel 2) and sends a full state report on every change, so both flags stay
+// current without tracking the switch's travel.
+PioneerDDJFLX4.fxChannelEnabled = [false, false];
+
+PioneerDDJFLX4.fxSelectedUnit = function() {
+    const ch1 = PioneerDDJFLX4.fxChannelEnabled[0],
+        ch2 = PioneerDDJFLX4.fxChannelEnabled[1];
+
+    return (ch2 && !ch1) ? 2 : 1;
+};
+
+PioneerDDJFLX4.fxUnitGroup = function() {
+    return "[EffectRack1_EffectUnit" + PioneerDDJFLX4.fxSelectedUnit() + "]";
+};
+
 PioneerDDJFLX4.focusedFxGroup = function() {
-    const focusedFx = engine.getValue("[EffectRack1_EffectUnit1]", "focused_effect");
-    return "[EffectRack1_EffectUnit1_Effect" + focusedFx + "]";
+    const unit = PioneerDDJFLX4.fxSelectedUnit(),
+        focusedFx = engine.getValue("[EffectRack1_EffectUnit" + unit + "]", "focused_effect");
+
+    return "[EffectRack1_EffectUnit" + unit + "_Effect" + focusedFx + "]";
+};
+
+PioneerDDJFLX4.applyFxRouting = function() {
+    const ch1 = PioneerDDJFLX4.fxChannelEnabled[0],
+        ch2 = PioneerDDJFLX4.fxChannelEnabled[1],
+        both = ch1 && ch2;
+
+    // Unit 1 covers deck 1, and both decks in the 1&2 position.
+    engine.setValue("[EffectRack1_EffectUnit1]", "group_[Channel1]_enable", ch1 ? 1 : 0);
+    engine.setValue("[EffectRack1_EffectUnit1]", "group_[Channel2]_enable", both ? 1 : 0);
+
+    // Unit 2 only enters the signal path when the switch is on 2 alone - in the
+    // 1&2 position unit 1 already serves both decks.
+    engine.setValue("[EffectRack1_EffectUnit2]", "group_[Channel1]_enable", 0);
+    engine.setValue("[EffectRack1_EffectUnit2]", "group_[Channel2]_enable", (ch2 && !both) ? 1 : 0);
 };
 
 PioneerDDJFLX4.beatFxLevelDepthRotate = function(_channel, _control, value) {
+    const unit = PioneerDDJFLX4.fxUnitGroup();
+
     if (PioneerDDJFLX4.shiftButtonDown[0] || PioneerDDJFLX4.shiftButtonDown[1]) {
-        engine.softTakeoverIgnoreNextValue("[EffectRack1_EffectUnit1]", "mix");
+        engine.softTakeoverIgnoreNextValue(unit, "mix");
         engine.setParameter(PioneerDDJFLX4.focusedFxGroup(), "meta", value / 0x7F);
     } else {
         engine.softTakeoverIgnoreNextValue(PioneerDDJFLX4.focusedFxGroup(), "meta");
-        engine.setParameter("[EffectRack1_EffectUnit1]", "mix", value / 0x7F);
+        engine.setParameter(unit, "mix", value / 0x7F);
     }
 };
 
 PioneerDDJFLX4.changeFocusedEffectBy = function(numberOfSteps) {
-    let focusedEffect = engine.getValue("[EffectRack1_EffectUnit1]", "focused_effect");
+    const unit = PioneerDDJFLX4.fxUnitGroup();
+    let focusedEffect = engine.getValue(unit, "focused_effect");
 
     // Convert to zero-based index
     focusedEffect -= 1;
@@ -389,7 +450,7 @@ PioneerDDJFLX4.changeFocusedEffectBy = function(numberOfSteps) {
     // Convert back to one-based index
     focusedEffect += 1;
 
-    engine.setValue("[EffectRack1_EffectUnit1]", "focused_effect", focusedEffect);
+    engine.setValue(unit, "focused_effect", focusedEffect);
 };
 
 PioneerDDJFLX4.beatFxSelectPressed = function(_channel, _control, value) {
@@ -426,30 +487,29 @@ PioneerDDJFLX4.beatFxOnOffPressed = function(_channel, _control, value) {
 PioneerDDJFLX4.beatFxOnOffShiftPressed = function(_channel, _control, value) {
     if (value === 0) { return; }
 
-    engine.setParameter("[EffectRack1_EffectUnit1]", "mix", 0);
-    engine.softTakeoverIgnoreNextValue("[EffectRack1_EffectUnit1]", "mix");
+    const unit = PioneerDDJFLX4.fxUnitGroup(),
+        unitNo = PioneerDDJFLX4.fxSelectedUnit();
+
+    engine.setParameter(unit, "mix", 0);
+    engine.softTakeoverIgnoreNextValue(unit, "mix");
 
     for (let i = 1; i <= 3; i++) {
-        engine.setValue("[EffectRack1_EffectUnit1_Effect" + i + "]", "enabled", 0);
+        engine.setValue("[EffectRack1_EffectUnit" + unitNo + "_Effect" + i + "]", "enabled", 0);
     }
     PioneerDDJFLX4.toggleLight(PioneerDDJFLX4.lights.beatFx, false);
     PioneerDDJFLX4.toggleLight(PioneerDDJFLX4.lights.shiftBeatFx, false);
 };
 
-PioneerDDJFLX4.beatFxChannel1 = function(_channel, control, value, _status, group) {
-    let enableChannel = 0;
-
-    if (value === 0x7f) { enableChannel = 1; }
-
-    engine.setValue(group, "group_[Channel1]_enable", enableChannel);
+PioneerDDJFLX4.beatFxChannel1 = function(_channel, _control, value) {
+    PioneerDDJFLX4.fxChannelEnabled[0] = (value === 0x7F);
+    PioneerDDJFLX4.applyFxRouting();
+    PioneerDDJFLX4.toggleFxLight();
 };
 
-PioneerDDJFLX4.beatFxChannel2 = function(_channel, control, value, _status, group) {
-    let enableChannel = 0;
-
-    if (value === 0x7f) { enableChannel = 1; }
-
-    engine.setValue(group, "group_[Channel2]_enable", enableChannel);
+PioneerDDJFLX4.beatFxChannel2 = function(_channel, _control, value) {
+    PioneerDDJFLX4.fxChannelEnabled[1] = (value === 0x7F);
+    PioneerDDJFLX4.applyFxRouting();
+    PioneerDDJFLX4.toggleFxLight();
 };
 
 //
@@ -763,6 +823,7 @@ PioneerDDJFLX4.samplerPlayOutputCallbackFunction = function(value, group, _contr
 // +4/+5/+6/+7 top row does not fit. The pads are laid out symmetrically instead,
 // which keeps the full range usable and allows shifting down as well.
 PioneerDDJFLX4.keyShiftOffsets = [-4, -3, -2, -1, 0, 1, 2, 3];
+
 
 PioneerDDJFLX4.keyShiftPadStatus = function(group) {
     return group === "[Channel1]" ? 0x97 : 0x99;

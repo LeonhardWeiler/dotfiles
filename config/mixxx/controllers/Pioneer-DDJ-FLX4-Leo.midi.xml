@@ -1017,7 +1017,7 @@
                 </options>
             </control>
             <control>
-                <description>BEAT LEFT - press - select previous effect unit</description>
+                <description>BEAT LEFT - press - focus the previous effect slot of the selected unit</description>
                 <group>[EffectRack1_EffectUnit1]</group>
                 <key>PioneerDDJFLX4.beatFxLeftPressed</key>
                 <status>0x94</status>
@@ -1028,7 +1028,7 @@
             </control>
 
             <control>
-                <description>BEAT RIGHT - press - select next effect unit</description>
+                <description>BEAT RIGHT - press - focus the next effect slot of the selected unit</description>
                 <group>[EffectRack1_EffectUnit1]</group>
                 <key>PioneerDDJFLX4.beatFxRightPressed</key>
                 <status>0x94</status>
@@ -1040,7 +1040,7 @@
 
             <!-- Beat Fx channel selector -->
             <control>
-                <description>BEAT FX CH SELECT CH1 - slide - Select FX on DECK 1</description>
+                <description>BEAT FX CH SELECT CH1 - slide - Drive effect unit 1 and route it to deck 1</description>
                 <group>[EffectRack1_EffectUnit1]</group>
                 <key>PioneerDDJFLX4.beatFxChannel1</key>
                 <status>0x94</status>
@@ -1050,7 +1050,7 @@
                 </options>
             </control>
             <control>
-                <description>BEAT FX CH SELECT CH2 - slide - Select FX on DECK 2</description>
+                <description>BEAT FX CH SELECT CH2 - slide - Drive effect unit 2 and route it to deck 2</description>
                 <group>[EffectRack1_EffectUnit1]</group>
                 <key>PioneerDDJFLX4.beatFxChannel2</key>
                 <status>0x95</status>
