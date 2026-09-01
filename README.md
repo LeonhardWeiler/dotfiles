@@ -688,6 +688,68 @@ Since the files are symlinks into this repo, editing them in `~/.mixxx/` and
 editing them in `config/mixxx/` is the same thing - but only Mixxx' **restart**
 (or *Preferences → Controllers*, re-selecting the mapping) reloads them.
 
+#### The LateNight-Leo skin
+
+`config/mixxx/skins/` holds a **skin generator**, not a skin. `build-skin`
+derives `LateNight-Leo` from the LateNight skin the mixxx package ships,
+recolors it into the palette the rest of this setup uses, and writes the result
+to `~/.mixxx/skins/LateNight-Leo`. Only four small files are tracked:
+
+| File | What it is |
+| --- | --- |
+| `palette.conf` | every color and every recolor rule - the single source |
+| `recolor.awk` | the rule itself, for text and for pixels |
+| `overrides/scheme-vars.conf` | waveform colors a hue rule cannot decide |
+| `overrides/style.qss` | library/selection styling, appended to the stylesheet |
+
+Derived rather than vendored, for the same reason dwl and wbg are built rather
+than committed: the alternative is ~2.7 MB of upstream assets in the repo. The
+cost is that **the skin is not portable on its own** - it needs mixxx installed
+to be rebuilt.
+
+Apply changes - and rebuild after a **mixxx update**, since the upstream skin
+moves with the package:
+
+```sh
+./install --mixxx-skin
+```
+
+Then pick it once in *Preferences → Interface*: skin `LateNight-Leo`, color
+scheme `Leo`. The skin only reloads on a Mixxx restart.
+
+**The recolor rule** is one sentence: convert every color to HSL, replace hue
+and saturation from the palette, **keep lightness**. Keeping lightness is what
+makes a blanket recolor safe - upstream encodes a button's state (unpressed,
+pressed, hovered, disabled) and every gradient and drop shadow as lightness
+steps, so all of that survives. Saturation decides what a color *is*: at or
+below `neutral_max_s` it is already neutral and is left alone, up to
+`surface_max_s` it is a tinted surface and is flattened to true grey (this is
+what removes PaleMoon's warm cast), above that it is a real accent and gets the
+palette's hue at a muted saturation.
+
+Two exceptions, both because a *role* cannot be read off a hue:
+
+- **Waveform markers** (`overrides/scheme-vars.conf`) keep separate colors. Play
+  head, cue, loop, intro/outro and the end-of-track warning overlap in one
+  strip where shape and position are already spoken for, so hue is the only
+  channel left to tell them apart. All of them come from foot's ANSI row.
+- **Alert assets** (`alert_pattern` in `palette.conf`) are recolored with a
+  wider saturation band. Muting is the right default, but a clipping indicator
+  that blends in is not doing its job.
+
+Two things the skin **cannot** control:
+
+- **Waveform signal colors.** `waveform.xml` leaves `<SignalHighColor>` and
+  friends empty, so the RGB/filtered renderers read them from *Preferences →
+  Waveforms* instead. Those live in `mixxx.cfg`, which is deliberately
+  untracked, so they have to be set by hand once.
+- **Everything outside the skin** - the preferences dialog, menus. Mixxx is
+  Qt6, and `QT_QPA_PLATFORMTHEME=qt5ct` only applies to Qt5.
+
+Upstream LateNight is CC BY-SA 3.0, so the generated skin is too; its
+`skin.xml` carries the attribution and a note on what was changed.
+
+
 ### Screen locker (waylock)
 
 dwl's `lockcmd` is [waylock](https://codeberg.org/ifreund/waylock), replacing the

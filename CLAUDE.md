@@ -66,6 +66,12 @@ scripts). The source->target mapping is stated explicitly in
     `config.h`, `make`, install the binary to `/usr/local/bin/dwl`). Since dwl is
     configured at compile time, this is the **apply** step for `config/dwl`
     changes. Not a default step.
+  - `--mixxx-skin` - build + install the **Mixxx skin** from
+    `config/mixxx/skins` via `config/mixxx/skins/build-skin` (derive from the
+    packaged LateNight skin, recolor, write to `~/.mixxx/skins/LateNight-Leo`).
+    The apply step for `config/mixxx/skins` changes, and it must be rerun after
+    a mixxx update too, since the upstream skin ships with the package. Not a
+    default step.
   - `--wbg` - build + install **wbg** (the wallpaper program) from a pinned
     upstream tag via `config/wbg/build-wbg` (clone/pin wbg,
     `meson`/`ninja`, install the binary to `/usr/local/bin/wbg`; installs
@@ -142,6 +148,27 @@ scripts). The source->target mapping is stated explicitly in
   points at the renamed `.js` (the `functionprefix` deliberately stays
   `PioneerDDJFLX4`). Reloading a mapping needs a Mixxx restart; develop with
   `mixxx --controller-debug --controller-abort-on-warning --developer`.
+  `config/mixxx/skins/` is **not** linked and is **not** a skin: it is a
+  generator. `build-skin` derives `LateNight-Leo` from the LateNight skin the
+  mixxx package ships, recolors it into the setup's palette and writes it to
+  `~/.mixxx/skins/` - so only `palette.conf` (every color *and* every recolor
+  rule, the single source), `recolor.awk` and `overrides/` are tracked, a few kB
+  instead of ~2.7 MB of upstream assets. Same trade as `build-dwl`/`build-wbg`,
+  and like dwl it needs an **apply** step: `./install --mixxx-skin`, which must
+  also be rerun after a **mixxx update** because the upstream skin moves with the
+  package. The rule is *keep lightness, replace hue and saturation* - lightness
+  is where upstream encodes button states, gradients and shadows, so keeping it
+  is what makes a blanket recolor safe. Saturation classifies: neutral (left
+  alone) / tinted surface (flattened to grey, this is what removes PaleMoon's
+  warm cast) / real accent. Two deliberate exceptions, both because a *role*
+  cannot be read off a hue - the waveform markers keep distinct colors
+  (`overrides/scheme-vars.conf`; they overlap in one strip, so hue is the only
+  channel left) and `alert_pattern` assets keep more saturation (a clipping
+  indicator that blends in is broken). Two things it **cannot** reach: the
+  waveform signal colors (`waveform.xml` leaves `<SignalHighColor>` empty, so
+  they come from Preferences → `mixxx.cfg`, which is untracked) and everything
+  outside the skin (Mixxx is Qt6, `QT_QPA_PLATFORMTHEME=qt5ct` is Qt5-only).
+  Upstream is CC BY-SA 3.0, so the generated skin is too.
 - **`setup/`** = deployment machinery: `links.conf` (link map, default config of
   `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
   script, without a `.sh` extension), and the **data lists the installer reads
