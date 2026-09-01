@@ -618,7 +618,7 @@ directory because Mixxx keeps state next to its config:
 | --- | --- | --- |
 | `Custom.kbd.cfg` | yes | hand-written keyboard mapping |
 | `soundconfig.xml` | yes | JACK/DDJ-FLX4 routing, 48 kHz |
-| `controllers/` | yes (glob) | own DDJ-FLX4 mapping fork |
+| `controllers/` | no | own mappings would go here; none tracked right now |
 | `mixxx.cfg` | no | rewritten on every exit; holds the search history |
 | `mixxxdb.sqlite` | **never** | library: absolute track paths + play history |
 | `analysis/` | **never** | 586 MB of waveform caches |
@@ -629,64 +629,6 @@ The last four are in `.gitignore` as a second line of defence, since **this repo
 is public**. The broadcast profile is the sharp edge: with
 `<SecureCredentialsStorage>0</SecureCredentialsStorage>` Mixxx writes the
 streaming password unencrypted into that XML.
-
-#### The DDJ-FLX4 mapping
-
-`config/mixxx/controllers/` holds a **fork of the mapping Mixxx ships**, so it
-can be developed further without a package update overwriting it:
-
-| File | Forked from |
-| --- | --- |
-| `Pioneer-DDJ-FLX4-Leo.midi.xml` | `/usr/share/mixxx/controllers/Pioneer-DDJ-FLX4.midi.xml` |
-| `Pioneer-DDJ-FLX4-Leo-script.js` | `/usr/share/mixxx/controllers/Pioneer-DDJ-FLX4-script.js` |
-
-Three things had to change so both mappings can coexist in the preferences
-dialog: `<name>` is `Pioneer DDJ-FLX4 (Leo)`, the `<file filename=…>` in
-`<scriptfiles>` points at the renamed `.js`, and `<author>` keeps the upstream
-credit. `functionprefix` stays `PioneerDDJFLX4` - only one mapping is loaded at
-a time, so it does not collide, and keeping it means the JS needs no rewrite.
-
-Mixxx is already switched over: `[ControllerPreset]` in `mixxx.cfg` points at
-`~/.mixxx/controllers/Pioneer-DDJ-FLX4-Leo.midi.xml`. That file is untracked, so
-on a fresh machine the mapping has to be picked once in *Preferences →
-Controllers*.
-
-Changes made so far, all four verified against the manufacturer's manual and with
-note numbers captured via `--controller-debug`:
-
-| Control | Was | Is now |
-| --- | --- | --- |
-| `4 BEAT/EXIT` | Reloop (a DDJ-400 leftover) | starts a 4 beat loop, cancels a running one |
-| `SHIFT + 4 BEAT/EXIT` | `reloop_andstop` | Reloop |
-| Key Shift pads | dead | key shift, -4..+3 semitones, lit pad shows the current pitch |
-| `SHIFT + BEAT ◄ / ►` | unmapped | BPM tap for deck 1 / deck 2 |
-| `SMART FADER` | unmapped | vinyl mode toggle, state on its own LED |
-
-Two deliberate deviations from the manual. The Key Shift row is `-4..+3` rather
-than the documented `+4/+5/+6/+7`, because Mixxx' `pitch` spans `-6..+6` and `+7`
-has no representation; symmetric keeps the whole range usable. And `SMART CFX`
-(`0x96`/`0x00`, shift `0x96`/`0x08`) stays **free** although it does send MIDI -
-unlike Smart Fader it has a plausible Mixxx equivalent in a QuickEffect chain on
-the metaknob, so it should keep its name for whoever builds that.
-
-What own changes exist is a diff against the stock file:
-
-```sh
-diff /usr/share/mixxx/controllers/Pioneer-DDJ-FLX4-script.js \
-     ~/.mixxx/controllers/Pioneer-DDJ-FLX4-Leo-script.js
-```
-
-Develop with `mixxx --controller-debug --controller-abort-on-warning
---developer`: the first two log every MIDI byte and turn controller-API misuse
-into hard errors, `--developer` unlocks the Developer Tools menu, which lists
-every control object live. The mapping API (`engine.getValue`,
-`engine.makeConnection`, `engine.beginTimer`, `midi.sendShortMsg`) plus the
-`midi-components-0.0.js` helper library are documented in the Mixxx manual;
-the JS engine is Qt's, so modern syntax works.
-
-Since the files are symlinks into this repo, editing them in `~/.mixxx/` and
-editing them in `config/mixxx/` is the same thing - but only Mixxx' **restart**
-(or *Preferences → Controllers*, re-selecting the mapping) reloads them.
 
 #### The LateNight-Leo skin
 

@@ -135,19 +135,13 @@ scripts). The source->target mapping is stated explicitly in
   `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
   are preserved. `claude` does **not** track
   `.claude.json`/sessions/history/cache (auth/state/secrets). `mixxx` is linked
-  the same way (two single files plus a `controllers/*` glob): `~/.mixxx/` must
+  the same way (two single files): `~/.mixxx/` must
   stay real because Mixxx keeps `mixxxdb.sqlite` (library + play history),
   `analysis/` (~600 MB of waveform caches) and its logs in there. `mixxx.cfg` is
   deliberately **not** tracked - Mixxx rewrites it on every exit and it carries
   the library search history. `broadcast_profiles/*.bcp.xml` must never be
   tracked: with `SecureCredentialsStorage 0` the streaming password sits in it
   in plain text, and **this repo is public** (hence the `.gitignore` entries).
-  `config/mixxx/controllers/` is a **fork of the DDJ-FLX4 mapping Mixxx ships**
-  (`Pioneer-DDJ-FLX4-Leo.midi.xml` + `-Leo-script.js`) so a package update cannot
-  overwrite it - renamed `<name>`, and the `<file filename=…>` in `<scriptfiles>`
-  points at the renamed `.js` (the `functionprefix` deliberately stays
-  `PioneerDDJFLX4`). Reloading a mapping needs a Mixxx restart; develop with
-  `mixxx --controller-debug --controller-abort-on-warning --developer`.
   `config/mixxx/skins/` is **not** linked and is **not** a skin: it is a
   generator. `build-skin` derives `LateNight-Leo` from the LateNight skin the
   mixxx package ships, recolors it into the setup's palette and writes it to
