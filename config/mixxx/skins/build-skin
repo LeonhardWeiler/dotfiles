@@ -2,7 +2,11 @@
 # SPDX-License-Identifier: ISC
 # Copyright (C) 2026 The leonhardweiler/dotfiles Authors
 #
-# Build the LateNight-Leo Mixxx skin into the Mixxx settings directory.
+# Build the LateNight-Leo Mixxx skin into the Mixxx settings directory, and
+# with it the two things that sit outside a skin but decide how Mixxx looks:
+# the style sheet for its dialogs (~/.mixxx/prefs.qss) and the Qt palette they
+# stand on (~/.config/qt6ct/, read by Mixxx alone - see the section at the
+# bottom).
 #
 # The skin is *derived*, not vendored: it is generated from the LateNight skin
 # that the mixxx package ships, recolored into our palette (palette.conf) and
@@ -40,6 +44,7 @@ DRY=0
 
 die() { printf 'build-skin: %s\n' "$*" >&2; exit 1; }
 note() { printf 'build-skin: %s\n' "$*"; }
+trim() { printf '%s' "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'; }
 
 [ -d "$SRC" ] || die "upstream skin not found: $SRC (is mixxx installed?)"
 [ -f "$HERE/palette.conf" ] || die "missing palette.conf next to this script"
@@ -82,6 +87,28 @@ HUE_FAMILIES=$(
     ' "$HERE/palette.conf"
 )
 [ -n "$HUE_FAMILIES" ] || die "palette.conf: no hue_family rules"
+
+# Rewrite `@name@` placeholders on stdin into their palette values. Both
+# override channels that carry text - overrides/style.qss and the replacement
+# table - go through this, so a color is still written down exactly once.
+expand_palette() {
+    sed -e "s|@bg@|$P_bg|g" \
+        -e "s|@fg@|$P_fg|g" \
+        -e "s|@surface@|$P_surface|g" \
+        -e "s|@border@|$P_border|g" \
+        -e "s|@border_focus@|$P_border_focus|g" \
+        -e "s|@dim@|$P_dim|g" \
+        -e "s|@accent@|$P_accent|g" \
+        -e "s|@warn@|$P_warn|g" \
+        -e "s|@green@|$P_green|g" \
+        -e "s|@orange@|$P_orange|g" \
+        -e "s|@blue@|$P_blue|g" \
+        -e "s|@cyan@|$P_cyan|g" \
+        -e "s|@magenta@|$P_magenta|g" \
+        -e "s|@font_family@|$P_font_family|g" \
+        -e "s|@font_size@|$P_font_size|g" \
+        -e "s|@skin@|$DEST|g"
+}
 
 # `alert_pattern` is a list, so it is read separately from the single-value keys.
 P_alert_pattern=$(pal alert_pattern)
@@ -159,6 +186,59 @@ if [ -n "$refs" ]; then
     note "kept $(printf '%s\n' "$refs" | wc -l) classic asset(s) still referenced"
 fi
 
+# --- Text replacements -----------------------------------------------------
+# The third override channel, for what neither the recolor nor a scheme
+# variable can reach: literal text in the templates. A color rule sees hues,
+# scheme variables see `<SetVariable>`; a hardcoded `<DisabledColor>` or a
+# stray hair space in a button label is neither.
+#
+# Applied here, on the pristine upstream copy - before the path rewrite and
+# before the recolor - so every search string is upstream's own text, exactly
+# as it reads in /usr/share/mixxx/skins/LateNight. That is also what makes the
+# check below meaningful: a string that no longer matches means upstream moved
+# under us, and that has to fail the build rather than silently do nothing.
+
+REPLACED_FILES=
+if [ -f "$HERE/overrides/replacements.conf" ]; then
+    replaced=0
+    while IFS= read -r line <&3; do
+        case $line in ''|\#*) continue ;; esac
+        rel=$(trim "${line%%|||*}")
+        rest=${line#*|||}
+        from=$(trim "${rest%%|||*}")
+        to=$(trim "${rest#*|||}")
+        [ -n "$rel" ] && [ -n "$from" ] \
+            || die "overrides/replacements.conf: malformed line: $line"
+        [ -f "$DEST/$rel" ] || die "overrides/replacements.conf: no such file: $rel"
+        # awk, not sed: both the search and the replacement are literal text,
+        # and these are XML fragments full of characters sed would read as
+        # syntax.
+        awk -v from="$from" -v to="$to" '
+            {
+                out = ""; line = $0
+                while ((n = index(line, from)) > 0) {
+                    out = out substr(line, 1, n - 1) to
+                    line = substr(line, n + length(from))
+                    hits++
+                }
+                print out line
+            }
+            END { if (!hits) exit 1 }
+        ' "$DEST/$rel" > "$DEST/$rel.tmp" \
+            || die "overrides/replacements.conf: '$from' not found in $rel"
+        mv "$DEST/$rel.tmp" "$DEST/$rel"
+        replaced=$((replaced + 1))
+        # `@name@` is left standing for now and resolved after the recolor:
+        # a palette color written into the file here would be read as one of
+        # upstream's own and remapped a second time.
+        case " $REPLACED_FILES " in
+            *" $rel "*) ;;
+            *) REPLACED_FILES="$REPLACED_FILES $rel" ;;
+        esac
+    done 3< "$HERE/overrides/replacements.conf"
+    note "applied $replaced text replacement(s)"
+fi
+
 # --- Rewrite internal paths and the manifest -------------------------------
 # LateNight addresses its own files as `skins:LateNight/...`, and that prefix
 # must go: `skins:` is a Qt search path that resolves *only* into the packaged
@@ -223,6 +303,16 @@ find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) -print \
 done
 count=$(find "$DEST" \( -name '*.svg' -o -name '*.qss' -o -name '*.xml' \) | wc -l)
 note "recolored $count file(s)"
+
+# The other half of the replacement step: `@name@` was left standing so the
+# recolor could not mistake a palette color for one of upstream's.
+if [ -n "$REPLACED_FILES" ]; then
+    for rel in $REPLACED_FILES; do
+        expand_palette < "$DEST/$rel" > "$DEST/$rel.tmp"
+        mv "$DEST/$rel.tmp" "$DEST/$rel"
+    done
+    note "resolved palette placeholders in replaced file(s)"
+fi
 
 # The VU meters, the latency bar and a couple of buttons ship as PNG, and a
 # bright green level bar in an otherwise muted skin is the loudest thing on
@@ -301,19 +391,49 @@ if [ -f "$HERE/overrides/style.qss" ]; then
     # Qt stylesheets are last-rule-wins, so appending is enough to override.
     {
         printf '\n/* --- overrides from dotfiles config/mixxx/skins/overrides --- */\n'
-        sed -e "s|@bg@|$P_bg|g" \
-            -e "s|@fg@|$P_fg|g" \
-            -e "s|@surface@|$P_surface|g" \
-            -e "s|@border@|$P_border|g" \
-            -e "s|@border_focus@|$P_border_focus|g" \
-            -e "s|@dim@|$P_dim|g" \
-            -e "s|@accent@|$P_accent|g" \
-            -e "s|@warn@|$P_warn|g" \
-            -e "s|@font_family@|$P_font_family|g" \
-            -e "s|@font_size@|$P_font_size|g" \
-            "$HERE/overrides/style.qss"
+        expand_palette < "$HERE/overrides/style.qss"
     } >> "$DEST/style_palemoon.qss"
     note "appended style overrides"
+fi
+
+# --- Dialogs ---------------------------------------------------------------
+# A skin styles the main window and nothing else. Preferences, track
+# properties and every message box are Mixxx' own QDialogs and come up in
+# whatever the Qt platform theme provides - here nothing, because this system
+# configures qt5ct and Mixxx is a Qt6 build. The sheet goes next to mixxx.cfg
+# rather than into the skin directory: it is not a skin file, and the recolor
+# that runs over every .qss in there would remap the palette colors it was
+# just given. Mixxx reads it because the desktop entry passes
+# `-stylesheet $HOME/.mixxx/prefs.qss` - see config/mixxx/org.mixxx.Mixxx.desktop.
+
+if [ -f "$HERE/overrides/prefs.qss" ]; then
+    PREFS_QSS=${MIXXX_SETTINGS_DIR:-$HOME/.mixxx}/prefs.qss
+    mkdir -p "$(dirname "$PREFS_QSS")"
+    expand_palette < "$HERE/overrides/prefs.qss" > "$PREFS_QSS"
+    note "wrote dialog stylesheet to $PREFS_QSS"
+fi
+
+# --- Qt palette ------------------------------------------------------------
+# The last two things a style sheet cannot reach, because Qt maps only a
+# handful of CSS properties onto palette roles: the color of a link, and how
+# light Qt considers the palette to be - which is what Mixxx reads to decide
+# between its light and dark preference icons. Both are palette roles, so they
+# need a platform theme, and qt6ct is the one that lets every role be named.
+#
+# Scoped to Mixxx by the same desktop entry that passes the style sheet: the
+# session sets QT_QPA_PLATFORMTHEME=qt5ct, which no Qt6 program reads, and
+# only Mixxx' Exec line overrides it with qt6ct. The files below are therefore
+# written once and consulted by one process.
+
+if [ -f "$HERE/overrides/qt6ct.conf" ] && [ -f "$HERE/overrides/qt6ct-colors.conf" ]; then
+    QT6CT_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/qt6ct
+    mkdir -p "$QT6CT_DIR/colors"
+    expand_palette < "$HERE/overrides/qt6ct-colors.conf" \
+        > "$QT6CT_DIR/colors/$SCHEME_NAME.conf"
+    expand_palette < "$HERE/overrides/qt6ct.conf" \
+        | sed -e "s|@colors_path@|$QT6CT_DIR/colors/$SCHEME_NAME.conf|" \
+        > "$QT6CT_DIR/qt6ct.conf"
+    note "wrote Qt palette to $QT6CT_DIR"
 fi
 
 # --- Verify every reference resolves ---------------------------------------

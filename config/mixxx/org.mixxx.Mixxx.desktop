@@ -1,0 +1,42 @@
+[Desktop Entry]
+# Overrides /usr/share/applications/org.mixxx.Mixxx.desktop by desktop-id -
+# XDG_DATA_HOME is searched first, which is what app_menu relies on too.
+#
+# Two changes from the packaged entry:
+#
+#   * `-stylesheet` hands Mixxx the dialog style sheet that build-skin writes
+#     next to mixxx.cfg. A skin only reaches the main window; preferences,
+#     track properties and every message box are Mixxx' own QDialogs and would
+#     otherwise come up unstyled - qt5ct, which themes the rest of this
+#     system's Qt apps, does not apply to a Qt6 build like Mixxx 2.5.
+#     A missing file is ignored by Qt, so the entry also works before the
+#     first build-skin run.
+#
+#   * QT_QPA_PLATFORMTHEME=qt6ct, for the two things a style sheet cannot
+#     reach because Qt does not map them from CSS: the color of a link, and
+#     how light Qt reads the palette to be - which is what Mixxx consults to
+#     choose between its light and dark preference icons. build-skin writes
+#     that palette to ~/.config/qt6ct. Setting the variable here and nowhere
+#     else is what keeps it to Mixxx: the session exports qt5ct, which no Qt6
+#     program reads.
+#
+#   * `pasuspender` is gone. It suspends a PulseAudio *server* so a JACK
+#     client can take the device; this system runs PipeWire, which is both at
+#     once and has nothing to suspend - and the binary is not installed, so
+#     upstream's `pasuspender -- mixxx || mixxx` only ever reached its
+#     fallback.
+#
+# The localised Name/GenericName/Comment lines of the packaged entry are
+# dropped: this system runs en_US.UTF-8 and app_menu reads the plain keys.
+Version=1.0
+Name=Mixxx
+GenericName=Digital DJ interface
+Comment=A digital DJ interface
+Exec=sh -c 'QT_QPA_PLATFORMTHEME=qt6ct exec mixxx -stylesheet "$HOME/.mixxx/prefs.qss" "$@"' mixxx %U
+Keywords=dj;music;alsa;jack:realtime;standalone;
+Terminal=false
+Icon=mixxx
+Type=Application
+StartupNotify=true
+StartupWMClass=org.mixxx.mixxx
+Categories=Qt;AudioVideo;Audio;Midi;Mixer;Player;Recorder;Sequencer;

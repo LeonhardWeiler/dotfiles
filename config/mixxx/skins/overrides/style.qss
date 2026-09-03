@@ -77,3 +77,82 @@ WSearchLineEdit {
 WSearchLineEdit:focus {
   border: 1px solid @accent@;
 }
+
+/* --- FX assign buttons ----------------------------------------------------
+ * 26px wide, and the label is "FX" plus the unit number. Upstream's Open Sans
+ * fits three characters in there; JetBrains Mono, like any monospaced face,
+ * needs about a fifth more width per character and pushes the digit under the
+ * right border. One step down in size buys back exactly that fifth. The hair
+ * space upstream uses for left padding is removed in
+ * overrides/replacements.conf - with a centered label it was padding on one
+ * side only, which is what made the overflow one-sided. */
+
+#FxAssignButtons WPushButton {
+  font-size: 9px;
+  padding: 0px;
+}
+
+/* --- Right-hand decks are mirrored ----------------------------------------
+ * A deck is [track rows][rate controls]: BPM, sync and the pitch fader sit on
+ * the right. For deck 1 that puts them against the mixer, which is where they
+ * belong - tempo is what you compare between decks, so the two readouts want
+ * to be next to each other. For deck 2 the same order puts them against the
+ * window edge, as far from deck 1's as the layout allows.
+ *
+ * Qt lays a horizontal box out in reverse when the widget is right-to-left,
+ * so flipping the deck and flipping its three children back is enough to
+ * swap the order without touching the templates. The children each reset the
+ * direction for their own subtree, so nothing below is mirrored. */
+
+#Deck2, #Deck4 {
+  qproperty-layoutDirection: RightToLeft;
+}
+  /* Two levels are left mirrored: the deck, which swaps [rows][rate], and the
+   * unnamed group inside the rate controls, which swaps [separator][rate] so
+   * the separator ends up between the rate column and the rows again rather
+   * than against the mixer. Everything below these two is set back. */
+  #Deck2 #DeckRows12345,
+  #Deck4 #DeckRows12345,
+  #Deck2 #RateContainer,
+  #Deck4 #RateContainer {
+    qproperty-layoutDirection: LeftToRight;
+  }
+  /* The separator between deck and rate controls is a bevel - dark edge, then
+   * light. Mirrored, it has to be read from the other side. */
+  #Deck2 #DeckRateSeparator,
+  #Deck4 #DeckRateSeparator {
+    border-left: 1px solid #333333;
+    border-right: 1px solid #0c0c0c;
+  }
+
+/* --- Labels that upstream sized for Open Sans -----------------------------
+ * A monospaced face gives every character the width of the widest one, so the
+ * same string comes out roughly half again as wide as it does in Open Sans.
+ * Upstream sizes several buttons and labels to fit their text exactly, and
+ * those are the ones that now run out of their widget: the last character is
+ * simply cut off at the border.
+ *
+ * Where the widget has a fixed size, the type has to give way - the sizes
+ * below are the largest that still fit the longest label in each group. */
+
+/* Toolbar: "SETTINGS" and "ON AIR" (both padded with leading spaces to clear
+ * their icon, and a space in a monospaced face is as wide as a letter). */
+#SkinSettingsToggle,
+#BroadcastButton {
+  font-size: 9px;
+}
+
+/* Skin settings panel: "Deck Size:", "hide mixer to select", "Load" / "Save",
+ * and the category headers "Effect Units" and "Samplers". */
+#SkinSettingsButton,
+#SkinSettingsNumToggle,
+#SkinSettingsMixerToggle,
+#SkinSettingsText {
+  font-size: 9px;
+}
+
+#SkinSettingsLabelButton,
+#CategoryLabel,
+#SkinSettingsNumToggleHeader {
+  font-size: 12px;
+}
