@@ -15,7 +15,7 @@ devtools 1:1.5.1-1
 dmidecode 3.7-1
 docker 1:29.7.2-1
 docker-buildx 0.36.1-1
-docker-compose 5.5.0-1
+docker-compose 5.5.1-1
 dosfstools 4.2-5
 efibootmgr 18-4
 exfatprogs 1.4.3-1
@@ -74,7 +74,7 @@ ripgrep 15.2.0-1
 rofi 2.0.0-1
 rsync 3.5.0-1
 rt-tests 2.10-1
-signal-desktop 8.25.0-1
+signal-desktop 8.26.0-1
 slurp 1.5.0-2
 smem 1.5-8
 stress-ng 0.22.00-1
@@ -89,7 +89,7 @@ wayland 1.26.0-1
 wayland-protocols 1.49-1
 waylock 1.6.0-1
 wget 1.25.0-6
-whisper-cpp 1.9.1-2
+whisper-cpp 1.9.3-1
 wireless-regdb 2026.05.30-1
 wireplumber 0.5.17-1
 wl-clipboard 1:2.3.0-1
