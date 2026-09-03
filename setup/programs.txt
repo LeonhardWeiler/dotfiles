@@ -21,7 +21,7 @@ efibootmgr 18-4
 exfatprogs 1.4.3-1
 figma-agent-linux-bin 0.4.3-1
 fio 3.42-1
-foot 1.27.0-2
+foot 1.28.0-1
 ggml-vulkan 0.22.0-2
 git 2.55.0-1
 glmark2 2023.01-2
