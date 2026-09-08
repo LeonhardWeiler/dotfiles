@@ -1,6 +1,6 @@
 local M = {}
 
-local root = vim.fn.expand("~/files/projects/leonhardweiler.github.io/")
+local root = vim.fn.expand("~/files/repos/leonhardweiler.github.io/")
 
 local template = root .. "/templates/text.html"
 local texts = root .. "/texts.html"
