@@ -1,5 +1,10 @@
 wheel
 input
 uucp
-disk
-lock
+# JACK/Mixxx: realtime-privileges only takes effect for members of this group.
+realtime
+# Not on this machine: `disk` grants raw access to every block device (root
+# equivalent) and `lock` was for the dwl mount_menu, which mounted drives by
+# hand. Under Plasma, Dolphin mounts through udisks2/polkit and needs neither.
+#disk
+#lock

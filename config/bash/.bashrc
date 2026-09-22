@@ -26,16 +26,10 @@ PROMPT_COMMAND=update_battery
 
 PS1='${battery}\w \$ '
 
-# OSC-133 markers for foot (prompt jumping + Ctrl+Shift+Y). Overrides
-# PROMPT_COMMAND, so it has to come after the two lines above.
-[ -f ~/.config/bash/foot-shell-integration.bash ] &&
-  . ~/.config/bash/foot-shell-integration.bash
-
-
 export EDITOR="nvim"
-export ELECTRON_OZONE_PLATFORM_HINT=wayland
-export QT_QPA_PLATFORM=wayland
-export BROWSER=zen-browser
+# Wayland hints for GUI apps live in config/kde/environment.conf, so that
+# programs started from the Plasma launcher (not from a shell) see them too.
+export BROWSER=helium
 
 
 alias open='xdg-open'
@@ -45,7 +39,7 @@ alias arst='sudo shutdown now'
 alias todo='nvim ./AGENT/TODO.md'
 alias claude='claude --dangerously-skip-permissions'
 alias camera='ffplay -f v4l2 /dev/video0 -vf hflip -x 1280 -y 720'
-alias screenshot='grim -g "$(slurp)"'
+alias screenshot='spectacle --region'
 
 
 export NIX_CONFIG="experimental-features = nix-command flakes"

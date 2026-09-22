@@ -8,11 +8,26 @@ STOPFILE="$STATE/stop"
 
 mkdir -p "$STATE"
 
+# Status display. Where the dwl machine drew a bar for as long as the recording
+# ran, this is a Plasma notification that gets closed again when the step is
+# over, so the indicator never piles up in the notification history.
+NOTIFY_ID=
+
+notify_close() {
+  [ -n "$NOTIFY_ID" ] || return 0
+  gdbus call --session \
+    --dest org.freedesktop.Notifications \
+    --object-path /org/freedesktop/Notifications \
+    --method org.freedesktop.Notifications.CloseNotification "$NOTIFY_ID" \
+    >/dev/null 2>&1
+  NOTIFY_ID=
+}
+
 cleanup() {
   rm -f "$STOPFILE"
 
   [ -n "$REC_PID" ] && kill "$REC_PID" 2>/dev/null
-  [ -n "$WOB_PID" ] && kill "$WOB_PID" 2>/dev/null
+  notify_close
 
   rm -rf "$STATE"
   [ -n "$TMP" ] && rm -f "$TMP" "$TMP.txt"
@@ -39,15 +54,8 @@ trap cleanup INT TERM HUP
 
 TMP=$(mktemp --suffix=.wav)
 
-# OSD
-(
-  while :; do
-    echo "100 record"
-    sleep 0.5
-  done
-) | wob >/dev/null 2>&1 &
-
-WOB_PID=$!
+NOTIFY_ID=$(notify-send -p -t 0 -i audio-input-microphone \
+  "Aufnahme läuft" "Tastenkürzel nochmal drücken zum Beenden" 2>/dev/null)
 
 echo "🎤 Aufnahme..."
 
@@ -64,8 +72,9 @@ echo "⏹ Aufnahme beendet"
 kill "$REC_PID" 2>/dev/null
 wait "$REC_PID" 2>/dev/null
 
-kill "$WOB_PID" 2>/dev/null
-WOB_PID=
+notify_close
+NOTIFY_ID=$(notify-send -p -t 0 -i media-record \
+  "Transkription läuft" "whisper.cpp" 2>/dev/null)
 
 echo "⌛ Whisper..."
 
@@ -84,7 +93,8 @@ if [ -s "$TMP.txt" ]; then
     | tr -d '\n' \
     | wl-copy
 
-  OSD_DURATION=0.2 osd 100 done
+  notify_close
+  notify-send -t 2000 -i edit-paste "Diktat im Clipboard" 2>/dev/null
   echo "✓ Im Clipboard"
 fi
 

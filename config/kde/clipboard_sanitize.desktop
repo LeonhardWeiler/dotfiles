@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Clipboard sanitize
+Comment=Strip metadata from images passing through the clipboard
+Exec=/home/leo/.local/bin/clipboard_sanitize
+Terminal=false
+X-GNOME-Autostart-enabled=true
+OnlyShowIn=KDE;

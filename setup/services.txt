@@ -7,8 +7,12 @@
 #                       starts. Undo by hand with `systemctl unmask`.)
 
 system  NetworkManager.service
-system  getty@tty1.service
 system  fstrim.timer
+# Plasma's login manager (SDDM's successor) owns the graphical session here.
+# The dwl machine had no display manager and exec'd the compositor from
+# .bash_profile after an autologin getty:
+#   system  getty@tty1.service
+system  plasmalogin.service
 
 disable  NetworkManager-wait-online.service
 disable  systemd-timesyncd.service
