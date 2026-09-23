@@ -1,0 +1,7 @@
+[Daemon]
+Autolock=true
+Timeout=15
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file:///home/leo/.local/share/wallpapers/Apple-Monterey/contents/splash/images/background.jpg
+PreviewImage=file:///home/leo/.local/share/wallpapers/Apple-Monterey/contents/splash/images/background.jpg
