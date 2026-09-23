@@ -122,7 +122,7 @@ read_list "$BASEDIR/setup/fonts.txt" FONT_PACKAGES
 STEP_ORDER=()
 declare -A STEP_DESC STEP_FN STEP_ARG SELECTED
 # Steps preselected in `setup` (menu Enter / no TTY = these defaults).
-DEFAULT_STEPS=(programs systemd locale)
+DEFAULT_STEPS=(programs systemd locale vconsole)
 # register_step <name> <fn> <description> [<arg-placeholder>]
 # The registry is the single source of truth: the `--<name>` flag, the help text
 # and the `setup` menu entry all come from here. The optional 4th field names the
@@ -391,6 +391,28 @@ do_getty_autologin() {
   run 1 systemctl daemon-reload || warn "daemon-reload failed"
 }
 register_step getty-autologin do_getty_autologin "Deploy getty@tty1 autologin drop-in (real copy)"
+
+# Set the system keyboard layout (console + login greeter) to Colemak-DH by
+# copying config/vconsole/ to /etc/vconsole.conf (console) and
+# /etc/X11/xorg.conf.d/00-keyboard.conf (localed's X11 layout, which KWin uses
+# for the Plasma Login Manager greeter - it has no kxkbrc of its own). REAL
+# copies, like the getty drop-in: systemd-vconsole-setup runs before /home is
+# mounted and sd-vconsole bakes the file into the initramfs, so that is rebuilt too.
+do_vconsole() {
+  local src="$BASEDIR/config/vconsole"
+  [ -f "$src/vconsole.conf" ] || { warn "vconsole.conf source missing: $src"; return 0; }
+  info "Copying vconsole.conf + 00-keyboard.conf to /etc"
+  run 1 install -m644 "$src/vconsole.conf" /etc/vconsole.conf || { warn "vconsole.conf copy failed"; return 0; }
+  run 1 install -Dm644 "$src/00-keyboard.conf" /etc/X11/xorg.conf.d/00-keyboard.conf \
+    || warn "00-keyboard.conf copy failed"
+  # services.txt used to mask it (dwl machine, plain us console); a mask is never
+  # undone by `./install`, so lift it here.
+  run 1 systemctl unmask systemd-vconsole-setup.service >/dev/null 2>&1 || warn "unmask failed"
+  run 1 systemctl restart systemd-localed.service || warn "localed restart failed"
+  run 1 systemctl restart systemd-vconsole-setup.service || warn "vconsole-setup restart failed"
+  do_initramfs
+}
+register_step vconsole do_vconsole "Colemak-DH for console + login screen (/etc/vconsole.conf, real copy)"
 
 # Passwordless sudo for the wheel group - a deliberate convenience choice of this
 # setup. As a drop-in in /etc/sudoers.d/ (0440), first checked with `visudo -c`
@@ -684,6 +706,7 @@ case "$CMD" in
     is_selected groups && do_groups
     is_selected timezone && do_timezone
     is_selected getty-autologin && do_getty_autologin
+    is_selected vconsole && do_vconsole
     is_selected sudoers && do_sudoers
     is_selected initramfs && do_initramfs
     is_selected fonts && do_fonts

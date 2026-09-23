@@ -17,4 +17,5 @@ system  plasmalogin.service
 disable  NetworkManager-wait-online.service
 disable  systemd-timesyncd.service
 
-mask     systemd-vconsole-setup.service
+# systemd-vconsole-setup.service used to be masked here (plain us console on the
+# dwl machine); it now applies the Colemak-DH KEYMAP from config/vconsole.

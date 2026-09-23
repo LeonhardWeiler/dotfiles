@@ -51,6 +51,10 @@ scripts). The source->target mapping is stated explicitly in
     log `leo` in automatically (`agetty --autologin`), and `~/.bash_profile` then
     execs the dwl session on tty1. Real copy (not symlinked) for the same reason
     the ly drop-ins were - systemd reads unit drop-ins before `/home` is mounted.
+  - `--vconsole` - Colemak-DH for the console and the login greeter: copies
+    `config/vconsole/` to `/etc` (real copies), unmasks
+    `systemd-vconsole-setup`, restarts localed and rebuilds the initramfs.
+    _Default._
   - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
     with `visudo -c`).
   - `--initramfs` - `mkinitcpio -P`.
@@ -126,7 +130,7 @@ scripts). The source->target mapping is stated explicitly in
 - **`config/`** = flat config sources: `bash`, `btop`, `claude`,
   `dwl`, `foot`, `git`, `keepassxc`, `locale`, `logind`, `mimeapps`,
   `mixxx`, `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `usrbin`, `wallpaper`, `wbg`, `wob`, `zen-yt`.
+  `systemd-system`, `usrbin`, `vconsole`, `voxtype`, `wallpaper`, `wbg`, `wob`, `zen-yt`.
   Whole directories are linked as a dir symlink (foot, nvim, rofi,
   wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
   `claude` and `/etc` targets deliberately **only the single file**
@@ -185,11 +189,15 @@ scripts). The source->target mapping is stated explicitly in
   `locale/locale.conf`, `locale/locale.gen` (-> `/etc/locale.gen`),
   `pacman/pacman.conf` (-> `/etc/pacman.conf`),
   `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
-  There is **no** `config/vconsole/`: `/etc/vconsole.conf` is left as the
-  untouched systemd fallback, `systemd-vconsole-setup.service` is `mask`ed in
-  `services.txt`, and the `keymap`/`consolefont` hooks are gone from `HOOKS` in
-  `mkinitcpio.conf`. The TTY therefore runs plain `us` QWERTY - accepted
-  knowingly (autologin, no password typed on the VT).
+  `config/vconsole/` is **not** linked but copied by the `--vconsole` step
+  (a default step): `vconsole.conf` -> `/etc/vconsole.conf` (`KEYMAP=mod-dh-iso-uk`,
+  console + initramfs via `sd-vconsole`) and `00-keyboard.conf` ->
+  `/etc/X11/xorg.conf.d/00-keyboard.conf` (`gb`/`colemak_dh`). The second one
+  is what fixes the **login screen**: the Plasma Login Manager greeter has no
+  `kxkbrc`, so KWin falls back to localed's `X11Layout`, which localed reads
+  from that file only (systemd 261 ignores `XKB_*` in `vconsole.conf`). Real
+  copies because `/home` is a separate partition. Keep both in sync with
+  `~/.config/kxkbrc` and voxtype's `eitype_xkb_*`.
 - **System services**: activated by the `install` script after linking via
   `systemctl enable` - the unit lists live in `setup/services.txt` (loaded into
   `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the

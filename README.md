@@ -53,6 +53,7 @@ The optional steps (menu entries; each also has a flag, see below):
 | Set the timezone (`/etc/localtime`)                 | `--timezone ZONE`       |         |
 | Generate locales (`locale-gen`)                     | `--locale`              | ✓       |
 | Deploy the getty@tty1 autologin drop-in             | `--getty-autologin`     |         |
+| Colemak-DH for console + login screen (`/etc`)      | `--vconsole`            | ✓       |
 | Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`             |         |
 | Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`           |         |
 | Install fonts + refresh the font cache (`fc-cache`) | `--fonts`               |         |
@@ -284,6 +285,16 @@ sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
   Because dwl is started from a plain autologin shell (not a display manager),
   the console keymap workaround that ly needed is unnecessary: no password is
   typed on the VT, and dwl applies its own xkb layout once it starts.
+
+- **Keyboard layout outside the session** (`./install --vconsole`): the
+  Plasma Login Manager greeter has no `kxkbrc`, so KWin falls back to
+  systemd-localed's X11 layout - which is read from
+  `/etc/X11/xorg.conf.d/00-keyboard.conf` only. Without it the first login
+  screen comes up with the wrong layout. The step copies
+  `config/vconsole/00-keyboard.conf` (`gb`/`colemak_dh`) and
+  `config/vconsole/vconsole.conf` (`KEYMAP=mod-dh-iso-uk`, the console twin)
+  to `/etc` as real copies, unmasks `systemd-vconsole-setup` and rebuilds the
+  initramfs (the `sd-vconsole` hook embeds the keymap).
 
 - **sudo** (`./install --sudoers`): this setup relies on passwordless sudo for
   the `wheel` group (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, written to
