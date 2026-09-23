@@ -125,7 +125,7 @@ kigo 26.08.1-1
 killbots 26.08.1-1
 kimagemapeditor 26.08.1-1
 kio-admin 26.08.1-1
-kio-extras 26.08.1-1
+kio-extras 26.08.1-2
 kio-gdrive 26.08.1-1
 kio-zeroconf 26.08.1-1
 kirigami-gallery 26.08.1-1
@@ -207,9 +207,9 @@ mixxx 2.5.6-7
 neochat 26.08.1-1
 neovim 0.12.5-1
 networkmanager 1.58.1-1
-nodejs-lts-jod 22.23.2-1
+nodejs-lts-krypton 24.21.0-1
 noto-fonts-cjk 20240730-1
-npm 12.0.2-1
+npm 12.1.0-1
 ntfs-3g 2026.7.7-1
 obs-studio 32.2.2-1
 okular 26.08.1-1
@@ -221,7 +221,7 @@ perl-image-exiftool 13.55-1
 picmi 26.08.1-1
 pim-data-exporter 26.08.1-1
 pim-sieve-editor 26.08.1-1
-pipewire-alsa 1:1.6.8-1
+pipewire-alsa 1:1.6.9-1
 plasma-camera 26.08.1-1
 plasma-meta 6.7-2
 plasmatube 26.08.1-1
