@@ -8,6 +8,7 @@ profile=balanced
 
 [AC][SuspendAndShutdown]
 AutoSuspendAction=0
+LidAction=0
 
 [Battery][Display]
 DimDisplayWhenIdle=true
@@ -21,6 +22,7 @@ profile=power-saver
 
 [Battery][SuspendAndShutdown]
 AutoSuspendAction=0
+LidAction=0
 
 [LowBattery][Display]
 DimDisplayWhenIdle=true
@@ -34,3 +36,4 @@ profile=power-saver
 
 [LowBattery][SuspendAndShutdown]
 AutoSuspendAction=0
+LidAction=0
