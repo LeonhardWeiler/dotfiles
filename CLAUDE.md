@@ -378,6 +378,15 @@ scripts). The source->target mapping is stated explicitly in
   a removal rebuilds the index and reopens rofi with `-filter` set to what was
   typed (`-format 'i f'` returns row number *and* filter), dropping the filter
   when it no longer matches a row.
+- **Dictation** is **voxtype** (AUR `voxtype-bin`, local whisper.cpp,
+  `large-v3-turbo`): `config/voxtype/config.toml` -> `~/.config/voxtype/`.
+  The daemon starts from the session autostart (Plasma:
+  `config/kde/voxtype.desktop`, dwl: `autostart[]`), the key only runs
+  `voxtype record toggle` (Plasma `Meta+Shift+W` via
+  `config/kde/voxtype-toggle.desktop`, dwl `MOD+Shift+W`). Its own OSD
+  (gtk4-layer-shell) is the recording indicator. Text is typed with
+  `wtype` (dwl) / `eitype` (KWin), clipboard as fallback. The Vulkan backend
+  (`voxtype setup gpu --enable`) is machine state, not tracked.
 - **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
   `config/keepassxc/` folder via `.claudeignore`.
 - Commits are SSH-signed (`config/git/config`).

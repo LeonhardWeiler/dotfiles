@@ -531,7 +531,7 @@ userscript talking to `127.0.0.1`, and none of that survived.
 `yt_save` strips the tracking parameters (`si`, `pp`, `feature`, `utm_*`; `v`,
 `list` and a timestamp that came with the link are kept, none is ever added),
 refuses a link already on either list, appends the entry, and flashes wob green
-through `osd` - the confirmation `dictate` gives. A
+through `osd`. A
 duplicate flashes **red** instead, so the keypress always answers. New entries
 go into the section above the first `##` heading, which is what keeps them out
 of the "godot" block at the bottom of the watchlist.

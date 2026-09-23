@@ -1,0 +1,50 @@
+# voxtype - local push-to-talk dictation (whisper.cpp, nothing leaves the
+# machine). The daemon runs from the session autostart; the keybinding only
+# calls `voxtype record toggle`. Full reference: /usr/share/doc/voxtype or
+# https://voxtype.io. Restart after editing: `pkill -x voxtype-osd-gtk;
+# pkill -x voxtype; voxtype daemon &` - kill the OSD too, an orphaned one keeps
+# the new daemon's OSD from starting.
+#
+# Machine state that is not in this file: `voxtype setup gpu --enable` switches
+# /usr/bin/voxtype to the Vulkan build (Radeon 680M here, ~5x faster than CPU
+# for large-v3-turbo), and the sound card must be on a profile with an input
+# (`pactl set-card-profile … output:analog-stereo+input:analog-stereo`).
+
+# Needed by `voxtype record toggle` and `voxtype status`.
+state_file = "auto"
+
+[hotkey]
+# No evdev listener (would need the `input` group); the compositor binds
+# `voxtype record toggle` instead - Plasma: Meta+Shift+W, dwl: MOD+Shift+W.
+enabled = false
+
+[audio]
+device = "default"
+sample_rate = 16000
+max_duration_secs = 300
+
+# Short click on start/stop, on top of the on-screen waveform.
+[audio.feedback]
+enabled = true
+theme = "subtle"
+volume = 0.5
+
+[whisper]
+# Multilingual (no .en), downloaded to ~/.local/share/voxtype/models by
+# `voxtype setup model`. Kept loaded, so a dictation starts without delay.
+model = "large-v3-turbo"
+language = "de"
+on_demand_loading = false
+
+[output]
+# Typed into the focused window. wtype covers dwl (wlroots), eitype covers
+# KWin (libei via the RemoteDesktop portal - wtype does not work there); if
+# both fail the text lands on the clipboard.
+mode = "type"
+driver_order = ["wtype", "eitype", "clipboard"]
+
+# The on-screen display (waveform while recording, then a transcribing state)
+# is the recording indicator. It is on by default; the section is here to make
+# that explicit.
+[osd]
+enabled = true

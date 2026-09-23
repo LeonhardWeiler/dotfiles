@@ -31,6 +31,7 @@ that **`hjkl` means the same thing everywhere**: `h`/`l` the horizontal axis,
 | `MOD+M`       | Drive menu (`mount_menu`) — _m_ount                             |
 | `MOD+S`       | Copy a file without its metadata (`sanitize_menu`) — _s_anitize |
 | `MOD+Y`       | YouTube lists from the notes repo (`yt_menu`) — _y_outube       |
+| `MOD+Shift+W` | Dictation on/off (`voxtype record toggle`; Plasma: `Meta+Shift+W`) |
 | `MOD+O`       | Close the focused window                                        |
 | `MOD+E`       | Toggle fullscreen                                               |
 | `MOD+V`       | Toggle floating for the focused window                          |

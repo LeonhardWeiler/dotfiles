@@ -8,9 +8,9 @@
 # daemon, no port and nothing listening between two keypresses.
 #
 # It appends `- [title](url)` to yt/remember.md or yt/watchlist.md in the notes
-# repo and flashes wob green through `osd` - the same confirmation `dictate`
-# gives.  A link already on either list is not added a second time; that
-# flashes red instead, so the keypress always answers.  It deliberately does
+# repo and flashes wob green through `osd`.  A link already on either list is
+# not added a second time; that flashes red instead, so the keypress always
+# answers.  It deliberately does
 # *not* commit: every commit in the notes repo is made by hand.
 #
 # Wire format (Mozilla native messaging): a 4-byte message length in native

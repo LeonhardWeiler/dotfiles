@@ -47,6 +47,9 @@ static const char *const autostart[] = {
     "\"$HOME/.local/bin/clipboard_sanitize\"",
     NULL,
 
+    /* Dictation daemon (config/voxtype); MOD+Shift+w toggles a recording. */
+    "voxtype", "daemon", NULL,
+
     NULL
 };
 
@@ -117,7 +120,7 @@ static const char *termcmd[]    = { "foot", NULL };
  * mode only, so the .desktop list is built by the script. */
 static const char *menucmd[]    = { "app_menu", NULL };
 static const char *browsercmd[] = { "zen-browser", NULL };
-static const char *whispercmd[] = { "dictate", NULL };
+static const char *dictatecmd[] = { "voxtype", "record", "toggle", NULL };
 static const char *lockcmd[]    = { "waylock", "-ignore-empty-password",
                                     "-init-color", "0x191414",
                                     "-input-color", "0xdddddd",
@@ -136,7 +139,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XKB_KEY_space,   spawn,            {.v = termcmd} },
 	{ MODKEY,                       XKB_KEY_i,       spawn,            {.v = menucmd} },
 	{ MODKEY,                       XKB_KEY_n,       spawn,            {.v = browsercmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_w,       spawn,            {.v = whispercmd} },
+	{ MODKEY|WLR_MODIFIER_SHIFT,    XKB_KEY_w,       spawn,            {.v = dictatecmd} },
 
 	/* Drive menu (mount/unmount/eject of removable media). Rare enough for the index
 	 * stretch, and `m` is the mnemonic - right hand, so no penalty against the
