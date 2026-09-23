@@ -42,6 +42,15 @@ on_demand_loading = false
 # both fail the text lands on the clipboard.
 mode = "type"
 driver_order = ["wtype", "eitype", "clipboard"]
+# eitype turns text into key codes through its own XKB keymap, and without
+# these it derives one from the language (`de` -> QWERTZ), so on Colemak-DH
+# every letter comes out as the one sitting on its QWERTY key ("test" ->
+# "bfrb"). Must match kxkbrc (LayoutList/VariantList).
+eitype_xkb_layout = "gb"
+eitype_xkb_variant = "colemak_dh"
+# KWin drops the tail of a fast eitype burst (measured: cut off mid-sentence
+# at 0 ms, complete at 2 ms).
+type_delay_ms = 2
 
 # The on-screen display (waveform while recording, then a transcribing state)
 # is the recording indicator. It is on by default; the section is here to make
