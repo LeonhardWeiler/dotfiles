@@ -1,0 +1,37 @@
+name = "handy"
+version = "0.1.0"
+description = "Small dark pill with white level bars, after Handy on macOS."
+palette = "package"
+layout = "minimal"
+
+[colors]
+accent = "#FFFFFF"
+foreground = "#FFFFFF"
+background = "rgba(0, 0, 0, 0.85)"
+surface = "rgba(0, 0, 0, 0.85)"
+muted = "rgba(255, 255, 255, 0.35)"
+success = "#FFFFFF"
+warning = "#FFFFFF"
+error = "#F2594D"
+recording = "#FFFFFF"
+streaming = "#FFFFFF"
+transcribing = "rgba(255, 255, 255, 0.6)"
+idle = "rgba(255, 255, 255, 0.6)"
+
+[frame]
+background = "background"
+border = "none"
+glow = false
+halo = false
+
+[[visual.layers]]
+type = "bars"
+source = "peak"
+color = "accent"
+order = 10
+x = 0.05
+y = 0.15
+width = 0.9
+height = 0.7
+gain = 0.3
+radius = 3

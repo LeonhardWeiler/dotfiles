@@ -52,8 +52,13 @@ eitype_xkb_variant = "colemak_dh"
 # at 0 ms, complete at 2 ms).
 type_delay_ms = 2
 
-# The on-screen display (waveform while recording, then a transcribing state)
-# is the recording indicator. It is on by default; the section is here to make
-# that explicit.
+# The on-screen display is the recording indicator, styled after Handy: a
+# small dark pill with white level bars, defined by the style package in
+# osd/handy. Styles only apply to the quickshell frontend.
 [osd]
 enabled = true
+frontend = "quickshell"
+style = "handy"
+position = "bottom-center"
+width_px = 180
+top_margin = 0.9
