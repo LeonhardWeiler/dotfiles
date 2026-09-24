@@ -4,91 +4,43 @@ description: Work through the items in AGENT/TODO.md in order and commit after e
 user-invocable: true
 ---
 
-# Work through TODO items & commit them one by one
+# Work through AGENT/TODO.md
 
-**Purpose:** Work through the items in `AGENT/TODO.md` in order and implement each
-one in code. After **every** item a separate commit follows.
+Implement the items in `AGENT/TODO.md` in order, one commit per item.
 
-This skill is **project-independent**: it works in any repository that uses an
-`AGENT/TODO.md`. All paths are relative to the repo root; run the skill from the
-root directory of the respective project.
-
-**Context:** The items in `TODO.md` are often the user's reactions/decisions to
-the findings in the health report `AGENT/project-health-report.html` (e.g. "ux-2
-fix", "cq-1 fix"). An ID like `UX-2` refers to the finding card of the same name
-in the report - read its description + recommendation there when an item refers to
-it.
-
----
-
-## Project setup & verification (if you don't know the codebase yet)
-
-Get a picture of the project first instead of making assumptions:
-
-- Read existing guides like `README.md`, `CLAUDE.md`, `AGENTS.md` or
-  `CONTRIBUTING.md` - especially sections on development/tests/build.
-- Determine **the project's own verification commands** from the project files
-  (e.g. `package.json` scripts, `Makefile`, `justfile`, `Cargo.toml`, `go.mod`,
-  `pyproject.toml`, CI config). Use **the package manager/toolchain the project
-  intends** - do not guess, derive it from lockfiles/config (e.g. `bun.lock` ->
-  Bun, `pnpm-lock.yaml` -> pnpm, `package-lock.json` -> npm).
-- Typical verification steps, if present in the project: **formatting/lint**,
-  **typecheck**, **tests**, **build**. Run only those relevant to the
-  changed side/language each time.
-- Note project-specific consistency rules (e.g. mirrored logic that has to be
-  kept in sync in several places) - such hints are usually in
-  `CLAUDE.md`/`README.md`.
+Items are often reactions to findings in `AGENT/project-health-report.html`
+(e.g. "ux-2 fix"). An ID like `UX-2` refers to the finding card of that name;
+read its description and recommendation there.
 
 ## Before you start
 
-> **Create missing files/folders:** If a file or folder named in this skill does
-> not exist yet (e.g. the `AGENT/` folder, `AGENT/TODO.md` or
-> `AGENT/project-health-report.html`), **create it** instead of aborting. If
-> `AGENT/TODO.md` is new or empty there is nothing to work through - say so
-> briefly instead of guessing.
+- Learn the project from `README.md`, `CLAUDE.md`, `AGENTS.md`,
+  `CONTRIBUTING.md`. Derive its format, lint, typecheck, test and build
+  commands from the project files (scripts, `Makefile`, `flake.nix`, CI config)
+  and use the toolchain the lockfiles point to.
+- Create `AGENT/` or `AGENT/TODO.md` if missing. If `TODO.md` is empty, say so
+  and stop.
+- Read all items, state a short plan (one commit per item), and ask about
+  ambiguous items or real design decisions now, not midway.
 
-1. Read `AGENT/TODO.md` fully and map to each item what concretely needs doing
-   (pull in the matching finding card in the health report if needed).
-2. **Create a short plan first** (one commit per item) and state it.
-3. **Ask questions** if an item is ambiguous or a real design decision is needed
-   - before you start, not midway.
+## Per item, in order
 
-## Per item (in order)
+1. Implement it. Stay within the item's scope.
+2. Run the project's checks for the affected side. Add or update a test for new
+   or changed behaviour if the project has tests.
+3. Commit only this item's files on the current branch, in the project's commit
+   style (default: `area: what it does`).
 
-1. **Implement** - make the necessary code changes. Stay within the item's scope;
-   do not bundle in unrelated changes.
-2. **Verify** - make it green locally before the commit (the project's own
-   commands, see above; check only the affected side/language). If a behaviour is
-   new/changed, add or update a test if the project has tests.
-3. **Commit** - a separate, focused commit with **only** the files of this item
-   and a meaningful commit message (a short prefix naming the item, e.g.
-   `ux-2 fix: …`). Commit **on the current branch** - do **not** create a new
-   branch unasked (unless the user explicitly asks for it).
+If the item changes something documented in `README.md` or `CLAUDE.md`, update
+that doc in a separate commit right after. Do not create a missing `CLAUDE.md`;
+that is `/init`'s job.
 
-## Maintain README/docs
+If the item fixes or changes a finding in `AGENT/project-health-report.html`,
+remove solved findings (do not tick them off) and keep counters and table of
+contents consistent. New problems you do not fix may be added as findings.
 
-If an item changes documented behaviour in the project documentation (`README.md`
-etc.: features, security/header details, protocol, deliberate decisions), update
-the docs and commit that change **separately afterwards**.
+## Rules
 
-## Maintain CLAUDE.md
-
-Just like the README: if an item changes a function, a behaviour, a command
-(build/test/lint), the project structure or a convention documented in
-`CLAUDE.md`, **update the `CLAUDE.md` accordingly** and commit that change
-**separately afterwards**. If no `CLAUDE.md` exists (yet), do not create one here
-- the `create-claude-md` skill is responsible for that.
-
-## Maintain the health report
-
-If an implemented item fixes a finding in `AGENT/project-health-report.html` or
-changes its assessment, update the report accordingly: **remove** solved findings
-(do not tick them off), keep counters/table of contents consistent. Newly
-discovered problems you do not implement may be added as a finding in the report.
-
-## Ground rules
-
-- **One commit per TODO item.** Do not mix items in one commit.
-- Do not touch files that do not belong to the current item (in particular do not
-  commit other work files in the `AGENT/` folder unasked).
-- At the end, report briefly what changed per item and in which commit it landed.
+- One commit per item, no unrelated files, no other `AGENT/` work files.
+- No new branch unless asked.
+- At the end, list per item what changed and in which commit.
