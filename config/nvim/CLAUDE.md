@@ -5,7 +5,7 @@ Notes for working on this Neovim configuration.
 ## Overview
 
 Personal Neovim config (Neovim >= 0.11, developed on 0.12) based on lazy.nvim.
-Keyboard-first (mouse disabled). Comment language: **English**.
+Keyboard-first (mouse disabled).
 
 ## Structure
 
@@ -62,6 +62,5 @@ Keep the indentation at 2 spaces (see `options.lua`/`stylua.toml`).
 ## Conventions
 
 - New plugins as their own file under `lua/plugins/`.
-- English comments, sparse and explanatory (why, not what).
 - Give keymaps a `desc`.
 - Preserve existing behaviour where it makes sense.

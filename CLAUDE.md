@@ -1,420 +1,69 @@
 # CLAUDE.md
 
-Notes for working on this dotfiles repo. Comment/doc language: **English**.
+Dotfiles for Arch Linux, deployed by `./install` (plain Bash, no dependencies).
+Details on every config: `README.md`.
 
-## Overview
+## Layout
 
-Personal dotfiles for Arch GNU/Linux with dwl (Wayland), managed via a **custom,
-dependency-free symlink script** (`./install`, plain Bash). The repo root
-separates **`config/`** (the config sources, **flat**: `config/<name>/…`) from
-**`setup/`** (deployment machinery: link map, package manifest, bootstrap
-scripts). The source->target mapping is stated explicitly in
-**`setup/links.conf`** (one line per link, two columns: `<source-in-repo> <target>`;
-`~` targets = user, `/etc/…` targets = system via sudo). Examples:
-`config/btop/btop.conf` -> `~/.config/btop/btop.conf`,
-`config/mkinitcpio/mkinitcpio.conf` -> `/etc/mkinitcpio.conf`. Details on contents/paths:
-`README.md`. No external dependencies (no Python, no dotbot).
+- `config/<name>/` - config sources, flat.
+- `setup/links.conf` - one line per link: `<source-in-repo> <target>`. A source
+  ending in `/*` links each entry into a real target directory. `/etc` targets
+  are always single files. A third field `optional` allows an empty glob.
+- `setup/programs.txt`, `services.txt`, `groups.txt`, `fonts.txt` - data the
+  installer reads. `programs.txt` is written by `config/usrbin/update_programs_list`
+  (also run by the pacman hook).
+- `AGENT/` is not linked. `AGENT/keymaps/keybinds.md` lists every keybinding;
+  update it when a binding changes.
+- `config/nvim/` has its own `CLAUDE.md`.
 
-## Installation & commands
+## Commands
 
-- **Linking**: `./install` (= `./install link`) - creates/refreshes all links
-  from `links.conf` and then reactivates the systemd units (self-healing). `~/…`
-  targets without, `/etc/…` targets via sudo (asks for the password if needed).
-  Options: `--user-only` (only `~`, no sudo), `--no-units` (skip systemd),
-  `-n/--dry-run` (only show), `--force` (back up a real file/dir at the target to
-  `.bak` and replace it - otherwise real targets stay protected; existing
-  symlinks are replaced anyway).
-- **New machine (bootstrap, one command)**: `./install setup` - shows a **menu of
-  optional steps** (on a TTY; Enter = defaults, without a TTY the defaults run),
-  then links the configs (implies `--force`) and runs the chosen steps. `link`
-  stays the idempotent everyday refresh; `setup` wraps the first-time setup flow.
-- **Optional setup steps** (selectable in the `setup` menu, **runnable
-  individually via a flag** - `./install --<step>` runs only those steps without
-  linking; `./install setup --<step> …` skips the menu and selects exactly
-  those). Registry in the script:
-  `register_step <name> <fn> "<description>" [<arg-placeholder>]` - it is the
-  **single source of truth**: the `--<name>` flag is matched generically against
-  it during argument parsing (which therefore sits *below* the `register_step`
-  calls) and `--help` generates the step list from `STEP_ORDER`/`STEP_DESC`, so
-  adding a step is one `register_step` call and nothing else. The optional 4th
-  field names the value a flag takes (only `--timezone ZONE` has one).
-  `DEFAULT_STEPS` = menu preselection:
-  - `--programs` - install packages from `programs.txt` (delegates to
-    `setup/install-programs`, bootstraps yay). _Default._
-  - `--systemd` - activate user/system units (`reactivate_units`). _Default._
-  - `--groups` - add the user to the groups from `setup/groups.txt` (loaded into
-    `GROUP_LIST`) via `usermod -aG`.
-  - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).
-  - `--locale` - copy `/etc/locale.conf` (real copy, see below) + `locale-gen`.
-    _Default._
-  - `--getty-autologin` - deploy the getty@tty1 autologin drop-in as a **real
-    copy** to `/etc`. There is no display manager: `getty@tty1` is overridden to
-    log `leo` in automatically (`agetty --autologin`), and `~/.bash_profile` then
-    execs the dwl session on tty1. Real copy (not symlinked) for the same reason
-    the ly drop-ins were - systemd reads unit drop-ins before `/home` is mounted.
-  - `--vconsole` - Colemak-DH for the console and the login greeter: copies
-    `config/vconsole/` to `/etc` (real copies), unmasks
-    `systemd-vconsole-setup`, restarts localed and rebuilds the initramfs.
-    _Default._
-  - `--sudoers` - passwordless sudo for `wheel` (`/etc/sudoers.d/`, validated
-    with `visudo -c`).
-  - `--initramfs` - `mkinitcpio -P`.
-  - `--legion-conservation` - enable the Lenovo Legion battery conservation mode
-    (write `1` to the `ideapad_acpi` `conservation_mode` sysfs entry). **One-shot**,
-    not a boot-time job: the driver writes the flag through to the embedded
-    controller, which keeps it across reboots. Idempotent (no-op when already
-    set) and self-skipping when the sysfs entry is missing. Not a default step.
-  - `--fonts` - install the font packages from `setup/fonts.txt` (loaded into
-    `FONT_PACKAGES`) and rebuild the fontconfig cache (`fc-cache -f`).
-  - `--dwl` - build + install **dwl** (Wayland compositor, compiled config) from
-    `config/dwl/config.h` via `config/dwl/build-dwl` (clone/pin dwl, drop in
-    `config.h`, `make`, install the binary to `/usr/local/bin/dwl`). Since dwl is
-    configured at compile time, this is the **apply** step for `config/dwl`
-    changes. Not a default step.
-  - `--mixxx-skin` - build + install the **Mixxx skin** from
-    `config/mixxx/skins` via `config/mixxx/skins/build-skin` (derive from the
-    packaged LateNight skin, recolor, write to `~/.mixxx/skins/LateNight-Leo`).
-    The apply step for `config/mixxx/skins` changes, and it must be rerun after
-    a mixxx update too, since the upstream skin ships with the package. Not a
-    default step.
-  - `--wbg` - build + install **wbg** (the wallpaper program) from a pinned
-    upstream tag via `config/wbg/build-wbg` (clone/pin wbg,
-    `meson`/`ninja`, install the binary to `/usr/local/bin/wbg`; installs
-    `tllist` from the AUR via yay). Built **jpg-only** (meson feature flags
-    disable png/webp/jxl/svg) since all wallpapers are jpg - that is the reason
-    it is built from source rather than installed from the AUR `wbg` package
-    (which enables every format). Like dwl, the source is cloned at build time
-    (not committed) and only the binary is installed. Not a default step.
-    **Currently stood down**: wbg + the whole wallpaper feature are disabled
-    (nothing installed/linked/autostarted) - the `config/wbg/` build script and
-    `config/wallpaper/pictures` stay in the repo so it can be brought back. To
-    re-enable: uncomment the two wallpaper lines in `setup/links.conf` and the
-    `change-wallpaper` autostart line in `config/dwl/config.h` (then
-    `./install --dwl`), and run `./install --wbg`.
-- **Removing**: `./install unlink` - removes the symlinks we manage (only real
-  symlinks to our sources; real files/foreign links stay).
-- **Status**: `./install status` - shows per entry ok / foreign link / real file
-  / missing.
-- **Validating `links.conf`**: `./install validate` - read-only check (no
-  filesystem changes). The `links.conf` pipeline is **parse -> validate -> build
-  (globs) -> execute**, and **every** command validates first, so a broken config
-  aborts the whole run (nothing changed) instead of silently skipping lines.
-  Validation is fatal, reporting `links.conf:<line>: <msg>` for:
-  missing target, stray extra field (only a third `optional` keyword is allowed),
-  absolute source, non-existent source, duplicate (expanded) target, a target
-  outside the allowlist (`ALLOWED_TARGET_PREFIXES` = `~` / `/etc` / `/usr/local`),
-  and a glob that matches nothing. Mark a legitimately-empty glob with a third
-  `optional` field: `config/foo/* ~/dir optional`.
-- **Update the package list** (without re-linking): `update_programs_list` (from
-  `config/usrbin/`, on the PATH; the same script the pacman hook uses).
-- **Install packages from `programs.txt`**: `./setup/install-programs` (uses
-  `yay`). A package that fails is collected and reported at the end instead of
-  aborting the run; the list is read on FD 3 so yay cannot eat it off stdin.
-- **Check shell scripts** (no test framework): syntax with `bash -n <script>`
-  (or `sh -n` for the `#!/bin/sh` scripts); where available `shellcheck
-  <script>`. Most scripts are POSIX `#!/bin/sh`; only `install` and
-  `config/usrbin/update_programs_list` are intentionally `bash` (associative
-  arrays / process substitution) - keep new bashisms out of the `sh` scripts.
-  
-  
-  
-  
-  
-  
-  
-  
-  
+```bash
+./install                 # link everything, reactivate systemd units
+./install --help          # all options and setup steps
+./install status          # ok / foreign link / real file / missing per entry
+./install validate        # read-only check of links.conf
+./install --<step>        # run one setup step without linking
+bash -n <script>          # or sh -n; shellcheck where available
+```
 
+A new setup step is one `register_step` call in `install`.
 
-## Structure
+## Desktop
 
-- **`config/`** = flat config sources: `bash`, `btop`, `claude`,
-  `dwl`, `foot`, `git`, `keepassxc`, `locale`, `logind`, `mimeapps`,
-  `mixxx`, `mkinitcpio`, `mpv`, `nvim`, `pacman`, `pipewire`, `qt5ct`, `rofi`,
-  `systemd-system`, `usrbin`, `vconsole`, `voxtype`, `wallpaper`, `wbg`, `wob`, `zen-yt`.
-  Whole directories are linked as a dir symlink (foot, nvim, rofi,
-  wob, mpv, git, keepassxc); for `btop`/`qt5ct`/`pipewire`/`mimeapps`/
-  `claude` and `/etc` targets deliberately **only the single file**
-  is linked (parent directory stays real - app runtime, or to avoid hiding system
-  contents). `usrbin` is linked **per file via a glob** (`config/usrbin/*`) into
-  `~/.local/bin` so the directory stays real and foreign entries (e.g. `claude`)
-  are preserved. `claude` does **not** track
-  `.claude.json`/sessions/history/cache (auth/state/secrets). `mixxx` is linked
-  the same way (two single files): `~/.mixxx/` must
-  stay real because Mixxx keeps `mixxxdb.sqlite` (library + play history),
-  `analysis/` (~600 MB of waveform caches) and its logs in there. `mixxx.cfg` is
-  deliberately **not** tracked - Mixxx rewrites it on every exit and it carries
-  the library search history. `broadcast_profiles/*.bcp.xml` must never be
-  tracked: with `SecureCredentialsStorage 0` the streaming password sits in it
-  in plain text, and **this repo is public** (hence the `.gitignore` entries).
-  `config/mixxx/skins/` is **not** linked and is **not** a skin: it is a
-  generator. `build-skin` derives `LateNight-Leo` from the LateNight skin the
-  mixxx package ships, recolors it into the setup's palette and writes it to
-  `~/.mixxx/skins/` - so only `palette.conf` (every color *and* every recolor
-  rule, the single source), `recolor.awk` and `overrides/` are tracked, a few kB
-  instead of ~2.7 MB of upstream assets. Same trade as `build-dwl`/`build-wbg`,
-  and like dwl it needs an **apply** step: `./install --mixxx-skin`, which must
-  also be rerun after a **mixxx update** because the upstream skin moves with the
-  package. Internal paths are rewritten to **absolute**: `skins:` is a Qt search path
-  resolving only into the *packaged* skin dir, so `skins:LateNight-Leo/` resolves
-  to nothing and Mixxx falls back to reading it relative to `$HOME` - the skin
-  then loads and renders **nothing**, since a missing template is only a log
-  warning (`skins:default-menu-styles-linux.qss` is deliberately left alone, it
-  really is a packaged file). `build-skin` verifies every reference exists after
-  each build and fails otherwise, because that bug is invisible at runtime.
-  The rule is *keep lightness, replace hue and saturation* - lightness
-  is where upstream encodes button states, gradients and shadows, so keeping it
-  is what makes a blanket recolor safe. Saturation classifies: neutral (left
-  alone) / tinted surface (flattened to grey, this is what removes PaleMoon's
-  warm cast) / real accent. Two deliberate exceptions, both because a *role*
-  cannot be read off a hue - the waveform markers keep distinct colors
-  (`overrides/scheme-vars.conf`; they overlap in one strip, so hue is the only
-  channel left) and `alert_pattern` assets keep more saturation (a clipping
-  indicator that blends in is broken). Two things it **cannot** reach: the
-  waveform signal colors (`waveform.xml` leaves `<SignalHighColor>` empty, so
-  they come from Preferences → `mixxx.cfg`, which is untracked) and everything
-  outside the skin (Mixxx is Qt6, `QT_QPA_PLATFORMTHEME=qt5ct` is Qt5-only).
-  Upstream is CC BY-SA 3.0, so the generated skin is too.
-- **`setup/`** = deployment machinery: `links.conf` (link map, default config of
-  `./install`), `programs.txt` (package manifest), `install-programs` (bootstrap
-  script, without a `.sh` extension), and the **data lists the installer reads
-  instead of hardcoding them**: `services.txt` (systemd units, `<scope> <unit>`
-  -> `USER_UNITS`/`SYSTEM_UNITS`), `groups.txt` (-> `GROUP_LIST`) and `fonts.txt`
-  (-> `FONT_PACKAGES`). The old `install.sh`/`migrate.sh` is replaced by
-  `./install` + `setup/links.conf`. The package list itself is written by
-  `config/usrbin/update_programs_list` (the single source, also used by the
-  pacman hook).
-- **`/etc` targets** (in `links.conf`, per file, `/etc/…` target path):
-  `mkinitcpio.conf`,
-  `pacman/dotfiles-programs-list.hook`,
-  `locale/locale.gen` (-> `/etc/locale.gen`),
-  `pacman/pacman.conf` (-> `/etc/pacman.conf`),
-  `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
-  `config/locale/locale.conf` is **not** linked but copied by the `--locale`
-  step: localed runs with `ProtectHome=yes`, a link into `/home` fails its
-  `Locale` property and with it the whole `GetAll` - the greeter's KWin
-  (`--locale1`) then drops the X11 layout and falls back to US.
-  `config/vconsole/` is **not** linked but copied by the `--vconsole` step
-  (a default step): `vconsole.conf` -> `/etc/vconsole.conf` (`KEYMAP=mod-dh-iso-uk`,
-  console + initramfs via `sd-vconsole`) and `00-keyboard.conf` ->
-  `/etc/X11/xorg.conf.d/00-keyboard.conf` (`gb`/`colemak_dh`). The second one
-  is what fixes the **login screen**: the Plasma Login Manager greeter has no
-  `kxkbrc`, so KWin falls back to localed's `X11Layout`, which localed reads
-  from that file only (systemd 261 ignores `XKB_*` in `vconsole.conf`). Real
-  copies because `/home` is a separate partition. Keep both in sync with
+This machine runs KDE Plasma. The dwl setup is dormant, not deleted: its lines
+in `links.conf` are commented out so it can come back. Keep `config/dwl`,
+`config/usrbin`, `rofi`, `foot`, `wob`, `wbg`, `wallpaper` and `zen-yt` working
+but do not re-enable them unless asked.
+
+dwl specifics, for when it returns:
+
+- `config/dwl/config.h` is compiled in, not linked. Apply with `./install --dwl`;
+  takes effect in a new session. Patches in `config/dwl/patches/` are applied by `build-dwl`.
+- No display manager: getty autologin on tty1, `~/.bash_profile` execs dwl.
+- Autostart (`bat_check`, `clipboard_sanitize`, voxtype) is `autostart[]` in `config.h`.
+- The screen locker is waylock, configured only by `lockcmd[]` in `config.h`.
+
+## Pitfalls
+
+- `config/locale/locale.conf` and `config/vconsole/` are copied, not linked
+  (`--locale`, `--vconsole`): localed and early boot cannot read `/home`. Keep the
+  Colemak DH layout in sync across `vconsole.conf`, `00-keyboard.conf`,
   `~/.config/kxkbrc` and voxtype's `eitype_xkb_*`.
-- **System services**: activated by the `install` script after linking via
-  `systemctl enable` - the unit lists live in `setup/services.txt` (loaded into
-  `USER_UNITS` / `SYSTEM_UNITS`). There are currently **no `user` units**: the
-  battery-level check runs as a plain command from the dwl
-  autostart (`autostart[]` in `config/dwl/config.h`) instead of a systemd user unit
-  (a `while` loop calling `bat_check` every 2 min), and the clipboard metadata
-  watcher (`clipboard_sanitize`) starts the same way.
-  Deliberately `enable`, **not**
-  `reenable`: our unit files are symlinks (linked units), and `reenable` would
-  delete exactly that unit symlink during its internal `disable`. `SYSTEM_UNITS`
-  only contains system units that really exist - pipewire/wireplumber run in the
-  user scope and are **not** in it.
-  PipeWire/WirePlumber/figma-agent come from their package presets and are
-  **not** tracked (formerly `*.wants` links in the repo - now removed).
-  There is also no `legion-conservation.service` any more: the ideapad
-  `conservation_mode` flag persists in the embedded controller, so it is set
-  once via the `--legion-conservation` step instead of at every boot.
-- **Not linked**: `AGENT/` (work/workflow files) stays in the repo root.
-- Custom scripts: **`config/usrbin/*`** -> `~/.local/bin` (per file, on the
-  `PATH` via `.bashrc`). `update_programs_list` writes
-  `setup/programs.txt`.
-  `update_programs_list` is **additionally** linked to the fixed system path
-  `/usr/local/bin/update_programs_list` (its own `links.conf` line), because the
-  pacman hook (`/etc/pacman.d/hooks`) knows no `$HOME` variables and calls it from
-  there - so the hook stays portable for a foreign user too.
-- **Booting** is **EFISTUB**, not a bootloader: the custom kernel is built with
-  `CONFIG_EFI_STUB=y` and boots **without an initramfs**, so the firmware starts
-  `vmlinuz` on the ESP directly. `config/usrbin/efistub-entry <kernel-on-esp>
-  [<cmdline>]` writes the EFI NVRAM entry (needs root; without `<cmdline>` it
-  reuses `/proc/cmdline`) - idempotent, it deletes an existing entry of the same
-  label first. systemd-boot deliberately **stays** at the ESP fallback path
-  (`/efi/EFI/BOOT/BOOTX64.EFI`) as the safety net, since the firmware here keeps
-  no OS-created NVRAM entry of its own. A new kernel revision therefore needs one
-  `efistub-entry` run (README section "EFISTUB").
-- **`config/wallpaper/`** = the picture set (`pictures/`, linked as a dir symlink
-  to `~/.local/share/wallpapers`) plus `change-wallpaper.sh` (linked to
-  `~/.local/bin/change-wallpaper`, picks a random wallpaper via wbg; called
-  from the dwl autostart in `config/dwl/config.h`). The script defaults to
-  `~/.local/share/wallpapers`, so both link targets line up.
-- **`nvim/`** has its **own `CLAUDE.md`** (`config/nvim/CLAUDE.md`) with the
-  nvim-specific verification commands - for nvim changes look there.
-
-## Conventions & pitfalls
-
-- New config: put the file **flat under `config/<name>/`** and add a line
-  `<source-in-repo>  <target>` to `setup/links.conf`. `/etc` targets **always per
-  file** (full `/etc/…` target path), never whole directories. If a target
-  directory should stay real and only individual files inside it be linked, let
-  the source end in `/*` (glob; links each entry into `<target>/<name>`) - see
-  `config/usrbin/*`.
-- **`AGENT/` stays in the root** and outside the link logic.
-- **waylock** is the dwl screen locker (dwl's `lockcmd` in `config.h`), replacing
-  the former hyprlock. It has **no config file** - everything is CLI flags, so
-  there is no `config/waylock/` and no `links.conf` entry; the configuration is
-  the `lockcmd[]` array in `config/dwl/config.h` and changing it needs
-  `./install --dwl`. waylock only paints solid colors, so hyprlock's screenshot
-  background, blur, input field, `hide_cursor` and `fail_timeout` have no
-  equivalent (see README "Screen locker").
-- **dwl** (`config/dwl/`) is the Wayland compositor. Unlike everything else here it
-  is **configured at compile time**: `config/dwl/config.h` is the source of truth
-  and is **not** symlinked - it is compiled into the binary. Editing it means
-  rebuilding (`./install --dwl`), and the new binary only takes effect in a
-  **new** session. There is **no display manager**: `getty@tty1` autologins
-  `leo` and `~/.bash_profile` execs `dwl` on tty1 (see the `--getty-autologin`
-  step). `build-dwl` applies **every** `config/dwl/patches/*.patch` on top of
-  the pinned checkout - currently three, all user-visible:
-  `attachbottom.patch` (new windows attach at the bottom of the stack),
-  `autostart.patch` (enables the `autostart[]` array in `config.h`, which is how
-  startup programs are spawned - there is no session script) and `gaps.patch`
-  (inner/outer gaps in the `tile` layout). `MODKEY` is **Alt**, there are **9
-  tags**, and `AGENT/keymaps/keybinds.md` lists every binding on the system (snapshot -
-  `config.h` stays the authority). `build-dwl` only contacts the remote when the
-  pinned tag is missing locally, so an outage cannot block applying a `config.h`
-  change.
-- **`Ctrl+Shift+Y` (copy last command + output)** spans three files that must
-  stay in sync: `config/bash/foot-shell-integration.bash` (sourced from
-  `.bashrc`, own `links.conf` line to `~/.config/bash/`) emits the **OSC-133**
-  markers (`A`/`C`/`D`) and stashes the command line in
-  `$XDG_RUNTIME_DIR/foot-last-command.<foot-pid>` from a `DEBUG` trap - it
-  overrides `PROMPT_COMMAND`, so it must be sourced *after* the prompt setup;
-  `config/foot/foot.ini` binds `pipe-command-output` to
-  `config/usrbin/copy-last-command`, which reads the output on stdin, the
-  command from that file, and pipes `Input:`/`Output:` into `wl-copy`. Both
-  sides find each other by walking up to the owning **foot** process, so this
-  breaks under `foot --server`/`footclient` (one process for all windows).
-  Removing the OSC-133 markers would also kill foot's prompt jumping.
-  **`Ctrl+Shift+A`** is the same idea for the whole screen (everything since the
-  last `clear`): `pipe-visible` -> `config/usrbin/copy-visible`. foot pipes that
-  as plain text with no markers left in it, so the script splits the blocks by
-  matching **prompt lines** with a regex that mirrors `PS1` - editing `PS1` in
-  `.bashrc` means editing `PROMPT_RE` in `copy-visible`.
-- **App launcher**: `MOD+I` runs `config/usrbin/app_menu`, **not** `rofi -show
-  drun`. Reason: rofi's `-no-custom` (Return is a no-op while nothing matches,
-  which is what `mount_menu`/`sanitize_menu` rely on) is implemented in the
-  **dmenu mode only**, so drun answers a typo with a `Failed to execute:`
-  dialog. The script therefore does drun's job itself: scan the `.desktop`
-  files of the XDG data dirs (user dir first, one entry per desktop-id),
-  filter `NoDisplay`/`Hidden`/`TryExec`/`OnlyShowIn`/`NotShowIn`, and launch
-  the `Exec` line with the field codes stripped (`Path=` as cwd,
-  `Terminal=true` and `Shift+Return` through `$TERMINAL`, default foot).
-  Ranking is a counter file in **drun's own format**
-  (`~/.cache/app_menu.history`, `<count> <desktop-id>`), seeded once from
-  `~/.cache/rofi3.druncache` - do not change that format without a migration.
-- **Removable drives**: `config/usrbin/mount_menu` (rofi, bound to `MOD+M` in
-  `config/dwl/config.h`) mounts/unmounts/ejects them with plain
-  `mount`/`umount` via `sudo -n` (the passwordless `wheel` rule from
-  `--sudoers`) - **no udisks2/polkit**, mount points under
-  `/run/media/<user>/<label>`. `sudo -n` everywhere so a missing rule errors
-  instead of hanging on a password prompt with no terminal. Encrypted volumes
-  are deliberately unsupported: the custom kernel has **no device-mapper**
-  (`dm_mod` is missing), so dm-crypt/LVM cannot work on this machine anyway.
-- **Metadata stripping** spans three scripts in `config/usrbin/`, all built on
-  **`sanitize`** (the only one with format knowledge: `exiftool -all=` for
-  images - lossless, `ffmpeg -c copy -map_metadata -1` for a/v, `mat2` for
-  everything else; an unsupported format is a hard error, never a silent pass).
-  It also renames (`image-<hex8>.jpg`) and re-stamps the mtime, since file name
-  and `lastModified` leak as loudly as EXIF; copies go to
-  `$XDG_RUNTIME_DIR/sanitized`. The two front-ends: **`sanitize_menu`** (rofi,
-  `MOD+S` in `config/dwl/config.h`; `Return` = image on the clipboard,
-  `Shift+Return` = path, because `wl-copy` offers one MIME type per call) and
-  **`clipboard_sanitize`** (one `wl-paste --watch` per MIME type in `TYPES` -
-  png/jpeg/webp/tiff/gif/avif -, loop-safe via a sha256 of what it wrote).
-- **Everything that reaches the clipboard as an image goes out as
-  `image/png`**, via `sanitize --png` (the conversion is `ffmpeg … -c:v png`,
-  and it lives in `sanitize` because deciding it from a MIME type is format
-  knowledge; SVG is rasterised too, through ffmpeg's `librsvg` decoder, and
-  moves from mat2's hands into exiftool's along the way). Reason: a Wayland
-  offer only carries the types its source announces and `wl-copy` announces
-  exactly the one it is given, so an `image/jpeg`-only offer shows up in
-  `wl-paste -l` and then comes back **empty** for every consumer that asks for
-  PNG - which is most of them (GTK/Qt/Electron/browsers, the Claude CLI). It
-  looks copied and pastes nowhere. In `sanitize_menu` only `Return` gets
-  `--png` (a file handed over by path keeps its format); what is still not a
-  PNG afterwards (PDF, office docs) falls back to copying the path.
-  `clipboard_sanitize` has the same problem from the other side: **every**
-  re-copy collapses a multi-type offer to one type, so exactly one watcher may
-  act - the one whose type is the **first `TYPES` entry the clipboard offers**
-  (hence `image/png` heads that list: a source that already speaks PNG is taken
-  at its word and nothing is re-encoded). An animated GIF loses its motion
-  there, accepted knowingly.
-  `sanitize_menu` is a **single** rofi window that filters live: the candidates
-  are piped in once and rofi does the matching, which only stays instant while
-  the list stays small - hence `EXTENSIONS`, which keeps the metadata-carrying
-  formats (~19k of 278k files here) and drops what `sanitize` would reject on
-  `Return` anyway. It deliberately passes **no `-p`**, so only the theme's
-  `Search...` placeholder shows, like `MOD+I`. The candidate list is built by
-  **`rg --files`** (threaded walk + extension globs, so only survivors are
-  `stat`ed) and sorted under **`LC_ALL=C`** - UTF-8 collation alone cost 170 ms
-  of the former ~350 ms, so keep that prefix on `sort`/`sed` and keep it *off*
-  the script as a whole (rofi and the file names need the real locale). The watcher runs from the dwl `autostart[]`, not
-  as a systemd user unit - same reasoning as `bat_check`. Both front-ends locate
-  `sanitize` via `dirname "$0"`, not `PATH`. A **watched `~/outbox` directory**
-  was built and then dropped on purpose - do not reintroduce it without asking.
-- **The YouTube lists** span a browser add-on and two scripts, and the notes
-  repo they write to (`~/files/repos/notes/yt/`) is **not** part of this repo.
-  `config/zen-yt/` is the add-on (`manifest.json`, `content.js` for the hover
-  state, `background.js` for the two `commands`) plus `build-xpi`; it is **not**
-  symlinked - only `at.leo.yt_save.json` is, into
-  `~/.mozilla/native-messaging-hosts` (Firefox-based browsers hardcode
-  `~/.mozilla` regardless of the app name - verified in Zen's `libxul.so`, and
-  the reason KeePassXC's manifest sits there too). That manifest needs an
-  **absolute** `path`, so `/home/leo` is spelled out in it, same as the
-  `signingkey` in `config/git/config`. The two ends: `config/usrbin/yt_save` is
-  the native messaging host (4-byte length prefix, then JSON, on stdin *and*
-  stdout - **stdout belongs to the protocol**, every diagnostic goes to stderr),
-  `config/usrbin/yt_menu` is the rofi front-end on `MOD+Y`. `content.js` must
-  **not** take a hovered link's own text as the title - on a thumbnail that is
-  the duration badge plus its screen-reader text; it resolves the title from
-  the `title` attribute, then from another anchor with the same video id or the
-  enclosing card (`ytd-*-renderer` / `yt-lockup-view-model`), and treats
-  anything starting with `\d+:\d+` as not-a-title. A length glued to the *end*
-  of the title ("… 28 minutes", the a11y spelling of the badge) is cut off,
-  guarded three ways - the words must be time words (en/de list), the numbers
-  must be the card badge's, and the preceding word must not be `in`/`unter`/… -
-  so "… in 11 Minutes" and "Die 3 Musketiere" survive. Neither script commits -
-  they only write the files, every commit in the notes repo is made by hand
-  (they used to auto-commit; do not reintroduce that).
-  An unsigned add-on only installs because Zen is built with
-  `MOZ_REQUIRE_SIGNING=false`; a Zen build that changes that would take the
-  feature with it. **rofi exit codes**: `10` is `Shift+Return` (alternate
-  accept, the same assumption `sanitize_menu` runs on), and `kb-custom-N`
-  returns `9 + N` - so `kb-custom-1` would collide with it. `yt_menu` therefore
-  binds `Alt+BackSpace` to `kb-custom-2` and reads `11`, which was measured
-  against the installed rofi rather than taken from the manpage. It has **no**
-  `Shift+Return` action (removed on purpose, not to be reintroduced) and loops:
-  a removal rebuilds the index and reopens rofi with `-filter` set to what was
-  typed (`-format 'i f'` returns row number *and* filter), dropping the filter
-  when it no longer matches a row.
-- **Dictation** is **voxtype** (AUR `voxtype-bin`, local whisper.cpp,
-  `large-v3-turbo`): `config/voxtype/config.toml` -> `~/.config/voxtype/`.
-  The daemon starts from the session autostart (Plasma:
-  `config/kde/voxtype.desktop`, dwl: `autostart[]`), the key only runs
-  `voxtype record toggle` (Plasma `Meta+Shift+W` via
-  `config/kde/voxtype-toggle.desktop`, dwl `MOD+Shift+W`). Its own OSD
-  (gtk4-layer-shell) is the recording indicator. Text is typed with
-  `wtype` (dwl) / `eitype` (KWin), clipboard as fallback. The Vulkan backend
-  (`voxtype setup gpu --enable`) is machine state, not tracked.
-- **KeePassXC DB** (`*.kdbx`) is excluded via `.gitignore` and the
-  `config/keepassxc/` folder via `.claudeignore`.
-- Commits are SSH-signed (`config/git/config`).
-- Scripts carry a two-line license header right after the shebang:
-  `# SPDX-License-Identifier: ISC` + a `# Copyright (C) <year> The
-leonhardweiler/dotfiles Authors` line (the repo is ISC, see `LICENSE`). Add it to any new script so the
-  license travels with a single copied file. Third-party scripts (e.g.
-  `config/mpv/scripts/thumbfast.lua`) keep their own header.
-- Two health/workflow skills write into `AGENT/`: `review-and-update-report`
-  (health report) and `implement-todo` (work through `TODO.md`, one commit per
-  item). `AGENT/keymaps/keybinds.md` is a hand-kept overview of every keybinding on the
-  system - update it when a binding changes.
-- **Claude Code runs without permission prompts here, on purpose**: `.bashrc`
-  aliases `claude` to `claude --dangerously-skip-permissions` and
-  `config/claude/settings.json` sets `skipDangerousModePermissionPrompt`.
-  Together with the passwordless `wheel` sudo from `--sudoers` that means no
-  guard rails at all - documented in the README, and the alias is meant to stay
-  the command.
+- `mkinitcpio.conf` is not linked on this machine (hybrid NVIDIA/AMD, ext4); linking it can make the system unbootable.
+- Units are activated with `systemctl enable`, never `reenable`: it deletes the unit symlink.
+- `~/.mixxx/` stays real. Never track `mixxx.cfg` or `broadcast_profiles/*.bcp.xml`
+  (plain-text streaming password; the repo is public).
+- `config/mixxx/skins/` is a generator (`./install --mixxx-skin`), rerun after every
+  mixxx update. Paths in the generated skin must be absolute; `build-skin` checks them.
+- `sanitize` is the only script with format knowledge; clipboard images always go out as `image/png`.
+- `yt_save` speaks native messaging on stdout; diagnostics go to stderr only.
+  rofi `kb-custom-N` returns `9 + N`, `10` is `Shift+Return`.
+- Do not reintroduce: the `~/outbox` watcher, auto-commits in the yt scripts,
+  a `Shift+Return` action in `yt_menu`.
+- `Ctrl+Shift+A` in foot: `PROMPT_RE` in `copy-visible` mirrors `PS1` in `.bashrc`.
+- `*.kdbx` is gitignored, `config/keepassxc/` is in `.claudeignore`.
+- New scripts start with `# SPDX-License-Identifier: ISC` and
+  `# Copyright (C) <year> The leonhardweiler/dotfiles Authors`.
+- Claude runs without permission prompts here on purpose (`.bashrc` alias,
+  `skipDangerousModePermissionPrompt`, passwordless sudo). Keep it that way.
