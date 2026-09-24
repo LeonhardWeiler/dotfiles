@@ -184,27 +184,27 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 
 ## Contents
 
-| Component      | Path                               |
-| -------------- | ---------------------------------- |
-| Bash           | `~/.bashrc`, `~/.config/bash`      |
-| btop           | `~/.config/btop`                   |
-| Claude Code    | `~/.claude/{skills,settings.json}` |
-| dwl            | compiled + `/usr/local` session    |
-| foot           | `~/.config/foot`                   |
-| Git            | `~/.config/git`                    |
-| MIME defaults  | `~/.config/mimeapps.list`          |
-| MPV            | `~/.config/mpv`                    |
-| Neovim         | `~/.config/nvim`                   |
-| wob (OSD)      | `~/.config/wob`                    |
-| Pacman hooks   | `/etc/pacman.d/hooks`              |
-| PipeWire       | `~/.config/pipewire`               |
-| qt5ct          | `~/.config/qt5ct`                  |
-| Rofi           | `~/.config/rofi`                   |
-| Scripts        | `~/.local/bin`                     |
-| Systemd System | `/etc/systemd/system/`             |
-| Wallpapers     | `~/.local/share/wallpapers`        |
-| wbg            | compiled + `/usr/local` binary     |
-| yt-save add-on | packed XPI + `~/.mozilla/native-messaging-hosts` |
+| Component      | Path                                                             |
+| -------------- | ---------------------------------------------------------------- |
+| Bash           | `~/.bashrc`, `~/.config/bash`                                    |
+| btop           | `~/.config/btop`                                                 |
+| Claude Code    | `~/.claude/{skills,settings.json}`, `~/.agents/.skill-lock.json` |
+| dwl            | compiled + `/usr/local` session                                  |
+| foot           | `~/.config/foot`                                                 |
+| Git            | `~/.config/git`                                                  |
+| MIME defaults  | `~/.config/mimeapps.list`                                        |
+| MPV            | `~/.config/mpv`                                                  |
+| Neovim         | `~/.config/nvim`                                                 |
+| wob (OSD)      | `~/.config/wob`                                                  |
+| Pacman hooks   | `/etc/pacman.d/hooks`                                            |
+| PipeWire       | `~/.config/pipewire`                                             |
+| qt5ct          | `~/.config/qt5ct`                                                |
+| Rofi           | `~/.config/rofi`                                                 |
+| Scripts        | `~/.local/bin`                                                   |
+| Systemd System | `/etc/systemd/system/`                                           |
+| Wallpapers     | `~/.local/share/wallpapers`                                      |
+| wbg            | compiled + `/usr/local` binary                                   |
+| yt-save add-on | packed XPI + `~/.mozilla/native-messaging-hosts`                 |
 
 ## My Setup
 
