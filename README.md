@@ -54,6 +54,7 @@ The optional steps (menu entries; each also has a flag, see below):
 | Generate locales (`locale-gen`)                     | `--locale`              | ✓       |
 | Deploy the getty@tty1 autologin drop-in             | `--getty-autologin`     |         |
 | Colemak-DH for console + login screen (`/etc`)      | `--vconsole`            | ✓       |
+| Desktop wallpaper as login screen background         | `--login-wallpaper`     |         |
 | Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`             |         |
 | Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`           |         |
 | Install fonts + refresh the font cache (`fc-cache`) | `--fonts`               |         |

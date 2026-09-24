@@ -424,6 +424,24 @@ do_vconsole() {
 }
 register_step vconsole do_vconsole "Colemak-DH for console + login screen (/etc/vconsole.conf, real copy)"
 
+# Set the Plasma Login Manager wallpaper to the current desktop wallpaper. The
+# greeter runs as the plasmalogin user and cannot read /home/leo, so the image
+# is copied to its home, as the KCM does.
+do_login_wallpaper() {
+  local img dir=/var/lib/plasmalogin/wallpapers
+  img="$(sed -n 's|^Image=file://||p' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" | head -1)"
+  [ -f "$img" ] || { warn "desktop wallpaper not found: ${img:-none}"; return 0; }
+  info "Copying $img to $dir"
+  run 1 rm -rf "$dir" && run 1 install -d -o plasmalogin -g plasmalogin "$dir" \
+    && run 1 install -m644 -o plasmalogin -g plasmalogin "$img" "$dir/" \
+    || { warn "wallpaper copy failed"; return 0; }
+  run 1 kwriteconfig6 --file /etc/plasmalogin.conf --group Greeter --key WallpaperPluginId org.kde.image
+  run 1 kwriteconfig6 --file /etc/plasmalogin.conf --group Greeter --group Wallpaper --group org.kde.image \
+    --group General --key Image "file://$dir/${img##*/}" && run 1 chmod 644 /etc/plasmalogin.conf \
+    || warn "plasmalogin.conf not written"
+}
+register_step login-wallpaper do_login_wallpaper "Desktop wallpaper as login screen background (/etc/plasmalogin.conf)"
+
 # Passwordless sudo for the wheel group - a deliberate convenience choice of this
 # setup. As a drop-in in /etc/sudoers.d/ (0440), first checked with `visudo -c`
 # on a temp file so broken sudoers syntax cannot lock you out of the system.
