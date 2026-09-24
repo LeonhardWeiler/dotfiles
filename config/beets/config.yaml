@@ -1,0 +1,18 @@
+include: [secrets.yaml]
+
+directory: ~/files/archive/audio/MUSIC/
+library: ~/.config/beets/library.db
+
+import:
+    copy: no
+    move: no
+    write: yes
+
+plugins: discogs fromfilename chroma
+
+chroma:
+    auto: yes
+
+discogs:
+    source_weight: 0.0
+    append_style_genre: yes

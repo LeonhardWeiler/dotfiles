@@ -186,6 +186,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | Component      | Path                               |
 | -------------- | ---------------------------------- |
 | Bash           | `~/.bashrc`, `~/.config/bash`      |
+| beets          | `~/.config/beets/config.yaml`      |
 | btop           | `~/.config/btop`                   |
 | Claude Code    | `~/.claude/{skills,settings.json}` |
 | dwl            | compiled + `/usr/local` session    |

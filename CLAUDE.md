@@ -49,7 +49,7 @@ dwl specifics, for when it returns:
 - `config/locale/locale.conf` and `config/vconsole/` are copied, not linked
   (`--locale`, `--vconsole`): localed and early boot cannot read `/home`. Keep the
   Colemak DH layout in sync across `vconsole.conf`, `00-keyboard.conf`,
-  `~/.config/kxkbrc` and voxtype's `eitype_xkb_*`.
+  `config/kde/kxkbrc` and voxtype's `eitype_xkb_*`.
 - Units are activated with `systemctl enable`, never `reenable`: it deletes the unit symlink.
 - `~/.mixxx/` stays real. Never track `mixxx.cfg` or `broadcast_profiles/*.bcp.xml`
   (plain-text streaming password; the repo is public).
