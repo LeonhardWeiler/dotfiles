@@ -42,6 +42,12 @@
 - Use my git config as is (name, email, signing). Never change author or skip signing.
 - Do not add "Authored by" or "Signed-off-by" lines to commit messages in school projects.
 
+## System
+
+- Arch Linux with KDE, keyboard layout Colemak DH.
+- NAS: `root@100.65.0.90` over SSH (OpenMediaVault, Docker).
+- Anthropic Pro plan: be economical with tokens, use subagents only when needed.
+
 ## Skills
 
 - React: always use the skill `vercel-react-best-practices`
