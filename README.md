@@ -191,9 +191,7 @@ PipeWire/WirePlumber/figma-agent are enabled by their own package presets and ar
 | dwl            | compiled + `/usr/local` session    |
 | foot           | `~/.config/foot`                   |
 | Git            | `~/.config/git`                    |
-| KeePassXC      | `~/.config/keepassxc`              |
 | MIME defaults  | `~/.config/mimeapps.list`          |
-| mkinitcpio     | `/etc/mkinitcpio.conf`             |
 | MPV            | `~/.config/mpv`                    |
 | Neovim         | `~/.config/nvim`                   |
 | wob (OSD)      | `~/.config/wob`                    |
@@ -752,9 +750,8 @@ background color -> `-init-color`, the outline color -> `-input-color`.
 
 ### New Initramfs
 
-`mkinitcpio.conf` is tracked and linked to `/etc/mkinitcpio.conf` via `links.conf`
-(source `config/mkinitcpio/mkinitcpio.conf`). After modifying it, regenerate the
-initramfs with `./install --initramfs`, or by hand:
+`/etc/mkinitcpio.conf` is not tracked. Regenerate the initramfs with
+`./install --initramfs`, or by hand:
 
 ```bash
 sudo mkinitcpio -P

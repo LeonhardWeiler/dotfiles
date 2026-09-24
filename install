@@ -444,7 +444,7 @@ do_sudoers() {
 register_step sudoers do_sudoers "Passwordless sudo for wheel (sudoers.d)"
 
 # Rebuild the initramfs (mkinitcpio -P) - needed after changes to
-# /etc/mkinitcpio.conf (linked via links.conf).
+# /etc/mkinitcpio.conf.
 do_initramfs() {
   command -v mkinitcpio >/dev/null 2>&1 || { warn "mkinitcpio missing - skipped"; return 0; }
   info "Regenerating initramfs (mkinitcpio -P)"

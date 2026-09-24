@@ -50,7 +50,6 @@ dwl specifics, for when it returns:
   (`--locale`, `--vconsole`): localed and early boot cannot read `/home`. Keep the
   Colemak DH layout in sync across `vconsole.conf`, `00-keyboard.conf`,
   `~/.config/kxkbrc` and voxtype's `eitype_xkb_*`.
-- `mkinitcpio.conf` is not linked on this machine (hybrid NVIDIA/AMD, ext4); linking it can make the system unbootable.
 - Units are activated with `systemctl enable`, never `reenable`: it deletes the unit symlink.
 - `~/.mixxx/` stays real. Never track `mixxx.cfg` or `broadcast_profiles/*.bcp.xml`
   (plain-text streaming password; the repo is public).
@@ -62,7 +61,7 @@ dwl specifics, for when it returns:
 - Do not reintroduce: the `~/outbox` watcher, auto-commits in the yt scripts,
   a `Shift+Return` action in `yt_menu`.
 - `Ctrl+Shift+A` in foot: `PROMPT_RE` in `copy-visible` mirrors `PS1` in `.bashrc`.
-- `*.kdbx` is gitignored, `config/keepassxc/` is in `.claudeignore`.
+- `*.kdbx` is gitignored.
 - New scripts start with `# SPDX-License-Identifier: ISC` and
   `# Copyright (C) <year> The leonhardweiler/dotfiles Authors`.
 - Claude runs without permission prompts here on purpose (`.bashrc` alias,
