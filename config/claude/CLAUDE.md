@@ -12,22 +12,19 @@
 - Check library APIs against the installed version, not from memory.
 - Do the task directly. Do not leave helper scripts behind unless asked.
 - No CI or GitHub Actions unless asked.
-- JS/TS: bun, not npm.
-- Verify UI changes in a real browser, not only with curl or tests.
 
 ## Comments and prose
 
-- No comments by default. A comment only carries what the code cannot, e.g. something that is weirdly done only in this project and would confuse others.
+- No comments by default. A comment only carries what the code cannot, e.g. something that is weirdly done only in this project and would CONFUSE others.
 - Never explain why an option was chosen. State the thing and stop.
 - Keep docs, READMEs and CLAUDE.md files short.
 
 ## Workflow
 
 - Make a plan before larger changes. Ask when something is unclear.
-- Commit after each step. Do not push unless asked.
+- Commit after each step. Push once when the task is done, not after every commit.
 - Provide toolchains and dependencies through a `flake.nix`, not system-wide installs.
 - Run the project's checks (typecheck, lint, tests) before every commit that could change their result.
-- Commit directly on the main branch. Branch only when asked.
 - `AGENT/` holds `TODO.md` and `project-health-report.html`, maintained by the
   skills `implement-todo` and `review-and-update-report`. It is not part of the product.
 
