@@ -260,13 +260,23 @@ next_steps() {
   fi
 }
 
-# Generate the freshly linked locales (/etc/locale.gen), idempotent.
+# Copy config/locale/locale.conf to /etc/locale.conf and generate the linked
+# locales (/etc/locale.gen), idempotent. locale.conf is a REAL copy: localed runs
+# with ProtectHome=yes, and a symlink into /home makes its Locale property fail
+# with "Access denied" - which fails the whole GetAll, so the Plasma Login
+# Manager greeter (KWin --locale1) loses the X11 layout and comes up as US.
+# PID 1 also reads it before /home is mounted. `rm` first so the copy replaces
+# an old symlink instead of writing through it into the repo.
 do_locale() {
-  if [ "$USER_ONLY" = 1 ]; then warn "--user-only: locale-gen skipped"; return 0; fi
+  if [ "$USER_ONLY" = 1 ]; then warn "--user-only: locale step skipped"; return 0; fi
+  info "Copying locale.conf to /etc"
+  run 1 rm -f /etc/locale.conf && run 1 install -m644 "$BASEDIR/config/locale/locale.conf" /etc/locale.conf \
+    || warn "locale.conf copy failed"
+  run 1 systemctl try-restart systemd-localed.service || warn "localed restart failed"
   info "Generating locales (locale-gen)"
   run 1 locale-gen || warn "locale-gen failed"
 }
-register_step locale do_locale "Generate locales (locale-gen)"
+register_step locale do_locale "Copy /etc/locale.conf (real copy) + generate locales (locale-gen)"
 
 # Apply the menu preselection (DEFAULT_STEPS) - used without a TTY or on empty input.
 select_defaults() { local s; for s in "${DEFAULT_STEPS[@]}"; do SELECTED[$s]=1; done; }

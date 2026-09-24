@@ -45,7 +45,8 @@ scripts). The source->target mapping is stated explicitly in
   - `--groups` - add the user to the groups from `setup/groups.txt` (loaded into
     `GROUP_LIST`) via `usermod -aG`.
   - `--timezone ZONE` - set `/etc/localtime` (without `ZONE` the menu asks).
-  - `--locale` - `locale-gen`. _Default._
+  - `--locale` - copy `/etc/locale.conf` (real copy, see below) + `locale-gen`.
+    _Default._
   - `--getty-autologin` - deploy the getty@tty1 autologin drop-in as a **real
     copy** to `/etc`. There is no display manager: `getty@tty1` is overridden to
     log `leo` in automatically (`agetty --autologin`), and `~/.bash_profile` then
@@ -186,9 +187,13 @@ scripts). The source->target mapping is stated explicitly in
 - **`/etc` targets** (in `links.conf`, per file, `/etc/…` target path):
   `mkinitcpio.conf`,
   `pacman/dotfiles-programs-list.hook`,
-  `locale/locale.conf`, `locale/locale.gen` (-> `/etc/locale.gen`),
+  `locale/locale.gen` (-> `/etc/locale.gen`),
   `pacman/pacman.conf` (-> `/etc/pacman.conf`),
   `logind/logind.conf` (-> `/etc/systemd/logind.conf`).
+  `config/locale/locale.conf` is **not** linked but copied by the `--locale`
+  step: localed runs with `ProtectHome=yes`, a link into `/home` fails its
+  `Locale` property and with it the whole `GetAll` - the greeter's KWin
+  (`--locale1`) then drops the X11 layout and falls back to US.
   `config/vconsole/` is **not** linked but copied by the `--vconsole` step
   (a default step): `vconsole.conf` -> `/etc/vconsole.conf` (`KEYMAP=mod-dh-iso-uk`,
   console + initramfs via `sd-vconsole`) and `00-keyboard.conf` ->

@@ -241,8 +241,13 @@ commands are kept here as reference and for doing them by hand. Checklist:
 
 - **Timezone** (`./install --timezone Europe/Vienna`):
   `sudo ln -sf /usr/share/zoneinfo/Europe/Vienna /etc/localtime`
-- **Locales** (`./install --locale`): `/etc/locale.conf` and `/etc/locale.gen`
-  are tracked, but the locales still have to be generated once: `sudo locale-gen`.
+- **Locales** (`./install --locale`): `/etc/locale.gen` is linked, but the
+  locales still have to be generated once (`locale-gen`, which the step runs).
+  `/etc/locale.conf` is **copied** by the same step, not linked:
+  systemd-localed runs with `ProtectHome=yes`, so a link into `/home` makes
+  its `Locale` property fail with "Access denied". That fails the whole
+  `GetAll`, and the Plasma Login Manager greeter (KWin `--locale1`) then
+  silently drops the X11 layout below and comes up as US QWERTY.
 - **Bootloader / kernel cmdline**: the custom kernel is started via **EFISTUB**
   (see below); systemd-boot remains installed on the ESP (`/efi`) as the
   fallback. The kernel options `amd_pstate=active usbcore.autosuspend=1 quiet`
