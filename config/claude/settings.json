@@ -1,7 +1,9 @@
 {
   "permissions": {
     "defaultMode": "auto",
-    "additionalDirectories": ["/"]
+    "additionalDirectories": [
+      "/"
+    ]
   },
   "model": "opus",
   "language": "german",
