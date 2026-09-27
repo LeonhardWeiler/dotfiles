@@ -213,6 +213,8 @@ nodejs-lts-krypton 24.21.0-1
 noto-fonts-cjk 20240730-1
 npm 12.1.0-1
 ntfs-3g 2026.9.18-1
+nvidia-open 615.71.09-4
+nvidia-utils 615.71.09-1
 obs-studio 32.2.2-1
 okular 26.08.1-1
 openssh 10.5p1-1
@@ -261,6 +263,7 @@ ttf-jetbrains-mono-nerd 3.5.1-2
 typst 1:0.15.1-2
 umbrello 26.08.1-1
 unzip 6.0-23
+uv 0.12.19-1
 voxtype-bin 1.1.0-2
 vulkan-radeon 1:26.2.3-1
 wayland-protocols 1.49-1
