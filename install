@@ -470,6 +470,19 @@ do_initramfs() {
 }
 register_step initramfs do_initramfs "Regenerate initramfs (mkinitcpio -P)"
 
+# rembg for the Dolphin "Hintergrund entfernen" action, on the NVIDIA GPU. The
+# modprobe file is a REAL copy: udev loads nvidia before /home is mounted, and
+# the kms hook bakes it into the initramfs.
+do_remove_bg() {
+  info "Deploying nvidia-cuda-only.conf + installing rembg (uv)"
+  run 1 install -m644 "$BASEDIR/config/nvidia/cuda-only.conf" /etc/modprobe.d/nvidia-cuda-only.conf \
+    || { warn "modprobe conf copy failed"; return 0; }
+  do_initramfs
+  run 0 uv tool install --python 3.13 "rembg[gpu,cli]" --with "onnxruntime-gpu[cuda,cudnn]" \
+    || warn "rembg install failed"
+}
+register_step remove-bg do_remove_bg "NVIDIA for CUDA only + rembg for Dolphin's remove-background action"
+
 # Install the font packages (loaded from setup/fonts.txt near the top) and rebuild
 # the fontconfig cache so freshly installed fonts are picked up without a re-login.
 do_fonts() {

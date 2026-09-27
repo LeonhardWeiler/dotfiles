@@ -1,0 +1,15 @@
+#!/home/leo/.local/share/uv/tools/rembg/bin/python
+# SPDX-License-Identifier: ISC
+# Copyright (C) 2026 The leonhardweiler/dotfiles Authors
+# remove-bg <image>...: writes <name>-nobg.png next to each image.
+
+import sys
+from pathlib import Path
+
+import onnxruntime
+onnxruntime.preload_dlls()
+from rembg import new_session, remove
+
+session = new_session("birefnet-general")
+for f in map(Path, sys.argv[1:]):
+    f.with_name(f.stem + "-nobg.png").write_bytes(remove(f.read_bytes(), session=session))

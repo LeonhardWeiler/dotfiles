@@ -57,6 +57,7 @@ The optional steps (menu entries; each also has a flag, see below):
 | Desktop wallpaper as login screen background        | `--login-wallpaper`     |         |
 | Passwordless sudo for `wheel` (`/etc/sudoers.d/`)   | `--sudoers`             |         |
 | Rebuild the initramfs (`mkinitcpio -P`)             | `--initramfs`           |         |
+| NVIDIA for CUDA only + rembg (Dolphin action)       | `--remove-bg`           |         |
 | Install fonts + refresh the font cache (`fc-cache`) | `--fonts`               |         |
 | Enable the Legion battery conservation mode         | `--legion-conservation` |         |
 | Build + install dwl from `config/dwl/config.h`      | `--dwl`                 |         |
@@ -299,6 +300,14 @@ sudo systemctl start efi.automount` (pass `0` disables the boot-time fsck).
   `config/vconsole/vconsole.conf` (`KEYMAP=mod-dh-iso-uk`, the console twin)
   to `/etc` as real copies, unmasks `systemd-vconsole-setup` and rebuilds the
   initramfs (the `sd-vconsole` hook embeds the keymap).
+
+- **Remove background** (`./install --remove-bg`): Dolphin's image context
+  menu gets "Hintergrund entfernen" (`config/kde/remove-bg.desktop`), which
+  runs `remove-bg` and writes `<name>-nobg.png` next to each image. It uses
+  rembg (BiRefNet) on the RTX 3070 via CUDA. `config/nvidia/cuda-only.conf`
+  keeps `nvidia_drm` from loading, so KWin never opens the GPU and it stays in
+  D3cold unless a CUDA process runs. The HDMI port, if wired to the dGPU,
+  stays dead.
 
 - **sudo** (`./install --sudoers`): this setup relies on passwordless sudo for
   the `wheel` group (`%wheel ALL=(ALL:ALL) NOPASSWD: ALL`, written to
