@@ -41,6 +41,13 @@ alias claude='claude --dangerously-skip-permissions'
 alias camera='ffplay -f v4l2 /dev/video0 -vf hflip -x 1280 -y 720'
 alias screenshot='spectacle --region'
 
+# HDMI is wired to the cuda-only 3070; loading nvidia_drm keeps it usable until reboot.
+hdmi() {
+  [ -d /sys/module/nvidia_drm ] || sudo modprobe --ignore-install nvidia_drm || return
+  grep -H . /sys/class/drm/card*-HDMI-A-*/status
+  echo "3070: $(</sys/bus/pci/devices/0000:01:00.0/power/runtime_status) (reboot to turn off)"
+}
+
 
 export NIX_CONFIG="experimental-features = nix-command flakes"
 
