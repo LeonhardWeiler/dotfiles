@@ -25,9 +25,9 @@ btop 1.4.7-1
 calindori 26.08.1-1
 calligra 26.08.1-1
 cantor 26.08.1-1
-clpeak 2.1.4-1
+clpeak 3.0.0-1
 colord-kde 26.08.1-1
-cpupower 7.2.7-1
+cpupower 7.2.8-1
 devtools 1:1.5.1-1
 docker 1:29.8.1-1
 docker-buildx 0.37.1-1
@@ -65,7 +65,7 @@ itinerary 26.08.1-1
 jq 1.8.2-1
 juk 26.08.1-1
 k3b 1:26.08.1-1
-kaddressbook 26.08.1-1
+kaddressbook 26.08.1-2
 kajongg 26.08.1-1
 kalarm 26.08.1-1
 kalgebra 26.08.1-1
@@ -141,7 +141,7 @@ klickety 26.08.1-1
 klines 26.08.1-1
 kmag 26.08.1-1
 kmahjongg 26.08.1-1
-kmail 26.08.1-1
+kmail 26.08.1-2
 kmail-account-wizard 26.08.1-1
 kmines 26.08.1-1
 kmix 26.08.1-1
@@ -163,7 +163,7 @@ konsole 26.08.1-1
 kontact 26.08.1-1
 kontrast 26.08.1-1
 konversation 26.08.1-1
-korganizer 26.08.1-1
+korganizer 26.08.1-2
 kpat 26.08.1-1
 krdc 26.08.1-1
 krecorder 26.08.1-1
@@ -224,7 +224,7 @@ partitionmanager 26.08.1-1
 perl-image-exiftool 13.55-1
 picmi 26.08.1-1
 pim-data-exporter 26.08.1-1
-pim-sieve-editor 26.08.1-1
+pim-sieve-editor 26.08.1-2
 pipewire-alsa 1:1.6.9-1
 plasma-camera 26.08.1-1
 plasma-meta 6.7-2
@@ -235,7 +235,7 @@ ps_mem 3.14-2
 python-internetarchive 5.8.0-1
 python-pip 26.2.1-1
 qmlkonsole 26.08.1-1
-qpdf 12.4.1-1
+qpdf 12.4.2-1
 qrca 26.08.1-1
 qt5-wayland 5.15.19+kde+r55-1
 quickshell 0.3.1-1
@@ -263,7 +263,7 @@ ttf-jetbrains-mono-nerd 3.5.1-2
 typst 1:0.15.1-2
 umbrello 26.08.1-1
 unzip 6.0-23
-uv 0.12.19-1
+uv 0.12.20-1
 voxtype-bin 1.1.0-2
 vulkan-radeon 1:26.2.3-1
 wayland-protocols 1.49-1

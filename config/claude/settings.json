@@ -6,15 +6,15 @@
     ]
   },
   "model": "opus",
+  "disableClaudeAiConnectors": true,
   "language": "german",
   "effortLevel": "medium",
+  "autoCompactWindow": 200000,
   "promptSuggestionEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "fileCheckpointingEnabled": false,
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true,
-  "autoCompactWindow": 200000,
-  "disableClaudeAiConnectors": true
+  "agentPushNotifEnabled": true
 }
