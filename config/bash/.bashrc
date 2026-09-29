@@ -43,9 +43,14 @@ alias screenshot='spectacle --region'
 
 # HDMI is wired to the cuda-only 3070; loading nvidia_drm keeps it usable until reboot.
 hdmi() {
-  [ -d /sys/module/nvidia_drm ] || sudo modprobe --ignore-install nvidia_drm || return
-  grep -H . /sys/class/drm/card*-HDMI-A-*/status
-  echo "3070: $(</sys/bus/pci/devices/0000:01:00.0/power/runtime_status) (reboot to turn off)"
+  case $1 in
+    on) [ -d /sys/module/nvidia_drm ] || sudo modprobe --ignore-install nvidia_drm || return ;;
+    off) [ -d /sys/module/nvidia_drm ] || { echo "already off"; return; }
+         read -rp "KWin holds nvidia_drm, reboot now? [y/N] " a
+         [ "$a" = y ] && systemctl reboot; return ;;
+  esac
+  grep -H . /sys/class/drm/card*-HDMI-A-*/status 2>/dev/null || echo "hdmi off"
+  echo "3070: $(</sys/bus/pci/devices/0000:01:00.0/power/runtime_status)"
 }
 
 
