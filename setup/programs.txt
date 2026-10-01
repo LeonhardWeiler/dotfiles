@@ -103,7 +103,7 @@ kdenlive 26.08.1-1
 kdepim-addons 26.08.1-1
 kdesdk-kio 26.08.1-1
 kdesdk-thumbnailers 26.08.1-1
-kdevelop 26.08.1-1
+kdevelop 26.08.1-2
 kdevelop-php 26.08.1-1
 kdevelop-python 26.08.1-1
 kdf 26.08.1-1
@@ -265,7 +265,7 @@ umbrello 26.08.1-1
 unzip 6.0-23
 uv 0.12.21-1
 voxtype-bin 1.1.0-2
-vulkan-radeon 1:26.2.3-1
+vulkan-radeon 1:26.2.3-2
 wayland-protocols 1.49-1
 wget 1.25.0-6
 wireless-regdb 2026.09.03-1
