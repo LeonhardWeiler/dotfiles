@@ -22,7 +22,7 @@
 - Make a plan before larger changes. Ask when something is unclear.
 - Commit after each step. Push at the end of the workflow.
 - Provide toolchains and dependencies through a `flake.nix`, not system-wide installs.
-- Run the project's checks (typecheck, lint, tests) before every commit that could change their result.
+- Before each commit run the fast checks (typecheck, lint, unit tests) and the slow tests the change affects; run the full suite before the push.
 - `AGENT/` holds `TODO.md` and `project-health-report.html`, maintained by the
   skills `implement-todo` and `review-and-update-report`. It is not part of the product.
 
