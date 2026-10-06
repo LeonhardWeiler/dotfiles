@@ -1,7 +1,7 @@
 [user]
 	email = leonhard-weiler@hotmail.com
 	name = Leonhard Weiler
-	signingkey = /home/leo/.ssh/id_ed25519.pub
+	signingkey = /home/leo/.ssh/id_ed25519
 [core]
 	editor = nvim
 [gpg]
@@ -10,3 +10,5 @@
 	gpgsign = true
 [gpg "ssh"]
 	allowedSignersFile = /home/leo/.config/git/allowed_signers
+[tag]
+	gpgSign = true
