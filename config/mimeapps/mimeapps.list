@@ -1,17 +1,23 @@
+[Added Associations]
+text/markdown=dev.zed.Zed.desktop;org.kde.kate.desktop;org.kde.kwrite.desktop;okularApplication_md.desktop;okularApplication_txt.desktop;nvim.desktop;org.kde.ghostwriter.desktop;org.kde.calligrawords_ascii.desktop;
+video/mp4=mpv.desktop;org.kde.dragonplayer.desktop;org.kde.kdenlive.desktop;org.kde.koko.desktop;
+
 [Default Applications]
-x-scheme-handler/figma=figma-linux.desktop
-x-scheme-handler/sgnl=signal.desktop
-x-scheme-handler/signalcaptcha=signal.desktop
-x-scheme-handler/http=helium.desktop
-x-scheme-handler/https=helium.desktop
-x-scheme-handler/chrome=helium.desktop
-text/html=helium.desktop
 application/x-extension-htm=helium.desktop
 application/x-extension-html=helium.desktop
 application/x-extension-shtml=helium.desktop
-application/xhtml+xml=helium.desktop
-application/x-extension-xhtml=helium.desktop
 application/x-extension-xht=helium.desktop
-x-scheme-handler/claude-cli=claude-code-url-handler.desktop
-x-scheme-handler/t3code=com.t3tools.T3Code.desktop
+application/x-extension-xhtml=helium.desktop
+application/xhtml+xml=helium.desktop
 image/jpeg=helium.desktop
+text/html=helium.desktop
+text/markdown=dev.zed.Zed.desktop;
+video/mp4=mpv.desktop;
+x-scheme-handler/chrome=helium.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+x-scheme-handler/figma=figma-linux.desktop
+x-scheme-handler/http=helium.desktop
+x-scheme-handler/https=helium.desktop
+x-scheme-handler/sgnl=signal.desktop
+x-scheme-handler/signalcaptcha=signal.desktop
+x-scheme-handler/t3code=com.t3tools.T3Code.desktop
