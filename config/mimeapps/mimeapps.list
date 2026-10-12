@@ -1,5 +1,6 @@
 [Added Associations]
 text/markdown=dev.zed.Zed.desktop;org.kde.kate.desktop;org.kde.kwrite.desktop;okularApplication_md.desktop;okularApplication_txt.desktop;nvim.desktop;org.kde.ghostwriter.desktop;org.kde.calligrawords_ascii.desktop;
+text/vnd.typst=dev.zed.Zed.desktop;org.kde.kate.desktop;org.kde.kwrite.desktop;org.kde.ghostwriter.desktop;nvim.desktop;okularApplication_txt.desktop;org.kde.calligrawords_ascii.desktop;
 video/mp4=mpv.desktop;org.kde.dragonplayer.desktop;org.kde.kdenlive.desktop;org.kde.koko.desktop;
 
 [Default Applications]
@@ -12,6 +13,7 @@ application/xhtml+xml=helium.desktop
 image/jpeg=helium.desktop
 text/html=helium.desktop
 text/markdown=dev.zed.Zed.desktop;
+text/vnd.typst=dev.zed.Zed.desktop;
 video/mp4=mpv.desktop;
 x-scheme-handler/chrome=helium.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
